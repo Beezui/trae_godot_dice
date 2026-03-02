@@ -4,6 +4,52 @@
 [ext_resource type="Script" path="res://scenes/battle_arena_script.gd" id="2_2022k"]
 [ext_resource type="Script" path="res://scenes/arena_object.gd" id="3_3022k"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_1a89m"]
+size = Vector3(15, 0.1, 10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2b78n"]
+size = Vector3(1, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3c67p"]
+albedo_color = Color(0.5, 0.5, 0.5, 1)
+roughness = 0.9
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4d98q"]
+size = Vector3(0.1, 1, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5e78r"]
+albedo_color = Color(0.7, 0.3, 0.3, 1)
+roughness = 0.9
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6f89s"]
+size = Vector3(15, 1, 0.1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_7g90t"]
+radius = 0.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_8h01u"]
+radius = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_9i12v"]
+albedo_color = Color(0.3, 0.7, 0.3, 1)
+roughness = 0.9
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_10j23w"]
+radius = 0.5
+height = 1.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_11k34x"]
+radius = 0.5
+height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_12l45y"]
+albedo_color = Color(0.2, 0.5, 0.8, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_13m56z"]
+albedo_color = Color(0.8, 0.2, 0.2, 1)
+roughness = 0.8
+
 [node name="BattleArena" type="Node3D"]
 script = ExtResource("2_2022k")
 
@@ -126,49 +172,3 @@ current = true
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 10, 0)
 energy = 2.0
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_1a89m"]
-size = Vector3(15, 0.1, 10)
-
-[sub_resource type="BoxMesh" id="BoxMesh_2b78n"]
-size = Vector3(1, 1, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3c67p"]
-albedo_color = Color(0.5, 0.5, 0.5, 1)
-roughness = 0.9
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_4d98q"]
-size = Vector3(0.1, 1, 10)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5e78r"]
-albedo_color = Color(0.7, 0.3, 0.3, 1)
-roughness = 0.9
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_6f89s"]
-size = Vector3(15, 1, 0.1)
-
-[sub_resource type="SphereShape3D" id="SphereShape3D_7g90t"]
-radius = 0.5
-
-[sub_resource type="SphereMesh" id="SphereMesh_8h01u"]
-radius = 0.5
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_9i12v"]
-albedo_color = Color(0.3, 0.7, 0.3, 1)
-roughness = 0.9
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_10j23w"]
-radius = 0.5
-height = 1.0
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_11k34x"]
-radius = 0.5
-height = 1.0
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_12l45y"]
-albedo_color = Color(0.2, 0.5, 0.8, 1)
-roughness = 0.8
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_13m56z"]
-albedo_color = Color(0.8, 0.2, 0.2, 1)
-roughness = 0.8

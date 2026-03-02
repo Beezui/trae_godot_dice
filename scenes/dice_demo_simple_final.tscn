@@ -7,26 +7,27 @@
 script = ExtResource("1_uzb9g")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=196822810]
-transform = Transform3D(1, 0, 0, 0, 0.17364818, -0.98480773, 0, 0.98480773, 0.17364818, 0, 15, 3)
+transform = Transform3D(1, 0, 0, 0, 0.9659, -0.2588, 0, 0.2588, 0.9659, 0, 20, 0)
 current = true
+fov = 30.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1374347128]
-transform = Transform3D(0.70710677, 0.49999997, 0.49999997, 0, 0.70710677, -0.70710677, -0.70710677, 0.49999997, 0.49999997, 10, 10, 10)
+transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
 
 [node name="Sandbox" type="StaticBody3D" parent="." unique_id=58598292]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 4, 0)
 
 [node name="Ground" type="CollisionShape3D" parent="Sandbox" unique_id=132666535]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Sandbox" unique_id=1215372309]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
 
 [node name="WallNorth" type="CollisionShape3D" parent="Sandbox" unique_id=167772160]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.5)
 
 [node name="WallSouth" type="CollisionShape3D" parent="Sandbox" unique_id=167772161]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.5)
 
 [node name="WallEast" type="CollisionShape3D" parent="Sandbox" unique_id=167772162]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)

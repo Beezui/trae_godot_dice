@@ -5,6 +5,7 @@ extends Node3D
 @onready var enemy = $Characters/Enemy
 
 var battle_state = "ready"  # ready, rolling, resolving, ended
+var timer: Timer
 
 func _input(event):
 	if event is InputEventMouseButton and event.pressed:
