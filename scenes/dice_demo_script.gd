@@ -12,6 +12,8 @@ var max_charge_time = 2.0  # 最大蓄力时间（秒）
 var max_force = 20.0  # 最大投掷力度增加到20
 var original_position = Vector3()  # 骰子原始位置
 var global_time = 0.0  # 全局时间，用于持续震动
+var base_width = 16.0  # 基础宽度（屏幕上方墙体长度）
+var base_height = 9.0   # 基础高度（屏幕左侧墙体长度）
 
 func _ready():
 	# 确保相机正确指向原点
@@ -22,20 +24,32 @@ func _ready():
 	if light:
 		light.look_at_from_position(light.position, Vector3(0, 0, 0), Vector3(0, 1, 0))
 	
+	# 获取窗口比例并调整沙盘尺寸
+	var window_size = DisplayServer.window_get_size()
+	var window_ratio = float(window_size.x) / float(window_size.y)
+	print("窗口尺寸: %s, 比例: %.2f" % [window_size, window_ratio])
+	
+	# 根据窗口比例调整尺寸
+	# 确保蓝色墙体（屏幕上方）长度：绿色墙体（屏幕左侧）长度 = 屏幕宽：屏幕高
+	var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
+	var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度（屏幕上方）
+	print("调整后沙盘尺寸 - 宽度: %.2f, 高度: %.2f" % [sandbox_width, sandbox_height])
+	print("蓝色墙体长度: %.2f, 绿色墙体长度: %.2f, 比例: %.2f" % [sandbox_height, sandbox_width, sandbox_height / sandbox_width])
+	
 	# 创建沙盘碰撞形状和网格
 	if sandbox:
 		# 创建地面碰撞形状
 		var ground_collision = sandbox.get_node("Ground")
 		if ground_collision:
 			var ground_shape = BoxShape3D.new()
-			ground_shape.size = Vector3(16, 0.1, 9)
+			ground_shape.size = Vector3(sandbox_width, 0.1, sandbox_height)
 			ground_collision.shape = ground_shape
 		
 		# 创建地面网格
 		var ground_mesh = sandbox.get_node("GroundMesh")
 		if ground_mesh:
 			var ground_mesh_resource = BoxMesh.new()
-			ground_mesh_resource.size = Vector3(16, 0.1, 9)
+			ground_mesh_resource.size = Vector3(sandbox_width, 0.1, sandbox_height)
 			ground_mesh.mesh = ground_mesh_resource
 			
 			# 创建地面材质
@@ -47,70 +61,76 @@ func _ready():
 		var wall_north = sandbox.get_node("WallNorth")
 		if wall_north:
 			var wall_north_shape = BoxShape3D.new()
-			wall_north_shape.size = Vector3(16, 10, 0.1)
+			wall_north_shape.size = Vector3(sandbox_width, 10, 0.1)
 			wall_north.shape = wall_north_shape
 		
 		# 创建北墙网格
 		var wall_north_mesh = MeshInstance3D.new()
 		wall_north_mesh.name = "WallNorthMesh"
-		wall_north_mesh.position = Vector3(0, -3.95, 4.5)
+		wall_north_mesh.position = Vector3(-sandbox_width/2, -3.95, 0)
 		var wall_north_mesh_resource = BoxMesh.new()
-		wall_north_mesh_resource.size = Vector3(16, 3, 0.1)
+		wall_north_mesh_resource.size = Vector3(0.1, 3, sandbox_height)
 		wall_north_mesh.mesh = wall_north_mesh_resource
-		var wall_material = StandardMaterial3D.new()
-		wall_material.albedo_color = Color(0.7, 0.3, 0.3, 1)
-		wall_north_mesh.material_override = wall_material
+		var north_wall_material = StandardMaterial3D.new()
+		north_wall_material.albedo_color = Color(0.3, 0.3, 0.7, 1)  # 北墙（屏幕上方）：蓝色
+		wall_north_mesh.material_override = north_wall_material
 		sandbox.add_child(wall_north_mesh)
 		
 		# 创建南墙碰撞形状
 		var wall_south = sandbox.get_node("WallSouth")
 		if wall_south:
 			var wall_south_shape = BoxShape3D.new()
-			wall_south_shape.size = Vector3(16, 10, 0.1)
+			wall_south_shape.size = Vector3(sandbox_width, 10, 0.1)
 			wall_south.shape = wall_south_shape
 		
 		# 创建南墙网格
 		var wall_south_mesh = MeshInstance3D.new()
 		wall_south_mesh.name = "WallSouthMesh"
-		wall_south_mesh.position = Vector3(0, -3.95, -4.5)
+		wall_south_mesh.position = Vector3(sandbox_width/2, -3.95, 0)
 		var wall_south_mesh_resource = BoxMesh.new()
-		wall_south_mesh_resource.size = Vector3(16, 3, 0.1)
+		wall_south_mesh_resource.size = Vector3(0.1, 3, sandbox_height)
 		wall_south_mesh.mesh = wall_south_mesh_resource
-		wall_south_mesh.material_override = wall_material
+		var south_wall_material = StandardMaterial3D.new()
+		south_wall_material.albedo_color = Color(0.7, 0.3, 0.3, 1)  # 南墙（屏幕下方）：红色
+		wall_south_mesh.material_override = south_wall_material
 		sandbox.add_child(wall_south_mesh)
 		
 		# 创建东墙碰撞形状
 		var wall_east = sandbox.get_node("WallEast")
 		if wall_east:
 			var wall_east_shape = BoxShape3D.new()
-			wall_east_shape.size = Vector3(0.1, 10, 9)
+			wall_east_shape.size = Vector3(0.1, 10, sandbox_height)
 			wall_east.shape = wall_east_shape
 		
 		# 创建东墙网格
 		var wall_east_mesh = MeshInstance3D.new()
 		wall_east_mesh.name = "WallEastMesh"
-		wall_east_mesh.position = Vector3(8, -3.95, 0)
+		wall_east_mesh.position = Vector3(0, -3.95, -sandbox_height/2)
 		var wall_east_mesh_resource = BoxMesh.new()
-		wall_east_mesh_resource.size = Vector3(0.1, 3, 9)
+		wall_east_mesh_resource.size = Vector3(sandbox_width, 3, 0.1)
 		wall_east_mesh.mesh = wall_east_mesh_resource
-		wall_east_mesh.material_override = wall_material
+		var east_wall_material = StandardMaterial3D.new()
+		east_wall_material.albedo_color = Color(0.7, 0.7, 0.3, 1)  # 东墙（屏幕右侧）：黄色
+		wall_east_mesh.material_override = east_wall_material
 		sandbox.add_child(wall_east_mesh)
 		
 		# 创建西墙碰撞形状
 		var wall_west = sandbox.get_node("WallWest")
 		if wall_west:
 			var wall_west_shape = BoxShape3D.new()
-			wall_west_shape.size = Vector3(0.1, 10, 9)
+			wall_west_shape.size = Vector3(0.1, 10, sandbox_height)
 			wall_west.shape = wall_west_shape
 		
 		# 创建西墙网格
 		var wall_west_mesh = MeshInstance3D.new()
 		wall_west_mesh.name = "WallWestMesh"
-		wall_west_mesh.position = Vector3(-8, -3.95, 0)
+		wall_west_mesh.position = Vector3(0, -3.95, sandbox_height/2)
 		var wall_west_mesh_resource = BoxMesh.new()
-		wall_west_mesh_resource.size = Vector3(0.1, 3, 9)
+		wall_west_mesh_resource.size = Vector3(sandbox_width, 3, 0.1)
 		wall_west_mesh.mesh = wall_west_mesh_resource
-		wall_west_mesh.material_override = wall_material
+		var west_wall_material = StandardMaterial3D.new()
+		west_wall_material.albedo_color = Color(0.3, 0.7, 0.3, 1)  # 西墙（屏幕左侧）：绿色
+		wall_west_mesh.material_override = west_wall_material
 		sandbox.add_child(wall_west_mesh)
 		
 		# 创建顶部碰撞形状（防止骰子跳出摄像机视野）
@@ -118,9 +138,13 @@ func _ready():
 		wall_top.name = "WallTop"
 		wall_top.position = Vector3(0, 8, 0)
 		var wall_top_shape = BoxShape3D.new()
-		wall_top_shape.size = Vector3(16, 0.5, 9)
+		wall_top_shape.size = Vector3(sandbox_width, 0.5, sandbox_height)
 		wall_top.shape = wall_top_shape
 		sandbox.add_child(wall_top)
+		
+		# 调整骰子初始位置（保持在沙盒内）
+		if dice:
+			dice.position = Vector3(0, 3, 0)  # 屏幕中央位置
 	
 	# 设置物理世界
 	# 暂时注释掉，使用默认重力
@@ -140,10 +164,14 @@ func _ready():
 	start_timer.start()
 
 func start_demo():
-	# 设置骰子初始状态：在屏幕靠下位置半空悬浮，靠近下方墙壁
+	# 设置骰子初始状态：在屏幕中央
 	if dice:
-		# 设置初始位置（靠近下方墙壁，X轴靠近东墙，但在视野范围内）
-		dice.position = Vector3(4, 1, 0)  # 更靠近屏幕下方（东墙），但在视野范围内
+		# 获取窗口比例并计算沙盘高度
+		var window_size = DisplayServer.window_get_size()
+		var window_ratio = float(window_size.x) / float(window_size.y)
+		var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
+		# 设置初始位置（屏幕中央）
+		dice.position = Vector3(0, 3, 0)  # 屏幕中央位置
 		dice.rotation = Vector3()
 	
 	# 取消自动投掷计时器
@@ -165,15 +193,20 @@ func throw_dice():
 		print("Dice node type:", dice.get_class())
 		return
 	
+	# 获取窗口比例并计算沙盘高度
+	var window_size = DisplayServer.window_get_size()
+	var window_ratio = float(window_size.x) / float(window_size.y)
+	var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
+	
 	# 重置骰子位置（离地面5个骰子高度）
-	dice.position = Vector3(0, 5, 0)
+	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # x轴中间，z轴靠近屏幕下方的黄墙（东墙）
 	dice.rotation = Vector3()
 	
-	# 生成随机投掷力
+	# 生成随机投掷力，朝向屏幕上方的绿墙（西墙）
 	var force = Vector3(
-		randf_range(-5, 5),
-		randf_range(5, 7.5),
-		randf_range(-5, 5)
+		randf_range(-2, 2),  # 较小的X方向随机力
+		randf_range(5, 7.5),  # 向上的力
+		randf_range(5, 10)     # 朝向屏幕上方的力（Z正方向）
 	)
 	
 	# 投掷骰子
@@ -190,20 +223,25 @@ func throw_dice_with_charge():
 		print("Error: Dice node does not have roll method")
 		return
 	
+	# 获取窗口比例并计算沙盘高度
+	var window_size = DisplayServer.window_get_size()
+	var window_ratio = float(window_size.x) / float(window_size.y)
+	var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
+	
 	# 重置骰子位置（离地面5个骰子高度）
-	dice.position = Vector3(0, 5, 0)
+	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # x轴中间，z轴靠近屏幕下方的黄墙（东墙）
 	dice.rotation = Vector3()
 	
 	# 根据蓄力时间计算投掷力度
 	var charge_ratio = charge_time / max_charge_time
 	var force_magnitude = charge_ratio * max_force
 	
-	# 生成朝向西墙的随机角度力（X轴负方向）
+	# 生成朝向屏幕上方的力，角度在-45到45度之间
 	var angle = deg_to_rad(randf_range(-45, 45))
 	var force = Vector3(
-		-sin(angle) - 0.5,  # 确保X分量为负，朝向西墙
-		cos(angle),
-		randf_range(-0.5, 0.5)  # 轻微的前后方向随机
+		sin(angle),  # X方向随角度变化
+		0.5,  # 固定的向上力
+		1.0   # 朝向屏幕上方的Z正方向
 	).normalized() * force_magnitude
 	
 	# 投掷骰子
@@ -264,8 +302,12 @@ func _process(delta):
 func reset_dice():
 	# 重置骰子到初始状态
 	if dice:
-		# 设置初始位置（靠近下方墙壁，X轴靠近东墙，但在视野范围内）
-		dice.position = Vector3(4, 1, 0)  # 更靠近屏幕下方（东墙），但在视野范围内
+		# 获取窗口比例并计算沙盘高度
+		var window_size = DisplayServer.window_get_size()
+		var window_ratio = float(window_size.x) / float(window_size.y)
+		var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
+		# 设置初始位置（屏幕中央）
+		dice.position = Vector3(0, 3, 0)  # 屏幕中央位置
 		dice.rotation = Vector3()
 		# 确保骰子静止
 		dice.linear_velocity = Vector3.ZERO

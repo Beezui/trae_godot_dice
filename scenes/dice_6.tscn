@@ -6,7 +6,15 @@
 script = ExtResource("1_1022k")
 dice_value = 1
 dice_faces = [1, 2, 3, 4, 5, 6]
+scale = Vector3(1, 1, 1)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+
+[node name="BoxMesh" type="BoxMesh" parent="MeshInstance3D"]
+size = Vector3(1, 1, 1)
+
+[node name="StandardMaterial3D" type="StandardMaterial3D" parent="MeshInstance3D"]
+albedo_color = Color(1, 0, 0, 1)
+roughness = 0.8

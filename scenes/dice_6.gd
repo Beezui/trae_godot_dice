@@ -59,47 +59,20 @@ func _ready():
 	# 创建网格
 	var mesh_instance = $MeshInstance3D
 	if mesh_instance:
-		# 尝试加载新的平滑骰子模型
-		var model_path = "res://models/dice_smooth.gltf"
-		var model_scene = load(model_path)
-		if model_scene:
-			# 从场景中获取网格
-			var model_instance = model_scene.instantiate()
-			if model_instance:
-				# 直接检查模型实例是否有mesh属性（因为GLTF根节点就是MeshInstance3D）
-				if model_instance.has_method("get_mesh") and model_instance.mesh:
-					mesh_instance.mesh = model_instance.mesh
-					# 缩放模型以适应场景
-					mesh_instance.scale = Vector3(0.5, 0.5, 0.5)
-				else:
-					# 如果根节点没有mesh，尝试遍历所有子节点
-					var children = model_instance.get_children()
-					for child in children:
-						if child.has_method("get_mesh") and child.mesh:
-							mesh_instance.mesh = child.mesh
-							mesh_instance.scale = Vector3(0.5, 0.5, 0.5)
-							break
-						# 递归检查子节点
-						var grand_children = child.get_children()
-						for grand_child in grand_children:
-							if grand_child.has_method("get_mesh") and grand_child.mesh:
-								mesh_instance.mesh = grand_child.mesh
-								mesh_instance.scale = Vector3(0.5, 0.5, 0.5)
-								break
-			# 清理临时实例
-			model_instance.queue_free()
-		else:
-			print("Warning: Failed to load smooth dice model, using default cube")
-			# 如果加载失败，使用默认立方体
-			var cube_mesh = BoxMesh.new()
-			cube_mesh.size = Vector3(1, 1, 1)
-			mesh_instance.mesh = cube_mesh
-			
-			# 创建材质
-			var material = StandardMaterial3D.new()
-			material.albedo_color = Color(1, 1, 1, 1)
-			material.roughness = 0.8
-			mesh_instance.material_override = material
+		print("MeshInstance3D found: ", mesh_instance.name)
+		# 直接使用默认立方体，确保骰子可见
+		var cube_mesh = BoxMesh.new()
+		cube_mesh.size = Vector3(1, 1, 1)
+		mesh_instance.mesh = cube_mesh
+		print("Default cube mesh created")
+		
+		# 创建材质
+		var material = StandardMaterial3D.new()
+		material.albedo_color = Color(1, 0, 0, 1)  # 使用红色，确保可见
+		material.roughness = 0.8
+		mesh_instance.material_override = material
+		print("Material assigned to cube")
+	print("Dice initialization complete")
 	
 	# 连接碰撞信号
 	body_entered.connect(_on_body_entered)
@@ -222,10 +195,12 @@ func trigger_skill():
 			parent.update_result_display(dice_value, skill.name)
 
 func _process(delta):
-	# 更新技能冷却
-	skill_system.update_cooldowns(delta)
-	# 更新粒子系统
-	particle_system.update(delta)
+	# 更新技能冷却（如果方法存在）
+	if skill_system and skill_system.has_method("update_cooldowns"):
+		skill_system.update_cooldowns(delta)
+	# 更新粒子系统（如果方法存在）
+	if particle_system and particle_system.has_method("update"):
+		particle_system.update(delta)
 
 func _on_body_entered(body):
 	if is_rolling:
