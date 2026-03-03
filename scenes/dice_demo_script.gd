@@ -6,6 +6,12 @@ extends Node3D
 @onready var sandbox = $Sandbox
 var start_timer: Timer
 var throw_timer: Timer
+var is_charging = false
+var charge_time = 0.0
+var max_charge_time = 2.0  # 最大蓄力时间（秒）
+var max_force = 20.0  # 最大投掷力度增加到20
+var original_position = Vector3()  # 骰子原始位置
+var global_time = 0.0  # 全局时间，用于持续震动
 
 func _ready():
 	# 确保相机正确指向原点
@@ -134,10 +140,10 @@ func _ready():
 	start_timer.start()
 
 func start_demo():
-	# 设置骰子初始状态：在屏幕靠下位置半空悬浮
+	# 设置骰子初始状态：在屏幕靠下位置半空悬浮，靠近下方墙壁
 	if dice:
-		# 设置初始位置（屏幕靠下位置）
-		dice.position = Vector3(0, 2, 0)
+		# 设置初始位置（靠近下方墙壁，X轴靠近东墙，但在视野范围内）
+		dice.position = Vector3(4, 1, 0)  # 更靠近屏幕下方（东墙），但在视野范围内
 		dice.rotation = Vector3()
 	
 	# 取消自动投掷计时器
@@ -173,19 +179,93 @@ func throw_dice():
 	# 投掷骰子
 	dice.roll(force)
 
+func throw_dice_with_charge():
+	# 检查骰子节点是否存在
+	if not dice:
+		print("Error: Dice node not found")
+		return
+	
+	# 检查骰子节点是否有roll方法
+	if not dice.has_method("roll"):
+		print("Error: Dice node does not have roll method")
+		return
+	
+	# 重置骰子位置（离地面5个骰子高度）
+	dice.position = Vector3(0, 5, 0)
+	dice.rotation = Vector3()
+	
+	# 根据蓄力时间计算投掷力度
+	var charge_ratio = charge_time / max_charge_time
+	var force_magnitude = charge_ratio * max_force
+	
+	# 生成朝向西墙的随机角度力（X轴负方向）
+	var angle = deg_to_rad(randf_range(-45, 45))
+	var force = Vector3(
+		-sin(angle) - 0.5,  # 确保X分量为负，朝向西墙
+		cos(angle),
+		randf_range(-0.5, 0.5)  # 轻微的前后方向随机
+	).normalized() * force_magnitude
+	
+	# 投掷骰子
+	dice.roll(force)
+
 func _input(event):
-	# 按空格键手动投掷骰子
+	# 按空格键开始蓄力
 	if event.is_action_pressed("ui_accept"):
-		throw_dice()
+		is_charging = true
+		charge_time = 0.0
+		# 记录骰子的原始位置
+		if dice:
+			original_position = dice.position
+		print("开始蓄力...")
+	# 松开空格键投掷骰子
+	elif event.is_action_released("ui_accept") and is_charging:
+		is_charging = false
+		# 恢复骰子到原始位置
+		if dice:
+			dice.position = original_position
+		throw_dice_with_charge()
+		print("投掷骰子！蓄力时间: %.2f秒" % charge_time)
 	# 按R键恢复骰子初始状态
 	if event is InputEventKey and event.pressed and event.keycode == KEY_R:
 		reset_dice()
 
+func _process(delta):
+	# 跟踪全局时间
+	global_time += delta
+	
+	# 跟踪蓄力时间
+	if is_charging:
+		charge_time += delta
+		# 限制最大蓄力时间
+		if charge_time > max_charge_time:
+			charge_time = max_charge_time
+			print("已达到最大蓄力！")
+		
+		# 计算蓄力比例
+		var charge_ratio = charge_time / max_charge_time
+		# 进一步减小震动幅度
+		var shake_amplitude = charge_ratio * 0.05  # 最大震动幅度进一步减小为0.05
+		# 增加震动频率（随蓄力时间增加）
+		var shake_frequency = 15.0 + (charge_ratio * 25.0)  # 频率从15增加到40
+		
+		# 应用震动效果
+		if dice and original_position != Vector3():
+			# 使用全局时间和频率生成持续震动
+			var time = global_time * shake_frequency
+			var shake_offset = Vector3(
+				sin(time * 3.14159) * shake_amplitude,
+				sin(time * 3.14159 * 1.5) * shake_amplitude,
+				sin(time * 3.14159 * 2.0) * shake_amplitude
+			)
+			# 应用震动偏移
+			dice.position = original_position + shake_offset
+
 func reset_dice():
 	# 重置骰子到初始状态
 	if dice:
-		# 设置初始位置（屏幕靠下位置）
-		dice.position = Vector3(0, 2, 0)
+		# 设置初始位置（靠近下方墙壁，X轴靠近东墙，但在视野范围内）
+		dice.position = Vector3(4, 1, 0)  # 更靠近屏幕下方（东墙），但在视野范围内
 		dice.rotation = Vector3()
 		# 确保骰子静止
 		dice.linear_velocity = Vector3.ZERO
