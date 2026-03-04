@@ -7,9 +7,9 @@
 script = ExtResource("1_uzb9g")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=196822810]
-transform = Transform3D(1, 0, 0, 0, 0.9848, -0.1736, 0, 0.1736, 0.9848, 0, 8, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
 current = true
-fov = 75.0
+fov = 30.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1374347128]
 transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
@@ -23,16 +23,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
 
 [node name="WallNorth" type="CollisionShape3D" parent="Sandbox" unique_id=167772163]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.5)
+debug_color = Color(0.9254902, 0.20392157, 0.08627451, 1)
 
 [node name="WallSouth" type="CollisionShape3D" parent="Sandbox" unique_id=167772162]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.5)
 
 [node name="WallEast" type="CollisionShape3D" parent="Sandbox" unique_id=167772161]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
 
 [node name="WallWest" type="CollisionShape3D" parent="Sandbox" unique_id=167772160]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 0)
 
 [node name="Dice" parent="." unique_id=399543580 instance=ExtResource("2_jh1g7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
