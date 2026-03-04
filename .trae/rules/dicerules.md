@@ -1,6 +1,6 @@
 ---
 alwaysApply: false
-description: 创建战斗场景 沙盘战斗 bug 调整物体位置 坐标 方向
+description: 场景 沙盘 bug 调整物体位置 坐标 方向 Godot坐标系说明
 ---
 ## 项目定位
 - **项目名称**: 晋升吧骰子
@@ -15,8 +15,6 @@ description: 创建战斗场景 沙盘战斗 bug 调整物体位置 坐标 方�
 - **屏幕垂直向外对应y轴正方向**
 - **屏幕垂直向内对应y轴负方向**
 - **制作项目时可使用godotmcp**
-
-
 
 创建战斗场景 沙盘战斗时阅读docs/sandbox_template.md文件，使用相关镜头及沙盘配置
 

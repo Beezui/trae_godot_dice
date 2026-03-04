@@ -21,13 +21,16 @@ func _ready():
 	contact_monitor = true
 	max_contacts_reported = 10
 	
+	# 设置质量，减小质量使旋转更容易
+	mass = 0.5
+	
 	# 设置阻尼
 	linear_damp = 0.1  # 增加线性阻尼
-	angular_damp = 0.08  # 减少角阻尼，提升滚动效果20%
+	angular_damp = 0.03  # 进一步减少角阻尼，使旋转持续时间更长
 	
 	# 设置物理材质
 	var physics_material = PhysicsMaterial.new()
-	physics_material.bounce = 0.0936  # 提升反弹效果50%
+	physics_material.bounce = 0.1404  # 提升反弹效果50%
 	physics_material.friction = 0.8  # 增加摩擦力
 	
 	# 应用物理材质到刚体
@@ -35,6 +38,10 @@ func _ready():
 	
 	# 初始状态：禁用重力，使骰子悬浮
 	gravity_scale = 0.0
+	
+	# 确保骰子静止
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
 	
 	# 创建碰撞形状
 	var collision_shape = $CollisionShape3D
@@ -162,14 +169,20 @@ func create_fallback_mesh():
 	
 	print("Fallback cube mesh created")
 
-func roll(force: Vector3):
+func roll(force: Vector3, angular_force: Vector3 = Vector3.ZERO):
 	# 恢复重力影响
 	gravity_scale = 1.0
 	
 	is_rolling = true
 	collision_count = 0
 	linear_velocity = force
-	angular_velocity = Vector3(randf_range(-10, 10), randf_range(-10, 10), randf_range(-10, 10))
+	
+	# 如果提供了旋转力，则使用它；否则使用随机旋转力
+	if angular_force != Vector3.ZERO:
+		angular_velocity = angular_force
+	else:
+		angular_velocity = Vector3(randf_range(-10, 10), randf_range(-10, 10), randf_range(-10, 10))
+	
 	roll_timer.start()
 	
 	# 如果有控制结果，启动结果控制计时器
