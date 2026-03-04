@@ -292,26 +292,27 @@ func trigger_skill():
 			parent.update_result_display(dice_value, skill.name)
 
 func _process(delta):
-	# 更新技能冷却（如果方法存在）
-	if skill_system and skill_system.has_method("update_cooldowns"):
-		skill_system.update_cooldowns(delta)
-	# 更新粒子系统（如果方法存在）
-	if particle_system and particle_system.has_method("update"):
-		particle_system.update(delta)
+	# 只在需要时更新系统
+	if is_rolling:
+		# 更新技能冷却（如果方法存在）
+		if skill_system and skill_system.has_method("update_cooldowns"):
+			skill_system.update_cooldowns(delta)
+		# 更新粒子系统（如果方法存在）
+		if particle_system and particle_system.has_method("update"):
+			particle_system.update(delta)
 
 func _on_body_entered(body):
 	if is_rolling:
 		collision_count += 1
-		print("Dice collided with: ", body.name)
-		# 这里可以添加碰撞特效和技能触发逻辑
-		
-		# 检测是否与其他骰子碰撞
-		if body is RigidBody3D and body.has_method("get_dice_type"):
-			print("Collided with another dice: ", body.get_dice_type())
-			
-		# 检测是否与场景物体碰撞
-		elif body is StaticBody3D:
-			print("Collided with scene object: ", body.name)
+		# 只在调试模式下打印
+		if Engine.is_editor_hint():
+			print("Dice collided with: ", body.name)
+			# 检测是否与其他骰子碰撞
+			if body is RigidBody3D and body.has_method("get_dice_type"):
+				print("Collided with another dice: ", body.get_dice_type())
+			# 检测是否与场景物体碰撞
+			elif body is StaticBody3D:
+				print("Collided with scene object: ", body.name)
 
 func _on_body_exited(_body):
 	if is_rolling:
@@ -322,6 +323,10 @@ func get_dice_type() -> String:
 
 func get_collision_count() -> int:
 	return collision_count
+
+func get_dice_value() -> int:
+	# 获取骰子点数
+	return dice_value
 
 func set_controlled_result(value: int):
 	# 设置控制结果
