@@ -16,25 +16,29 @@ var base_width = 16.0  # 基础宽度（屏幕上方墙体长度）
 var base_height = 9.0   # 基础高度（屏幕左侧墙体长度）
 
 func _ready():
-	# 确保相机正确指向原点
+	# 调整摄像机位置和FOV，使其拉远并更接近2D效果
 	if camera:
+		# 设置摄像机位置，进一步拉远以看到墙体
+		camera.position = Vector3(0, 30, 0)  # 进一步拉远摄像机
+		# 保持当前FOV设置
+		camera.fov = 30.0  # 保持当前FOV值
+		# 确保相机正确指向原点
 		camera.look_at_from_position(camera.position, Vector3(0, 0, 0), Vector3(0, 1, 0))
-	
+
 	# 确保光照正确指向原点
 	if light:
 		light.look_at_from_position(light.position, Vector3(0, 0, 0), Vector3(0, 1, 0))
 	
-	# 获取窗口比例并调整沙盘尺寸
+	# 获取窗口比例并调整沙盘尺寸，保持16:9比例
 	var window_size = DisplayServer.window_get_size()
 	var window_ratio = float(window_size.x) / float(window_size.y)
 	print("窗口尺寸: %s, 比例: %.2f" % [window_size, window_ratio])
 	
-	# 根据窗口比例调整尺寸
-	# 确保蓝色墙体（屏幕上方）长度：绿色墙体（屏幕左侧）长度 = 屏幕宽：屏幕高
+	# 计算基础尺寸，保持16:9比例
+	var base_ratio = 16.0 / 9.0
 	var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
-	var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度（屏幕上方）
-	print("调整后沙盘尺寸 - 宽度: %.2f, 高度: %.2f" % [sandbox_width, sandbox_height])
-	print("蓝色墙体长度: %.2f, 绿色墙体长度: %.2f, 比例: %.2f" % [sandbox_height, sandbox_width, sandbox_height / sandbox_width])
+	var sandbox_height = sandbox_width * base_ratio  # 对应蓝色墙体长度（屏幕上方），保持16:9比例
+	print("调整后沙盘尺寸 - 宽度: %.2f, 高度: %.2f, 比例: %.2f" % [sandbox_width, sandbox_height, sandbox_height / sandbox_width])
 	
 	# 创建沙盘碰撞形状和网格
 	if sandbox:
@@ -144,8 +148,9 @@ func _ready():
 		
 		# 调整骰子初始位置（保持在沙盒内）
 		if dice:
-			dice.position = Vector3(0, 3, 0)  # 屏幕中央位置
-	
+			# 设置初始位置（水平中间，靠近下方墙体）
+			dice.position = Vector3(0, 3, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
+
 	# 设置物理世界
 	# 暂时注释掉，使用默认重力
 	# var world = get_world_3d()
@@ -154,7 +159,7 @@ func _ready():
 	# 	# var physics_world = world.physics_world_3d
 	# 	# if physics_world:
 	# 	# 	physics_world.gravity = Vector3(0, -9.8, 0)
-	
+
 	# 创建启动计时器
 	start_timer = Timer.new()
 	start_timer.wait_time = 1.0
@@ -164,16 +169,16 @@ func _ready():
 	start_timer.start()
 
 func start_demo():
-	# 设置骰子初始状态：在屏幕中央
+	# 设置骰子初始状态：靠近下方墙体，水平方向屏幕中间
 	if dice:
-		# 获取窗口比例并计算沙盘高度
-		var window_size = DisplayServer.window_get_size()
-		var window_ratio = float(window_size.x) / float(window_size.y)
-		var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
-		# 设置初始位置（屏幕中央）
-		dice.position = Vector3(0, 3, 0)  # 屏幕中央位置
+		# 计算16:9比例的沙盘高度
+		var base_ratio = 16.0 / 9.0
+		var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
+		var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
+		# 设置初始位置（水平中间，靠近下方墙体）
+		dice.position = Vector3(0, 3, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
 		dice.rotation = Vector3()
-	
+
 	# 取消自动投掷计时器
 	# throw_timer = Timer.new()
 	# throw_timer.wait_time = 3.0
@@ -193,20 +198,20 @@ func throw_dice():
 		print("Dice node type:", dice.get_class())
 		return
 	
-	# 获取窗口比例并计算沙盘高度
-	var window_size = DisplayServer.window_get_size()
-	var window_ratio = float(window_size.x) / float(window_size.y)
-	var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
+	# 计算16:9比例的沙盘高度
+	var base_ratio = 16.0 / 9.0
+	var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
+	var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
 	
 	# 重置骰子位置（离地面5个骰子高度）
-	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # x轴中间，z轴靠近屏幕下方的黄墙（东墙）
+	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
 	dice.rotation = Vector3()
 	
-	# 生成随机投掷力，朝向屏幕上方的绿墙（西墙）
+	# 生成随机投掷力，朝向屏幕上方的北墙
 	var force = Vector3(
 		randf_range(-2, 2),  # 较小的X方向随机力
 		randf_range(5, 7.5),  # 向上的力
-		randf_range(5, 10)     # 朝向屏幕上方的力（Z正方向）
+		randf_range(-10, -5)     # 朝向屏幕上方的力（X负方向，北墙方向）
 	)
 	
 	# 投掷骰子
@@ -223,13 +228,13 @@ func throw_dice_with_charge():
 		print("Error: Dice node does not have roll method")
 		return
 	
-	# 获取窗口比例并计算沙盘高度
-	var window_size = DisplayServer.window_get_size()
-	var window_ratio = float(window_size.x) / float(window_size.y)
-	var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
+	# 计算16:9比例的沙盘高度
+	var base_ratio = 16.0 / 9.0
+	var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
+	var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
 	
 	# 重置骰子位置（离地面5个骰子高度）
-	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # x轴中间，z轴靠近屏幕下方的黄墙（东墙）
+	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
 	dice.rotation = Vector3()
 	
 	# 根据蓄力时间计算投掷力度
@@ -239,9 +244,9 @@ func throw_dice_with_charge():
 	# 生成朝向屏幕上方的力，角度在-45到45度之间
 	var angle = deg_to_rad(randf_range(-45, 45))
 	var force = Vector3(
-		sin(angle),  # X方向随角度变化
+		-1.0,  # 朝向屏幕上方的X负方向（北墙方向）
 		0.5,  # 固定的向上力
-		1.0   # 朝向屏幕上方的Z正方向
+		sin(angle)   # Z方向随角度变化
 	).normalized() * force_magnitude
 	
 	# 投掷骰子
@@ -302,12 +307,12 @@ func _process(delta):
 func reset_dice():
 	# 重置骰子到初始状态
 	if dice:
-		# 获取窗口比例并计算沙盘高度
-		var window_size = DisplayServer.window_get_size()
-		var window_ratio = float(window_size.x) / float(window_size.y)
-		var sandbox_height = base_width * window_ratio  # 对应蓝色墙体长度
-		# 设置初始位置（屏幕中央）
-		dice.position = Vector3(0, 3, 0)  # 屏幕中央位置
+		# 计算16:9比例的沙盘高度
+		var base_ratio = 16.0 / 9.0
+		var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
+		var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
+		# 设置初始位置（水平中间，靠近下方墙体）
+		dice.position = Vector3(0, 3, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
 		dice.rotation = Vector3()
 		# 确保骰子静止
 		dice.linear_velocity = Vector3.ZERO

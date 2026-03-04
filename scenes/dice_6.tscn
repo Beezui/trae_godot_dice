@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://c2x0x5e4k0q9g"]
 
 [ext_resource type="Script" path="res://scenes/dice_6.gd" id="1_1022k"]
+[ext_resource type="Mesh" path="res://models/dice_smooth.gltf" id="2_3k4j5"]
 
 [node name="Dice6" type="RigidBody3D"]
 script = ExtResource("1_1022k")
@@ -11,10 +12,8 @@ scale = Vector3(1, 1, 1)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-
-[node name="BoxMesh" type="BoxMesh" parent="MeshInstance3D"]
-size = Vector3(1, 1, 1)
+mesh = ExtResource("2_3k4j5")
 
 [node name="StandardMaterial3D" type="StandardMaterial3D" parent="MeshInstance3D"]
-albedo_color = Color(1, 0, 0, 1)
+albedo_color = Color(1, 1, 1, 1)
 roughness = 0.8

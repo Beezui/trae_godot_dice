@@ -56,27 +56,111 @@ func _ready():
 	result_control_timer.timeout.connect(_on_result_control_timeout)
 	add_child(result_control_timer)
 	
-	# 创建网格
-	var mesh_instance = $MeshInstance3D
-	if mesh_instance:
-		print("MeshInstance3D found: ", mesh_instance.name)
-		# 直接使用默认立方体，确保骰子可见
-		var cube_mesh = BoxMesh.new()
-		cube_mesh.size = Vector3(1, 1, 1)
-		mesh_instance.mesh = cube_mesh
-		print("Default cube mesh created")
-		
-		# 创建材质
-		var material = StandardMaterial3D.new()
-		material.albedo_color = Color(1, 0, 0, 1)  # 使用红色，确保可见
-		material.roughness = 0.8
-		mesh_instance.material_override = material
-		print("Material assigned to cube")
+	# 初始化骰子模型
+	init_dice_model()
+	
 	print("Dice initialization complete")
 	
 	# 连接碰撞信号
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
+
+func init_dice_model():
+	# 检查网格实例是否存在
+	var mesh_instance = $MeshInstance3D
+	if mesh_instance:
+		print("MeshInstance3D found: ", mesh_instance.name)
+		
+		# 检查是否有有效的mesh
+		if mesh_instance.mesh:
+			print("Using imported dice model")
+			# 缩放模型以适应场景
+			mesh_instance.scale = Vector3(1, 1, 1)
+		else:
+			print("No mesh found, trying to load model")
+			# 尝试加载模型
+			load_dice_model(mesh_instance)
+	else:
+		print("MeshInstance3D not found, creating fallback")
+		# 创建备用网格实例
+		create_fallback_mesh()
+
+func load_dice_model(mesh_instance):
+	# 尝试加载GLTF模型
+	var model_path = "res://models/dice_smooth.gltf"
+	var model_resource = load(model_path)
+	
+	if model_resource:
+		print("Model resource loaded: ", model_path)
+		# 实例化模型
+		var model_instance = model_resource.instantiate()
+		
+		if model_instance:
+			print("Model instantiated successfully")
+			# 直接检查模型实例是否有mesh属性（因为GLTF根节点就是MeshInstance3D）
+			if model_instance.has_method("get_mesh") and model_instance.mesh:
+				mesh_instance.mesh = model_instance.mesh
+				# 缩放模型以适应场景
+				mesh_instance.scale = Vector3(1, 1, 1)
+				print("Model mesh assigned from root node")
+			else:
+				# 如果根节点没有mesh，尝试遍历所有子节点
+				var children = model_instance.get_children()
+				var mesh_found = false
+				
+				for child in children:
+					if child.has_method("get_mesh") and child.mesh:
+						mesh_instance.mesh = child.mesh
+						mesh_instance.scale = Vector3(1, 1, 1)
+						mesh_found = true
+						print("Model mesh assigned from child node")
+						break
+					# 递归检查子节点
+					var grand_children = child.get_children()
+					for grand_child in grand_children:
+						if grand_child.has_method("get_mesh") and grand_child.mesh:
+							mesh_instance.mesh = grand_child.mesh
+							mesh_instance.scale = Vector3(1, 1, 1)
+							mesh_found = true
+							print("Model mesh assigned from grandchild node")
+							break
+						if mesh_found:
+							break
+					if mesh_found:
+						break
+				
+				if not mesh_found:
+					print("No mesh found in model, creating fallback")
+					create_fallback_mesh()
+			# 清理临时实例
+			model_instance.queue_free()
+		else:
+			print("Failed to instantiate model, creating fallback")
+			create_fallback_mesh()
+	else:
+		print("Failed to load model resource, creating fallback")
+		create_fallback_mesh()
+
+func create_fallback_mesh():
+	# 创建备用立方体网格
+	var mesh_instance = $MeshInstance3D
+	if not mesh_instance:
+		mesh_instance = MeshInstance3D.new()
+		mesh_instance.name = "MeshInstance3D"
+		add_child(mesh_instance)
+	
+	# 创建默认立方体
+	var cube_mesh = BoxMesh.new()
+	cube_mesh.size = Vector3(1, 1, 1)
+	mesh_instance.mesh = cube_mesh
+	
+	# 创建材质
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color(1, 1, 1, 1)  # 使用白色，确保可见
+	material.roughness = 0.8
+	mesh_instance.material_override = material
+	
+	print("Fallback cube mesh created")
 
 func roll(force: Vector3):
 	# 恢复重力影响
@@ -216,7 +300,7 @@ func _on_body_entered(body):
 		elif body is StaticBody3D:
 			print("Collided with scene object: ", body.name)
 
-func _on_body_exited(body):
+func _on_body_exited(_body):
 	if is_rolling:
 		collision_count = max(0, collision_count - 1)
 
