@@ -148,8 +148,8 @@ func _ready():
 		
 		# 调整骰子初始位置（保持在沙盒内）
 		if dice:
-			# 设置初始位置（水平中间，靠近下方墙体）
-			dice.position = Vector3(0, 3, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
+			# 设置初始位置（屏幕水平方向中心，靠近屏幕下方南墙）
+			dice.position = Vector3(base_width/2 - 3, 4, 0)  # 靠近屏幕下方南墙，屏幕水平方向中心，向上提高2单位
 
 	# 设置物理世界
 	# 暂时注释掉，使用默认重力
@@ -169,14 +169,14 @@ func _ready():
 	start_timer.start()
 
 func start_demo():
-	# 设置骰子初始状态：靠近下方墙体，水平方向屏幕中间
+	# 设置骰子初始状态：屏幕水平方向中心，靠近屏幕下方南墙
 	if dice:
 		# 计算16:9比例的沙盘高度
 		var base_ratio = 16.0 / 9.0
 		var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
 		var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
-		# 设置初始位置（水平中间，靠近下方墙体）
-		dice.position = Vector3(0, 3, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
+		# 设置初始位置（屏幕水平方向中心，靠近屏幕下方南墙）
+		dice.position = Vector3(base_width/2 - 3, 4, 0)  # 靠近屏幕下方南墙，屏幕水平方向中心，向上提高2单位
 		dice.rotation = Vector3()
 
 	# 取消自动投掷计时器
@@ -204,7 +204,7 @@ func throw_dice():
 	var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
 	
 	# 重置骰子位置（离地面5个骰子高度）
-	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
+	dice.position = Vector3(base_width/2 - 3, 5, 0)  # 靠近屏幕下方南墙，屏幕水平方向中心
 	dice.rotation = Vector3()
 	
 	# 生成随机投掷力，朝向屏幕上方的北墙
@@ -234,7 +234,7 @@ func throw_dice_with_charge():
 	var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
 	
 	# 重置骰子位置（离地面5个骰子高度）
-	dice.position = Vector3(0, 5, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
+	dice.position = Vector3(base_width/2 - 3, 5, 0)  # 靠近屏幕下方南墙，屏幕水平方向中心
 	dice.rotation = Vector3()
 	
 	# 根据蓄力时间计算投掷力度
@@ -311,8 +311,8 @@ func reset_dice():
 		var base_ratio = 16.0 / 9.0
 		var sandbox_width = base_width  # 对应绿色墙体长度（屏幕左侧）
 		var sandbox_height = base_width * base_ratio  # 对应蓝色墙体长度，保持16:9比例
-		# 设置初始位置（水平中间，靠近下方墙体）
-		dice.position = Vector3(0, 3, -sandbox_height/2 + 0.5)  # 水平中间，靠近下方墙体（南墙）
+		# 设置初始位置（屏幕水平方向中心，靠近屏幕下方南墙）
+		dice.position = Vector3(base_width/2 - 3, 4, 0)  # 靠近屏幕下方南墙，屏幕水平方向中心，向上提高2单位
 		dice.rotation = Vector3()
 		# 确保骰子静止
 		dice.linear_velocity = Vector3.ZERO
