@@ -144,6 +144,7 @@ func throw_all_dice(force_multiplier: float = 1.0):
 	prepare_dice_for_throw()
 	is_throwing = true
 	rolling_dice_count = dice_instances.size()
+	print("Throwing all dice, rolling count: ", rolling_dice_count)
 	
 	for dice in dice_instances:
 		if dice and is_instance_valid(dice):
@@ -169,6 +170,15 @@ func throw_all_dice(force_multiplier: float = 1.0):
 				dice.gravity_scale = 1.0
 				dice.linear_velocity = force
 				dice.angular_velocity = angular_force
+				# 设置 is_rolling 标志并启动 roll_timer
+				if dice.has_method("set_rolling"):
+					dice.set_rolling(true)
+				elif dice.has("is_rolling"):
+					dice.is_rolling = true
+				if dice.has_method("start_roll_timer"):
+					dice.start_roll_timer()
+				elif dice.has("roll_timer"):
+					dice.roll_timer.start()
 
 func throw_all_dice_with_charge(charge_ratio: float):
 	# 蓄力投掷所有骰子
@@ -225,6 +235,15 @@ func throw_all_dice_with_charge(charge_ratio: float):
 				dice.gravity_scale = 1.0
 				dice.linear_velocity = force
 				dice.angular_velocity = angular_force
+				# 设置 is_rolling 标志并启动 roll_timer
+				if dice.has_method("set_rolling"):
+					dice.set_rolling(true)
+				elif dice.has("is_rolling"):
+					dice.is_rolling = true
+				if dice.has_method("start_roll_timer"):
+					dice.start_roll_timer()
+				elif dice.has("roll_timer"):
+					dice.roll_timer.start()
 
 func on_dice_stopped():
 	# 骰子停止时的回调
@@ -232,7 +251,17 @@ func on_dice_stopped():
 	if rolling_dice_count <= 0:
 		is_throwing = false
 		print("All dice have stopped rolling")
-		# 这里可以添加结果判定逻辑
+		# 确保所有骰子都有结果
+		for dice in dice_instances:
+			if dice and is_instance_valid(dice):
+				dice.check_dice_value()
+		# 获取排序后的骰子结果
+		var sorted_values = get_sorted_dice_values()
+		print("Dice results (sorted): ", sorted_values)
+		# 通知父节点更新结果显示
+		var parent = get_parent()
+		if parent and parent.has_method("update_result_display"):
+			parent.update_result_display(sorted_values)
 
 func get_all_dice_values() -> Array:
 	# 获取所有骰子的点数
@@ -240,6 +269,12 @@ func get_all_dice_values() -> Array:
 	for dice in dice_instances:
 		if dice and is_instance_valid(dice) and dice.has_method("get_dice_value"):
 			values.append(dice.get_dice_value())
+	return values
+
+func get_sorted_dice_values() -> Array:
+	# 获取排序后的骰子点数（从小到大）
+	var values = get_all_dice_values()
+	values.sort()
 	return values
 
 func update(delta: float):

@@ -328,3 +328,10 @@ func reset_dice():
 	is_in_initial_state = true
 	
 	print("Dice reset to initial state")
+
+func update_result_display(results: Array):
+	# 显示骰子结果
+	print("=== DICE RESULTS ===")
+	print("Sorted results: ", results)
+	print("Total dice: ", results.size())
+	print("===================")

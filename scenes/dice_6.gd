@@ -13,6 +13,8 @@ var particle_system
 var dice_face_manager
 var controlled_result: int = -1  # -1表示没有控制结果
 var result_control_timer: Timer
+var has_valid_result: bool = false  # 标记骰子是否有有效结果
+var result_check_timer: Timer  # 用于定期检查骰子状态
 
 func _ready():
 	# 初始化系统
@@ -71,6 +73,12 @@ func _ready():
 	result_control_timer.one_shot = true
 	result_control_timer.timeout.connect(_on_result_control_timeout)
 	add_child(result_control_timer)
+	
+	# 创建结果检查计时器
+	result_check_timer = Timer.new()
+	result_check_timer.wait_time = 0.5  # 每0.5秒检查一次
+	result_check_timer.timeout.connect(_on_result_check_timeout)
+	add_child(result_check_timer)
 	
 	# 初始化骰子模型
 	init_dice_model()
@@ -163,7 +171,8 @@ func apply_dice_textures(mesh_instance):
 		if surface_count >= 6:
 			for i in range(6):
 				if i < surface_count:
-					mesh_instance.mesh.set_surface_material(i, materials[i])
+					mesh_instance.mesh.surface_set_material(i, materials[i])
+					print("Applied material ", i, " to surface ", i)
 			print("Applied materials to mesh surfaces")
 		else:
 			# 对于单一表面的网格，使用材质覆盖
@@ -174,66 +183,9 @@ func apply_dice_textures(mesh_instance):
 		mesh_instance.set_meta("dice_materials", materials)
 
 func load_dice_model(mesh_instance):
-	# 尝试加载GLTF模型
-	var model_path = "res://models/dice_unwrapped.gltf"
-	var model_resource = load(model_path)
-	
-	if model_resource:
-		print("Model resource loaded: ", model_path)
-		# 实例化模型
-		var model_instance = model_resource.instantiate()
-		
-		if model_instance:
-			print("Model instantiated successfully")
-			# 直接检查模型实例是否有mesh属性（因为GLTF根节点就是MeshInstance3D）
-			if model_instance.has_method("get_mesh") and model_instance.mesh:
-				mesh_instance.mesh = model_instance.mesh
-				# 缩放模型以适应场景
-				mesh_instance.scale = Vector3(1, 1, 1)
-				# 应用贴图
-				apply_dice_textures(mesh_instance)
-				print("Model mesh assigned from root node")
-			else:
-				# 如果根节点没有mesh，尝试遍历所有子节点
-				var children = model_instance.get_children()
-				var mesh_found = false
-				
-				for child in children:
-					if child.has_method("get_mesh") and child.mesh:
-						mesh_instance.mesh = child.mesh
-						mesh_instance.scale = Vector3(1, 1, 1)
-						# 应用贴图
-						apply_dice_textures(mesh_instance)
-						mesh_found = true
-						print("Model mesh assigned from child node")
-						break
-					# 递归检查子节点
-					var grand_children = child.get_children()
-					for grand_child in grand_children:
-						if grand_child.has_method("get_mesh") and grand_child.mesh:
-							mesh_instance.mesh = grand_child.mesh
-							mesh_instance.scale = Vector3(1, 1, 1)
-							# 应用贴图
-							apply_dice_textures(mesh_instance)
-							mesh_found = true
-							print("Model mesh assigned from grandchild node")
-							break
-						if mesh_found:
-							break
-					if mesh_found:
-						break
-				
-				if not mesh_found:
-					print("No mesh found in model, creating fallback")
-					create_fallback_mesh()
-			# 清理临时实例
-			model_instance.queue_free()
-		else:
-			print("Failed to instantiate model, creating fallback")
-			create_fallback_mesh()
-	else:
-		print("Failed to load model resource, creating fallback")
-		create_fallback_mesh()
+	# 直接使用fallback mesh，确保有6个独立表面
+	print("Using fallback mesh with 6 surfaces")
+	create_fallback_mesh()
 
 func create_fallback_mesh():
 	# 创建备用立方体网格
@@ -243,18 +195,80 @@ func create_fallback_mesh():
 		mesh_instance.name = "MeshInstance3D"
 		add_child(mesh_instance)
 	
-	# 创建默认立方体
-	var cube_mesh = BoxMesh.new()
-	cube_mesh.size = Vector3(1, 1, 1)
-	mesh_instance.mesh = cube_mesh
+	# 创建一个具有6个独立表面的立方体
+	var mesh = ArrayMesh.new()
 	
-	# 创建材质
-	var material = StandardMaterial3D.new()
-	material.albedo_color = Color(1, 1, 1, 1)  # 使用白色，确保可见
-	material.roughness = 0.8
-	mesh_instance.material_override = material
+	# 定义立方体的8个顶点
+	var vertices = [
+		Vector3(-0.5, -0.5, -0.5),  # 0
+		Vector3(0.5, -0.5, -0.5),   # 1
+		Vector3(0.5, 0.5, -0.5),    # 2
+		Vector3(-0.5, 0.5, -0.5),   # 3
+		Vector3(-0.5, -0.5, 0.5),   # 4
+		Vector3(0.5, -0.5, 0.5),    # 5
+		Vector3(0.5, 0.5, 0.5),     # 6
+		Vector3(-0.5, 0.5, 0.5)     # 7
+	]
 	
-	print("Fallback cube mesh created")
+	# 定义6个面的索引（每个面4个顶点）
+	var faces = [
+		[0, 1, 2, 3],  # 前面
+		[5, 4, 7, 6],  # 后面
+		[4, 0, 3, 7],  # 左面
+		[1, 5, 6, 2],  # 右面
+		[3, 2, 6, 7],  # 顶面
+		[4, 5, 1, 0]   # 底面
+	]
+	
+	# 为每个面创建独立的表面
+	for i in range(6):
+		# 创建表面数据
+		var arrays = []
+		arrays.resize(Mesh.ARRAY_MAX)
+		
+		# 顶点数据
+		var surface_vertices = []
+		for j in faces[i]:
+			surface_vertices.append(vertices[j])
+		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array(surface_vertices)
+		
+		# 法线数据
+		var normals = []
+		var normal = Vector3(0, 0, 0)
+		match i:
+			0: normal = Vector3(0, 0, -1)  # 前面
+			1: normal = Vector3(0, 0, 1)   # 后面
+			2: normal = Vector3(-1, 0, 0)  # 左面
+			3: normal = Vector3(1, 0, 0)   # 右面
+			4: normal = Vector3(0, 1, 0)   # 顶面
+			5: normal = Vector3(0, -1, 0)  # 底面
+		for j in range(4):
+			normals.append(normal)
+		arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array(normals)
+		
+		# UV数据
+		var uvs = [
+			Vector2(0, 0),
+			Vector2(1, 0),
+			Vector2(1, 1),
+			Vector2(0, 1)
+		]
+		arrays[Mesh.ARRAY_TEX_UV] = PackedVector2Array(uvs)
+		
+		# 索引数据
+		var indices = [0, 1, 2, 0, 2, 3]
+		arrays[Mesh.ARRAY_INDEX] = PackedInt32Array(indices)
+		
+		# 添加表面
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	
+	# 设置网格
+	mesh_instance.mesh = mesh
+	
+	# 应用贴图
+	apply_dice_textures(mesh_instance)
+	
+	print("Fallback cube mesh with 6 surfaces created")
 
 func roll(force: Vector3, angular_force: Vector3 = Vector3.ZERO):
 	# 恢复重力影响
@@ -277,8 +291,17 @@ func roll(force: Vector3, angular_force: Vector3 = Vector3.ZERO):
 		result_control_timer.start()
 
 func _on_roll_timer_timeout():
-	is_rolling = false
-	check_dice_value()
+	# 检查骰子是否真的停止运动
+	if linear_velocity.length() < 0.1 and angular_velocity.length() < 0.1:
+		is_rolling = false
+		check_dice_value()
+		# 通知骰子管理器
+		var parent = get_parent()
+		if parent and parent.has_method("on_dice_stopped"):
+			parent.on_dice_stopped()
+	else:
+		# 骰子还在运动，重新启动计时器
+		roll_timer.start()
 
 func _on_result_control_timeout():
 	# 控制骰子结果
@@ -292,9 +315,42 @@ func _on_result_control_timeout():
 		angular_velocity = Vector3.ZERO
 		# 直接设置骰子值
 		dice_value = controlled_result
+		has_valid_result = true
 		print("Controlled dice result: ", dice_value)
 		# 重置控制状态
 		controlled_result = -1
+
+func _on_result_check_timeout():
+	# 定期检查骰子状态
+	if not is_rolling and not has_valid_result:
+		# 骰子停止但没有有效结果，应用预防措施
+		_apply_preventive_measure()
+
+func _apply_preventive_measure():
+	# 应用预防措施，给骰子施加随机力使其重新运动
+	if not is_rolling:
+		is_rolling = true
+		# 施加随机的线性力
+		var linear_force = Vector3(
+			randf_range(-2, 2),
+			randf_range(1, 3),
+			randf_range(-2, 2)
+		)
+		# 施加随机的旋转力
+		var angular_force = Vector3(
+			randf_range(-5, 5),
+			randf_range(-5, 5),
+			randf_range(-5, 5)
+		)
+		
+		# 应用力
+		linear_velocity = linear_force
+		angular_velocity = angular_force
+		
+		print("Applied preventive measure: small force to reposition dice")
+		
+		# 重启滚动计时器
+		roll_timer.start()
 
 func get_target_rotation(value: int) -> Quaternion:
 	# 根据骰子值计算目标旋转
@@ -324,59 +380,75 @@ func check_dice_value():
 	# 如果有控制结果，直接使用控制值
 	if controlled_result != -1:
 		dice_value = controlled_result
-		print("Dice rolled: ", dice_value)
+		has_valid_result = true
+		print("Dice rolled (controlled): ", dice_value)
 		trigger_skill()
 		return
 	
-	# 从骰子中心向六个方向发射射线，检测哪个面朝上
-	var ray_origin = global_position
-	var directions = [
-		Vector3.UP,      # 1点 (顶部)
-		Vector3.DOWN,    # 6点 (底部)
-		Vector3.RIGHT,   # 3点 (右侧)
-		Vector3.LEFT,    # 4点 (左侧)
-		Vector3.FORWARD, # 2点 (正面)
-		Vector3.BACK     # 5点 (背面)
+	# 直接根据骰子的旋转计算朝上的面
+	var up_direction = Vector3.UP
+	var transform = global_transform
+	var global_directions = []
+	
+	# 定义骰子六个面的本地方向，与create_fallback_mesh函数中的面索引顺序匹配
+	var local_directions = [
+		Vector3(0, 0, -1),  # 前面 (面索引0)
+		Vector3(0, 0, 1),   # 后面 (面索引1)
+		Vector3(-1, 0, 0),  # 左面 (面索引2)
+		Vector3(1, 0, 0),   # 右面 (面索引3)
+		Vector3(0, 1, 0),   # 顶面 (面索引4)
+		Vector3(0, -1, 0)   # 底面 (面索引5)
 	]
-	var values = [1, 6, 3, 4, 2, 5]
 	
-	var space_state = get_world_3d().direct_space_state
+	# 将本地方向转换为全局方向
+	for local_dir in local_directions:
+		global_directions.append(transform.basis * local_dir)
 	
-	for i in range(directions.size()):
-		var direction = directions[i]
-		var query = PhysicsRayQueryParameters3D.new()
-		query.from = ray_origin
-		query.to = ray_origin + direction * 100
-		query.exclude = [self]
-		var result = space_state.intersect_ray(query)
-		
-		if result:
-			# 检查碰撞点是否在骰子的哪个面上
-			var collision_normal = result.normal
-			if collision_normal.dot(direction) > 0.9:
-				dice_value = values[i]
-				print("Dice rolled: ", dice_value)
-				trigger_skill()
-				break
+	# 根据dice_config.gd中的配置，映射每个面索引对应的骰子值
+	# 面索引与dice_config的对应关系：
+	# 0: 前面 -> dice_config[0] = 1 (1点)
+	# 1: 后面 -> dice_config[1] = 2 (2点)
+	# 2: 左面 -> dice_config[2] = 3 (3点)
+	# 3: 右面 -> dice_config[3] = 4 (4点)
+	# 4: 顶面 -> dice_config[4] = 4 (5点)
+	# 5: 底面 -> dice_config[5] = 4 (6点)
+	var values = [1, 2, 3, 4, 4, 4]
+	
+	# 找到最接近全局向上方向的面
+	var max_dot = -1
+	var closest_index = 0
+	
+	for i in range(global_directions.size()):
+		var dot = up_direction.dot(global_directions[i])
+		if dot > max_dot:
+			max_dot = dot
+			closest_index = i
+	
+	# 设置骰子值
+	dice_value = values[closest_index]
+	has_valid_result = true
+	print("Dice rolled: ", dice_value)
+	trigger_skill()
+	
+	# 不需要预防措施，因为我们总能找到一个面朝上
 
 func trigger_skill():
 	# 根据骰子点数触发对应技能
-	var skill_id = skill_system.get_skill_by_dice_value(dice_value)
-	if skill_id:
-		var skill = skill_system.get_skill(skill_id)
-		print("Triggering skill: ", skill.name)
-		skill_system.use_skill(skill_id, self)
-		
-		# 生成技能粒子特效
-		var particles = particle_system.spawn_skill_particles(skill_id, global_position)
-		if particles:
-			get_parent().add_child(particles)
-			particles.emitting = true
-		
-		# 更新结果显示
-		var parent = get_parent()
-		if parent and parent.has_method("update_result_display"):
-			parent.update_result_display(dice_value, skill.name)
+	if skill_system and skill_system.has_method("get_skill_by_dice_value"):
+		var skill_id = skill_system.get_skill_by_dice_value(dice_value)
+		if skill_id and skill_system.has_method("get_skill") and skill_system.has_method("use_skill"):
+			var skill = skill_system.get_skill(skill_id)
+			if skill and skill.has("name"):
+				print("Triggering skill: ", skill.name)
+				skill_system.use_skill(skill_id, self)
+				
+				# 生成技能粒子特效
+				if particle_system and particle_system.has_method("spawn_skill_particles"):
+					var particles = particle_system.spawn_skill_particles(skill_id, global_position)
+					if particles:
+						get_parent().add_child(particles)
+						particles.emitting = true
+	# 结果显示由 dice_manager 在所有骰子停止后统一处理
 
 func _process(delta):
 	# 只在需要时更新系统
@@ -387,9 +459,6 @@ func _process(delta):
 		# 更新粒子系统（如果方法存在）
 		if particle_system and particle_system.has_method("update"):
 			particle_system.update(delta)
-	
-	# 动态更新骰子材质，根据旋转状态
-	update_dice_material_by_rotation()
 
 func _on_body_entered(body):
 	if is_rolling:
@@ -437,35 +506,3 @@ func update_dice_textures():
 	if mesh_instance:
 		apply_dice_textures(mesh_instance)
 		print("Updated dice textures")
-
-func update_dice_material_by_rotation():
-	# 根据骰子的旋转状态动态切换材质
-	var mesh_instance = $MeshInstance3D
-	if mesh_instance and mesh_instance.has_meta("dice_materials"):
-		var materials = mesh_instance.get_meta("dice_materials")
-		if materials and materials.size() >= 6:
-			# 获取骰子的当前旋转
-			var up_vector = global_transform.basis.y
-			
-			# 计算与六个面的方向向量的点积
-			var directions = [
-				Vector3.UP,      # 顶部
-				Vector3.DOWN,    # 底部
-				Vector3.RIGHT,   # 右侧
-				Vector3.LEFT,    # 左侧
-				Vector3.FORWARD, # 正面
-				Vector3.BACK     # 背面
-			]
-			
-			var max_dot = -1.0
-			var selected_face = 0
-			
-			# 找到最接近向上的面
-			for i in range(directions.size()):
-				var dot = up_vector.dot(directions[i])
-				if dot > max_dot:
-					max_dot = dot
-					selected_face = i
-			
-			# 应用对应的材质
-			mesh_instance.material_override = materials[selected_face]
