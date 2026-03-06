@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://hx5ov5xgivjv"]
+
+[node name="TestCSVSimple" type="Node3D"]
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="Control/VBoxContainer"]
+layout_mode = 2
+text = "Load CSV"
+
+[node name="Label" type="Label" parent="Control/VBoxContainer"]
+layout_mode = 2
+text = "CSV Data:"
+
+[node name="Script" type="Script" parent="Control"]
+script = """
+extends Control
+
+var dice_face_manager
+
+func _ready():
+	print("Test CSV Simple scene loaded")
+	
+	# 初始化骰子面管理器
+	print("Loading DiceFaceManager...")
+	dice_face_manager = preload("res://scripts/dice_face_manager.gd").new()
+	print("DiceFaceManager loaded")
+	
+	# 连接按钮信号
+	print("Connecting button signal...")
+	$VBoxContainer/Button.pressed.connect(load_csv)
+	print("Button signal connected")
+	
+	# 初始加载
+	print("Loading CSV data...")
+	load_csv()
+	print("CSV data loaded")
+
+func load_csv():
+	print("Reloading CSV file...")
+	
+	# 加载CSV文件
+	dice_face_manager.reload()
+	
+	# 显示CSV数据
+	var info = "CSV Data:\n"
+	info += "All face IDs: " + str(dice_face_manager.get_all_face_ids()) + "\n"
+	
+	# 显示每个ID对应的贴图路径
+	for id in dice_face_manager.get_all_face_ids():
+		var path = dice_face_manager.get_texture_path_by_id(id)
+		var desc = dice_face_manager.get_description_by_id(id)
+		info += "ID " + str(id) + ": " + path + " (" + desc + ")\n"
+	
+	print("CSV data: " + info)
+	$VBoxContainer/Label.text = info
+"""

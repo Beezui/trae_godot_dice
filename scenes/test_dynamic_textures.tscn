@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://c2x0x5e4k0q9g"]
+
+[ext_resource type="Script" path="res://scenes/dice_manager.gd" id="1_1022k"]
+
+[node name="TestDynamicTextures" type="Node3D"]
+
+[node name="DiceManager" type="Node3D" parent="."]
+script = ExtResource("1_1022k")
+dice_count = 2
+current_scene = "normal"
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = """
+extends Control
+
+var dice_manager
+
+func _ready():
+	dice_manager = $DiceManager
+	
+	# 连接按钮信号
+	$VBoxContainer/HBoxContainer/NormalButton.pressed.connect(func(): set_scene("normal"))
+	$VBoxContainer/HBoxContainer/SkillButton.pressed.connect(func(): set_scene("skill"))
+	$VBoxContainer/HBoxContainer/TestButton.pressed.connect(test_custom_config)
+
+func set_scene(scene_name: String):
+	# 切换场景配置
+	dice_manager.set_scene_config(scene_name)
+	# 更新标签
+	$VBoxContainer/ResultLabel.text = "Current Scene: " + scene_name
+
+func test_custom_config():
+	# 测试自定义配置
+	var custom_config = {
+		0: "res://textures/dice/dice_face_6.png",
+		1: "res://textures/dice/dice_face_5.png",
+		2: "res://textures/dice/dice_face_4.png",
+		3: "res://textures/dice/dice_face_3.png",
+		4: "res://textures/dice/dice_face_2.png",
+		5: "res://textures/dice/dice_face_1.png"
+	}
+	
+	# 应用自定义配置到第一个骰子
+	var dice = dice_manager.get_dice(0)
+	if dice and dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(custom_config)
+		$VBoxContainer/ResultLabel.text = "Applied custom config to first dice"
+"""
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="NormalButton" type="Button" parent="Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Normal"
+
+[node name="SkillButton" type="Button" parent="Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Skill"
+
+[node name="TestButton" type="Button" parent="Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Test Custom"
+
+[node name="ResultLabel" type="Label" parent="Control/VBoxContainer"]
+layout_mode = 2
+text = "Current Scene: normal"
+

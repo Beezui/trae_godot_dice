@@ -1,0 +1,36 @@
+[gd_scene load_steps=2 format=3 uid="uid://cax0x5e4k0q9m"]
+
+[node name="LightningParticles" type="CPUParticles3D"]
+amount = 400
+execution_time = 1.5
+lifetime = 1.5
+one_shot = true
+randomness = 0.7
+speed_scale = 3.0
+local_coords = false
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+amount = 400
+execution_time = 1.5
+lifetime = 1.5
+one_shot = true
+randomness = 0.7
+speed_scale = 3.0
+local_coords = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="./CPUParticles3D"]
+visible = false
+mesh = SubResource("SphereMesh_1k23x")
+material_override = SubResource("StandardMaterial3D_2l34y")
+
+[sub_resource type="SphereMesh" id="SphereMesh_1k23x"]
+radius = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2l34y"]
+albedo_color = Color(0.8, 0.8, 1, 1)
+emission_enabled = true
+emission_color = Color(0.6, 0.6, 1, 1)
+emission_energy = 2.5
+roughness = 0.1
+metallic = 0.9

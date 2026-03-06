@@ -1,0 +1,59 @@
+{
+  "mcpServers": {
+    "blender": {
+      "command": "uvx",
+      "args": [
+        "blender-mcp"
+      ],
+      "env": {
+        "HYPER3D_API_KEY": "k9TcfFoEhNd9cCPP2guHAHHHkctZHIRhZDywZ1euGUXwihbYLpOjQhofby80NJez",
+        "RODIN_FREE_TRIAL_KEY": "k9TcfFoEhNd9cCPP2guHAHHHkctZHIRhZDywZ1euGUXwihbYLpOjQhofby80NJez",
+        "BLENDER_PATH": "D:\\blender\\blender-4.0.0-windows-x64\\blender.exe"
+      },
+      "fromGalleryId": "byted-mcp-volcengine.blender"
+    },
+    "godot": {
+      "command": "node",
+      "args": [
+        "D:/Godot/Godot_v4.6.1-stable_win64.exe/godot-mcp/build/index.js"
+      ],
+      "env": {
+        "GODOT_PATH": "D:/Godot/Godot_v4.6.1-stable_win64.exe/Godot_v4.6.1-stable_win64.exe",
+        "DEBUG": "true"
+      }
+    },
+    "Knowledge Graph Memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@itseasy21/mcp-knowledge-graph"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "D:\\trae\\Trae CN\\mem"
+      },
+      "fromGalleryId": "byted-mcp-volcengine.knowledge_graph",
+      "disabled": true
+    },
+    "web research": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mzxrai/mcp-webresearch@latest"
+      ],
+      "env": {},
+      "fromGalleryId": "byted-mcp-volcengine.web_research",
+      "disabled": true
+    },
+    "GitHub": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
+      },
+      "fromGalleryId": "byted-mcp-volcengine.github"
+    }
+  }
+}

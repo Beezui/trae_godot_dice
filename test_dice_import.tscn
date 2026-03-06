@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://croqjwm3xgovg"]
+
+[node name="test_dice_import" type="Node3D" unique_id=1401757980]
+
+[node name="test_dice_import#dice" parent="." unique_id=1807424549]
+
+[node name="test_dice_import#Camera3D" type="Camera3D" parent="." unique_id=1862969027]
+transform = Transform3D(1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 3, 4)
+current = true
