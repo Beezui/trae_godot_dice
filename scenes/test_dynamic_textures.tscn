@@ -1,77 +1,38 @@
-[gd_scene format=3 uid="uid://c2x0x5e4k0q9g"]
+[gd_scene format=3 uid="uid://bc265kvfftxy0"]
 
-[ext_resource type="Script" path="res://scenes/dice_manager.gd" id="1_1022k"]
+[ext_resource type="Script" uid="uid://c4qm0q34dedh" path="res://scenes/dice_manager.gd" id="1_1022k"]
 
-[node name="TestDynamicTextures" type="Node3D"]
+[node name="TestDynamicTextures" type="Node3D" unique_id=815259512]
 
-[node name="DiceManager" type="Node3D" parent="."]
+[node name="DiceManager" type="Node3D" parent="." unique_id=1591958811]
 script = ExtResource("1_1022k")
-dice_count = 2
-current_scene = "normal"
 
-[node name="Control" type="Control" parent="."]
+[node name="Control" type="Control" parent="." unique_id=441047597]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = """
-extends Control
 
-var dice_manager
+[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=1450185786]
+layout_mode = 0
 
-func _ready():
-	dice_manager = $DiceManager
-	
-	# 连接按钮信号
-	$VBoxContainer/HBoxContainer/NormalButton.pressed.connect(func(): set_scene("normal"))
-	$VBoxContainer/HBoxContainer/SkillButton.pressed.connect(func(): set_scene("skill"))
-	$VBoxContainer/HBoxContainer/TestButton.pressed.connect(test_custom_config)
-
-func set_scene(scene_name: String):
-	# 切换场景配置
-	dice_manager.set_scene_config(scene_name)
-	# 更新标签
-	$VBoxContainer/ResultLabel.text = "Current Scene: " + scene_name
-
-func test_custom_config():
-	# 测试自定义配置
-	var custom_config = {
-		0: "res://textures/dice/dice_face_6.png",
-		1: "res://textures/dice/dice_face_5.png",
-		2: "res://textures/dice/dice_face_4.png",
-		3: "res://textures/dice/dice_face_3.png",
-		4: "res://textures/dice/dice_face_2.png",
-		5: "res://textures/dice/dice_face_1.png"
-	}
-	
-	# 应用自定义配置到第一个骰子
-	var dice = dice_manager.get_dice(0)
-	if dice and dice.has_method("set_dice_face_config"):
-		dice.set_dice_face_config(custom_config)
-		$VBoxContainer/ResultLabel.text = "Applied custom config to first dice"
-"""
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/VBoxContainer" unique_id=365392088]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Control/VBoxContainer"]
-layout_mode = 2
-
-[node name="NormalButton" type="Button" parent="Control/VBoxContainer/HBoxContainer"]
+[node name="NormalButton" type="Button" parent="Control/VBoxContainer/HBoxContainer" unique_id=1139048796]
 layout_mode = 2
 text = "Normal"
 
-[node name="SkillButton" type="Button" parent="Control/VBoxContainer/HBoxContainer"]
+[node name="SkillButton" type="Button" parent="Control/VBoxContainer/HBoxContainer" unique_id=1030482708]
 layout_mode = 2
 text = "Skill"
 
-[node name="TestButton" type="Button" parent="Control/VBoxContainer/HBoxContainer"]
+[node name="TestButton" type="Button" parent="Control/VBoxContainer/HBoxContainer" unique_id=1182177151]
 layout_mode = 2
 text = "Test Custom"
 
-[node name="ResultLabel" type="Label" parent="Control/VBoxContainer"]
+[node name="ResultLabel" type="Label" parent="Control/VBoxContainer" unique_id=1133667898]
 layout_mode = 2
 text = "Current Scene: normal"
-

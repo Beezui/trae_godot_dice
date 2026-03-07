@@ -4,13 +4,13 @@ extends RigidBody3D
 @export var dice_faces: Array = [1, 2, 3, 4, 5, 6]
 @export var dice_type: String = "normal"
 @export var dice_face_config: Dictionary = {}
+@export var dice_value_config: Dictionary = {}
 
 var is_rolling: bool = false
 var roll_timer: Timer
 var collision_count: int = 0
 var skill_system
 var particle_system
-var dice_face_manager
 var controlled_result: int = -1  # -1表示没有控制结果
 var result_control_timer: Timer
 var has_valid_result: bool = false  # 标记骰子是否有有效结果
@@ -20,7 +20,6 @@ func _ready():
 	# 初始化系统
 	skill_system = preload("res://scripts/skill_system.gd").new()
 	particle_system = preload("res://scripts/particle_system.gd").new()
-	dice_face_manager = preload("res://scripts/dice_face_manager.gd").new()
 	
 	# 调整物理参数
 	contact_monitor = true
@@ -133,16 +132,15 @@ func apply_dice_textures(mesh_instance):
 	
 	# 创建六个面的材质
 	for i in range(6):
-		# 获取当前面的配置
-		var face_id = dice_face_config.get(i, 1)
+		# 获取当前面的贴图路径
+		var texture_path = dice_face_config.get(i, "")
 		# 创建材质
 		var material = StandardMaterial3D.new()
 		material.roughness = 0.8
 		
-		# 尝试从CSV加载贴图
-		var texture_path = dice_face_manager.get_texture_path_by_id(face_id)
+		# 尝试加载贴图
 		if texture_path and not texture_path.is_empty():
-			print("Loading texture for face ", i, " with ID: ", face_id, " from path: ", texture_path)
+			print("Loading texture for face ", i, " from path: ", texture_path)
 			var texture = load(texture_path)
 			if texture:
 				print("Successfully loaded texture: ", texture_path)
@@ -150,12 +148,12 @@ func apply_dice_textures(mesh_instance):
 			else:
 				print("Failed to load texture: ", texture_path)
 				# 加载失败，使用彩色材质
-				var color = id_colors.get(face_id, Color(0.5, 0.5, 0.5, 1))  # 默认灰色
+				var color = id_colors.get(i + 1, Color(0.5, 0.5, 0.5, 1))  # 默认灰色
 				material.albedo_color = color
 				print("Using fallback color: ", color)
 		else:
 			# 没有贴图路径，使用彩色材质
-			var color = id_colors.get(face_id, Color(0.5, 0.5, 0.5, 1))  # 默认灰色
+			var color = id_colors.get(i + 1, Color(0.5, 0.5, 0.5, 1))  # 默认灰色
 			material.albedo_color = color
 			print("No texture path, using color: ", color)
 		
@@ -404,16 +402,6 @@ func check_dice_value():
 	for local_dir in local_directions:
 		global_directions.append(transform.basis * local_dir)
 	
-	# 根据dice_config.gd中的配置，映射每个面索引对应的骰子值
-	# 面索引与dice_config的对应关系：
-	# 0: 前面 -> dice_config[0] = 1 (1点)
-	# 1: 后面 -> dice_config[1] = 2 (2点)
-	# 2: 左面 -> dice_config[2] = 3 (3点)
-	# 3: 右面 -> dice_config[3] = 4 (4点)
-	# 4: 顶面 -> dice_config[4] = 4 (5点)
-	# 5: 底面 -> dice_config[5] = 4 (6点)
-	var values = [1, 2, 3, 4, 4, 4]
-	
 	# 找到最接近全局向上方向的面
 	var max_dot = -1
 	var closest_index = 0
@@ -424,8 +412,14 @@ func check_dice_value():
 			max_dot = dot
 			closest_index = i
 	
-	# 设置骰子值
-	dice_value = values[closest_index]
+	# 设置骰子值，使用从CSV读取的点数配置
+	if dice_value_config.size() > 0:
+		# 使用从CSV读取的点数配置
+		dice_value = dice_value_config.get(closest_index, 1)
+	else:
+		# 使用默认值
+		var values = [1, 2, 3, 4, 5, 6]
+		dice_value = values[closest_index]
 	has_valid_result = true
 	print("Dice rolled: ", dice_value)
 	trigger_skill()
@@ -493,12 +487,15 @@ func set_controlled_result(value: int):
 		controlled_result = value
 		print("Set controlled result: ", value)
 
-func set_dice_face_config(config: Dictionary):
+func set_dice_face_config(config: Dictionary, value_config: Dictionary = {}):
 	# 设置骰子面的贴图配置
 	dice_face_config = config
+	# 设置骰子面的点数配置
+	dice_value_config = value_config
 	# 更新贴图
 	update_dice_textures()
 	print("Set dice face config: ", config)
+	print("Set dice value config: ", value_config)
 
 func update_dice_textures():
 	# 动态更新骰子贴图

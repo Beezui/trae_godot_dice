@@ -196,9 +196,9 @@ func start_demo():
 func initialize_dynamic_textures():
 	# 初始化动态贴图系统
 	if dice_manager:
-		# 设置默认场景配置为 normal
-		dice_manager.set_scene_config("normal")
-		print("Dynamic textures initialized with normal scene config")
+		# 设置默认场景配置为 1001
+		dice_manager.set_scene_config("1001")
+		print("Dynamic textures initialized with 1001 scene config")
 
 func set_scene_config(scene_name: String):
 	# 切换场景配置
@@ -264,12 +264,12 @@ func _input(event):
 				print("减少骰子，当前数量: %d" % dice_manager.get_dice_count())
 			else:
 				print("已达到最小骰子数量: 1")
-	# 按1键切换到 normal 场景配置
+	# 按1键切换到 1001 场景配置
 	if event is InputEventKey and event.pressed and event.keycode == KEY_1:
-		set_scene_config("normal")
-	# 按2键切换到 skill 场景配置
+		set_scene_config("1001")
+	# 按2键切换到 1002 场景配置
 	if event is InputEventKey and event.pressed and event.keycode == KEY_2:
-		set_scene_config("skill")
+		set_scene_config("1002")
 
 func _process(delta):
 	# 跟踪全局时间

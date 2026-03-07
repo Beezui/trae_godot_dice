@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bhkph5pvwvb6e"
+
+[deps]
+
+files=["res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation"]
+
+source_file="res://table/ItemDices.csv"
+dest_files=["res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation", "res://table/ItemDices.en.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -5,11 +5,11 @@ extends Node3D
 @export var dice_scene: PackedScene  # 骰子场景
 @export var current_scene: String = "normal"  # 当前场景
 
-var dice_config
+var dice_csv_reader
 
 func _ready():
-	# 加载骰子配置
-	dice_config = preload("res://scripts/dice_config.gd").new()
+	# 加载骰子CSV配置
+	dice_csv_reader = preload("res://scripts/dice_csv_reader.gd").new()
 	
 	# 加载骰子场景
 	if not dice_scene:
@@ -35,8 +35,10 @@ func initialize_dice_pool():
 	# 限制骰子数量
 	dice_count = clamp(dice_count, 1, max_dice_count)
 	
-	# 获取当前场景配置
-	var scene_config = dice_config.get_scene_config(current_scene)
+	# 获取当前骰子配置
+	var dice_config = dice_csv_reader.get_num_dice_config(current_scene)
+	var scene_config = dice_config.get("textures", {})
+	var value_config = dice_config.get("values", {})
 	
 	# 强制加载正确的骰子场景
 	var dice_scene_path = "res://scenes/dice_6.tscn"
@@ -64,7 +66,7 @@ func initialize_dice_pool():
 			
 			# 应用当前场景配置
 			if dice.has_method("set_dice_face_config"):
-				dice.set_dice_face_config(scene_config)
+				dice.set_dice_face_config(scene_config, value_config)
 			
 			# 设置初始位置，沿着水平方向并排排列
 			var spacing = 1.5  # 骰子间距
@@ -290,10 +292,12 @@ func update(delta: float):
 func set_scene_config(scene_name: String):
 	# 切换场景配置
 	current_scene = scene_name
-	# 获取场景配置
-	var scene_config = dice_config.get_scene_config(scene_name)
-	# 更新所有骰子的贴图配置
+	# 获取骰子配置
+	var dice_config = dice_csv_reader.get_num_dice_config(scene_name)
+	var scene_config = dice_config.get("textures", {})
+	var value_config = dice_config.get("values", {})
+	# 更新所有骰子的贴图配置和点数配置
 	for dice in dice_instances:
 		if dice and is_instance_valid(dice) and dice.has_method("set_dice_face_config"):
-			dice.set_dice_face_config(scene_config)
+			dice.set_dice_face_config(scene_config, value_config)
 	print("Set scene config to: ", scene_name)

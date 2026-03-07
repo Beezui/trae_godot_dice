@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqy5xkwrvnkig"
-valid=false
+uid="uid://bj44mg3qjeoh4"
+path="res://.godot/imported/dice_face_6.png-e72399377d0965fb1a0a50160c74c3ec.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://textures/dice/dice_face_6.png"
+dest_files=["res://.godot/imported/dice_face_6.png-e72399377d0965fb1a0a50160c74c3ec.ctex"]
 
 [params]
 

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dpuyjvlu0w5fw"
+
+[deps]
+
+files=["res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation"]
+
+source_file="res://table/SkillDices.csv"
+dest_files=["res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation", "res://table/SkillDices.en.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
