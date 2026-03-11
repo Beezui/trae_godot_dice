@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://bow5e5p0ono0a"]
+
+[ext_resource type="Script" path="res://scenes/test_particle_simple.gd" id="1_1022k"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_bm4n7"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_e3y2i"]
+emission_shape = 1
+emission_sphere_radius = 1.0
+angle_min = -65.59999
+angle_max = 439.6
+velocity_pivot = Vector3(1, 0, 0)
+direction = Vector3(1, 1, 1)
+spread = 51.716
+orbit_velocity_min = -0.86999995
+orbit_velocity_max = 0.74400014
+radial_accel_min = 2.8099978
+radial_accel_max = 16.839998
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bm4n7"]
+albedo_color = Color(1, 0.31764707, 0.19607843, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_e3y2i"]
+material = SubResource("StandardMaterial3D_bm4n7")
+radius = 0.2
+height = 0.5
+
+[node name="TestParticleSimple" type="Node3D" unique_id=1628300658]
+script = ExtResource("1_1022k")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=638247264]
+transform = Transform3D(-0.9514617, 0.24188462, -0.1902957, -0.21142489, -0.064380705, 0.9752716, 0.22365183, 0.9681668, 0.11239621, 0, 15, 0)
+current = true
+fov = 60.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=136914758]
+transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
+
+[node name="ExplosionParticles" type="CPUParticles3D" parent="." unique_id=896180641]
+emitting = false
+amount = 300
+lifetime = 3.0
+one_shot = true
+mesh = SubResource("BoxMesh_bm4n7")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="." unique_id=454781835]
+transform = Transform3D(1, 0, 0, 0, 0.994562, 0.10414659, 0, -0.10414659, 0.994562, 0, 3, 0)
+explosiveness = 1.0
+randomness = 0.22
+process_material = SubResource("ParticleProcessMaterial_e3y2i")
+draw_pass_1 = SubResource("SphereMesh_e3y2i")

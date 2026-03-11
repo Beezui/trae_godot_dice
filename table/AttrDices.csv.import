@@ -2,12 +2,12 @@
 
 importer="csv_translation"
 type="Translation"
-uid="uid://dcvbllvcl1eqk"
+uid="uid://c3tjnf0r3l6tu"
 valid=false
 
 [deps]
 
-source_file="res://table/skill.csv"
+source_file="res://table/AttrDices.csv"
 
 [params]
 

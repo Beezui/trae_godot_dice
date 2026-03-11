@@ -15,6 +15,7 @@ func load_num_dices():
 	if file:
 		# 读取表头
 		var header = file.get_line()
+		print("NumDices.csv header: " + header)
 		
 		# 读取数据行
 		while not file.eof_reached():

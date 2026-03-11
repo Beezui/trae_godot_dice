@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://skill_test_scene"]
+
+[ext_resource type="Script" path="res://scenes/skill_test_scene.gd" id="1_skilltest"]
+[ext_resource type="PackedScene" uid="uid://c2x0x5e4k0q9g" path="res://scenes/dice_6.tscn" id="2_dice"]
+
+[node name="SkillTestScene" type="Node3D"]
+script = ExtResource("1_skilltest")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 60, 0)
+current = true
+fov = 15.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
+
+[node name="Sandbox" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Ground" type="CollisionShape3D" parent="Sandbox"]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Sandbox"]
+
+[node name="TopCollision" type="CollisionShape3D" parent="Sandbox"]
+
+[node name="AttackerDice" parent="." instance=ExtResource("2_dice")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.5, 0)
+
+[node name="TargetDice1" parent="." instance=ExtResource("2_dice")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.5, -2)
+
+[node name="TargetDice2" parent="." instance=ExtResource("2_dice")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.5, 0)
+
+[node name="TargetDice3" parent="." instance=ExtResource("2_dice")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.5, 0)
+
+[node name="Marker3D" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)

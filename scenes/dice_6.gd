@@ -180,8 +180,8 @@ func apply_dice_textures(mesh_instance):
 		# 存储材质数组，以便在运行时切换
 		mesh_instance.set_meta("dice_materials", materials)
 
-func load_dice_model(mesh_instance):
-	# 直接使用fallback mesh，确保有6个独立表面
+func load_dice_model(_mesh_instance):
+	# 直接使用 fallback mesh，确保有 6 个独立表面
 	print("Using fallback mesh with 6 surfaces")
 	create_fallback_mesh()
 
@@ -385,7 +385,7 @@ func check_dice_value():
 	
 	# 直接根据骰子的旋转计算朝上的面
 	var up_direction = Vector3.UP
-	var transform = global_transform
+	var dice_transform = global_transform
 	var global_directions = []
 	
 	# 定义骰子六个面的本地方向，与create_fallback_mesh函数中的面索引顺序匹配
@@ -398,9 +398,9 @@ func check_dice_value():
 		Vector3(0, -1, 0)   # 底面 (面索引5)
 	]
 	
-	# 将本地方向转换为全局方向
+	# 将每个面的本地方向转换为全局方向
 	for local_dir in local_directions:
-		global_directions.append(transform.basis * local_dir)
+		global_directions.append(dice_transform.basis * local_dir)
 	
 	# 找到最接近全局向上方向的面
 	var max_dot = -1
@@ -480,6 +480,10 @@ func get_collision_count() -> int:
 func get_dice_value() -> int:
 	# 获取骰子点数
 	return dice_value
+
+func get_has_valid_result() -> bool:
+	# 获取是否有有效结果
+	return has_valid_result
 
 func set_controlled_result(value: int):
 	# 设置控制结果

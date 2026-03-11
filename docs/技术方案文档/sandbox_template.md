@@ -34,47 +34,47 @@
 ### 墙壁
 
 #### 北墙（屏幕上方）
-- **碰撞形状**: BoxShape3D(size = Vector3(sandbox_width, 10, 0.1))
-- **碰撞位置**: (0, -4, -sandbox_height/2) (在Sandbox局部坐标系中，与地面对齐)
-- **网格位置**: (0, -2.5, -sandbox_height/2) (在Sandbox局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(sandbox_width, 3, 0.1) (可见高度3)
+- **碰撞形状**: BoxShape3D(size = Vector3(sandbox_width, 50, 0.1))
+- **碰撞位置**: (0, 21, -sandbox_height/2) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
+- **网格位置**: (0, -2.5, -sandbox_height/2) (在 Sandbox 局部坐标系中，与地面对齐)
+- **网格缩放**: Vector3(sandbox_width, 3, 0.1) (可见高度 3)
 - **材质**: 蓝色 (albedo_color = Color(0.3, 0.3, 0.7, 1))
-- **Godot坐标系重点**: 北墙位于z轴负方向，对应屏幕上方
+- **Godot 坐标系重点**: 北墙位于 z 轴负方向，对应屏幕上方
 
 #### 南墙（屏幕下方）
-- **碰撞形状**: BoxShape3D(size = Vector3(sandbox_width, 10, 0.1))
-- **碰撞位置**: (0, -4, sandbox_height/2) (在Sandbox局部坐标系中，与地面对齐)
-- **网格位置**: (0, -2.5, sandbox_height/2) (在Sandbox局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(sandbox_width, 3, 0.1) (可见高度3)
+- **碰撞形状**: BoxShape3D(size = Vector3(sandbox_width, 50, 0.1))
+- **碰撞位置**: (0, 21, sandbox_height/2) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
+- **网格位置**: (0, -2.5, sandbox_height/2) (在 Sandbox 局部坐标系中，与地面对齐)
+- **网格缩放**: Vector3(sandbox_width, 3, 0.1) (可见高度 3)
 - **材质**: 红色 (albedo_color = Color(0.7, 0.3, 0.3, 1))
-- **Godot坐标系重点**: 南墙位于z轴正方向，对应屏幕下方
+- **Godot 坐标系重点**: 南墙位于 z 轴正方向，对应屏幕下方
 
 #### 东墙（屏幕右侧）
-- **碰撞形状**: BoxShape3D(size = Vector3(0.1, 10, sandbox_height))
-- **碰撞位置**: (sandbox_width/2, -4, 0) (在Sandbox局部坐标系中，与地面对齐)
-- **网格位置**: (sandbox_width/2, -2.5, 0) (在Sandbox局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(0.1, 3, sandbox_height) (可见高度3)
+- **碰撞形状**: BoxShape3D(size = Vector3(0.1, 50, sandbox_height))
+- **碰撞位置**: (sandbox_width/2, 21, 0) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
+- **网格位置**: (sandbox_width/2, -2.5, 0) (在 Sandbox 局部坐标系中，与地面对齐)
+- **网格缩放**: Vector3(0.1, 3, sandbox_height) (可见高度 3)
 - **材质**: 黄色 (albedo_color = Color(0.7, 0.7, 0.3, 1))
-- **Godot坐标系重点**: 东墙位于x轴正方向，对应屏幕右侧
+- **Godot 坐标系重点**: 东墙位于 x 轴正方向，对应屏幕右侧
 
 #### 西墙（屏幕左侧）
-- **碰撞形状**: BoxShape3D(size = Vector3(0.1, 10, sandbox_height))
-- **碰撞位置**: (-sandbox_width/2, -4, 0) (在Sandbox局部坐标系中，与地面对齐)
-- **网格位置**: (-sandbox_width/2, -2.5, 0) (在Sandbox局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(0.1, 3, sandbox_height) (可见高度3)
+- **碰撞形状**: BoxShape3D(size = Vector3(0.1, 50, sandbox_height))
+- **碰撞位置**: (-sandbox_width/2, 21, 0) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
+- **网格位置**: (-sandbox_width/2, -2.5, 0) (在 Sandbox 局部坐标系中，与地面对齐)
+- **网格缩放**: Vector3(0.1, 3, sandbox_height) (可见高度 3)
 - **材质**: 绿色 (albedo_color = Color(0.3, 0.7, 0.3, 1))
-- **Godot坐标系重点**: 西墙位于x轴负方向，对应屏幕左侧
+- **Godot 坐标系重点**: 西墙位于 x 轴负方向，对应屏幕左侧
 
 #### 顶部碰撞
-- **碰撞形状**: BoxShape3D(size = Vector3(sandbox_width, 0.5, sandbox_height))
-- **碰撞位置**: (0, 4, 0) (在Sandbox局部坐标系中)
-- **用途**: 防止骰子跳出摄像机视野
+- **说明**：已移除顶部碰撞形状，避免阻挡骰子下落
+- **原因**：顶部碰撞会阻挡骰子正常落到地面
+- **代码位置**：在 `dice_demo_script.gd` 第 160-162 行已注释掉
 
 ### 碰撞区域
-- **碰撞高度**: 10 (确保骰子无法跳出)
-- **可见高度**: 3
-- **边界范围**: 固定比例 16:9（宽度24，深度13.5，放大1.5倍）
-- **顶部碰撞**: 在Y=4位置设置碰撞形状，防止骰子弹出摄像机视野
+- **碰撞高度**: 50 (墙壁碰撞形状高度)
+- **可见高度**: 3 (墙壁网格可见部分高度)
+- **边界范围**: 固定比例 16:9（宽度 24，深度 13.5，放大 1.5 倍）
+- **顶部碰撞**: 已移除，避免阻挡骰子下落
 
 ## 光照设置
 - **类型**: DirectionalLight3D
@@ -104,21 +104,22 @@
 
 ## 使用说明
 1. 此模板使用固定的 16:9 比例，不再自动调整沙盘尺寸
-2. 摄像机角度已优化，提供良好的3D俯视视角，视角固定
-3. 墙壁可见高度为3，增强视觉效果
+2. 摄像机角度已优化，提供良好的 3D 俯视视角，视角固定
+3. 墙壁可见高度为 3，增强视觉效果
 4. 碰撞区域保持完整，确保游戏机制正常
-5. 顶部设置了碰撞形状，防止骰子弹出摄像机视野
+5. 顶部碰撞形状已移除，确保骰子能正常落到地面
 6. 可基于此模板创建不同的战斗场景
 7. 墙壁颜色已按照屏幕方向标准化：北（上）- 蓝色，南（下）- 红色，西（左）- 绿色，东（右）- 黄色
 
 ## 注意事项
 - 沙盘使用固定的 16:9 比例，不再自动适配窗口大小
 - 摄像机视角固定，确保沙盘显示效果一致
-- 如需调整摄像机，建议保持类似的倾斜角度以维持3D效果
-- 墙壁碰撞区域应保持足够高度，防止骰子跳出
-- 可根据需要调整FOV和摄像机高度以获得最佳视角
+- 如需调整摄像机，建议保持类似的倾斜角度以维持 3D 效果
+- 墙壁碰撞区域高度为 50，确保骰子无法跳出
+- 可根据需要调整 FOV 和摄像机高度以获得最佳视角
 - 墙壁底部已与地面完全连接，确保无间隙
 - 骰子模型已使用圆滑边缘设计，提升滚动效果
+- 顶部碰撞已移除，确保骰子能正常落到地面
 
 ## Godot坐标系说明
 
@@ -160,6 +161,167 @@
 - **骰子脚本**: `res://scenes/dice_6.gd`
 - **技能系统**: `res://scripts/skill_system.gd`
 - **粒子系统**: `res://scripts/particle_system.gd`
+
+## 核心配置代码
+
+### 摄像机配置代码
+
+```gdscript
+# 摄像机配置
+@onready var camera = $Camera3D
+
+func _ready():
+	# 调整摄像机位置和FOV，使其拉远并更接近2D效果
+	if camera:
+		# 设置摄像机位置，进一步拉高镜头以看到整个沙盘
+		camera.position = Vector3(0, 60, 0)  # 进一步拉高摄像机
+		# 进一步减小FOV，更贴近俯视2D效果
+		camera.fov = 15.0  # 进一步减小FOV值
+		# 直接设置相机旋转，避免look_at的共线问题
+		camera.rotation = Vector3(-PI/2, 0, 0)
+
+	# 确保光照正确指向原点
+	@onready var light = $DirectionalLight3D
+	if light:
+		light.look_at_from_position(light.position, Vector3(0, 0, 0), Vector3(0, 1, 0))
+```
+
+### 沙盘配置代码
+
+```gdscript
+# 沙盘配置
+@onready var sandbox = $Sandbox
+
+var base_width = 24.0  # 基础宽度（屏幕水平方向），放大1.5倍
+var base_height = 13.5   # 基础高度（屏幕竖直方向），放大1.5倍
+
+func _ready():
+	# 计算基础尺寸，保持16:9比例
+	var base_ratio = 16.0 / 9.0
+	var sandbox_width = base_width  # 屏幕水平方向（x轴）
+	var sandbox_height = sandbox_width / base_ratio  # 屏幕竖直方向（z轴），保持16:9比例
+	
+	# 创建沙盘碰撞形状和网格
+	if sandbox:
+		# 创建地面碰撞形状
+		var ground_collision = sandbox.get_node("Ground")
+		if ground_collision:
+			var ground_shape = BoxShape3D.new()
+			ground_shape.size = Vector3(sandbox_width, 0.1, sandbox_height)
+			ground_collision.shape = ground_shape
+			
+		# 为地面添加物理材质，提升反弹系数50%
+		var ground_physics_material = PhysicsMaterial.new()
+		ground_physics_material.bounce = 0.3  # 提升反弹效果50%
+		ground_physics_material.friction = 0.8  # 增加摩擦力
+		# 为沙盒静态体设置物理材质
+		if sandbox:
+			sandbox.physics_material_override = ground_physics_material
+		
+		# 创建地面网格
+		var ground_mesh = sandbox.get_node("GroundMesh")
+		if ground_mesh:
+			var ground_mesh_resource = BoxMesh.new()
+			ground_mesh_resource.size = Vector3(sandbox_width, 0.1, sandbox_height)
+			ground_mesh.mesh = ground_mesh_resource
+			
+			# 创建地面材质
+			var ground_material = StandardMaterial3D.new()
+			ground_material.albedo_color = Color(0.5, 0.5, 0.5, 1)
+			ground_mesh.material_override = ground_material
+		
+		# 创建北墙碰撞形状（屏幕上方，z轴负方向）
+		var wall_north = sandbox.get_node("WallNorth")
+		if wall_north:
+			var wall_north_collision = wall_north.get_node("CollisionShape3D")
+			if wall_north_collision:
+				var wall_north_shape = BoxShape3D.new()
+				wall_north_shape.size = Vector3(sandbox_width, 50, 0.1)
+				wall_north.position = Vector3(0, 21, -sandbox_height/2)
+				wall_north_collision.shape = wall_north_shape
+		
+		# 创建北墙网格
+		var wall_north_mesh = MeshInstance3D.new()
+		wall_north_mesh.name = "WallNorthMesh"
+		wall_north_mesh.position = Vector3(0, -2.5, -sandbox_height/2)
+		var wall_north_mesh_resource = BoxMesh.new()
+		wall_north_mesh_resource.size = Vector3(sandbox_width, 3, 0.1)
+		wall_north_mesh.mesh = wall_north_mesh_resource
+		var north_wall_material = StandardMaterial3D.new()
+		north_wall_material.albedo_color = Color(0.3, 0.3, 0.7, 1)  # 北墙（屏幕上方）：蓝色
+		wall_north_mesh.material_override = north_wall_material
+		sandbox.add_child(wall_north_mesh)
+		
+		# 创建南墙碰撞形状（屏幕下方，z轴正方向）
+		var wall_south = sandbox.get_node("WallSouth")
+		if wall_south:
+			var wall_south_collision = wall_south.get_node("CollisionShape3D")
+			if wall_south_collision:
+				var wall_south_shape = BoxShape3D.new()
+				wall_south_shape.size = Vector3(sandbox_width, 50, 0.1)
+				wall_south.position = Vector3(0, 21, sandbox_height/2)
+				wall_south_collision.shape = wall_south_shape
+		
+		# 创建南墙网格
+		var wall_south_mesh = MeshInstance3D.new()
+		wall_south_mesh.name = "WallSouthMesh"
+		wall_south_mesh.position = Vector3(0, -2.5, sandbox_height/2)
+		var wall_south_mesh_resource = BoxMesh.new()
+		wall_south_mesh_resource.size = Vector3(sandbox_width, 3, 0.1)
+		wall_south_mesh.mesh = wall_south_mesh_resource
+		var south_wall_material = StandardMaterial3D.new()
+		south_wall_material.albedo_color = Color(0.7, 0.3, 0.3, 1)  # 南墙（屏幕下方）：红色
+		wall_south_mesh.material_override = south_wall_material
+		sandbox.add_child(wall_south_mesh)
+		
+		# 创建东墙碰撞形状（屏幕右侧，x轴正方向）
+		var wall_east = sandbox.get_node("WallEast")
+		if wall_east:
+			var wall_east_collision = wall_east.get_node("CollisionShape3D")
+			if wall_east_collision:
+				var wall_east_shape = BoxShape3D.new()
+				wall_east_shape.size = Vector3(0.1, 50, sandbox_height)
+				wall_east.position = Vector3(sandbox_width/2, 21, 0)
+				wall_east_collision.shape = wall_east_shape
+		
+		# 创建东墙网格
+		var wall_east_mesh = MeshInstance3D.new()
+		wall_east_mesh.name = "WallEastMesh"
+		wall_east_mesh.position = Vector3(sandbox_width/2, -2.5, 0)
+		var wall_east_mesh_resource = BoxMesh.new()
+		wall_east_mesh_resource.size = Vector3(0.1, 3, sandbox_height)
+		wall_east_mesh.mesh = wall_east_mesh_resource
+		var east_wall_material = StandardMaterial3D.new()
+		east_wall_material.albedo_color = Color(0.7, 0.7, 0.3, 1)  # 东墙（屏幕右侧）：黄色
+		wall_east_mesh.material_override = east_wall_material
+		sandbox.add_child(wall_east_mesh)
+		
+		# 创建西墙碰撞形状（屏幕左侧，x轴负方向）
+		var wall_west = sandbox.get_node("WallWest")
+		if wall_west:
+			var wall_west_collision = wall_west.get_node("CollisionShape3D")
+			if wall_west_collision:
+				var wall_west_shape = BoxShape3D.new()
+				wall_west_shape.size = Vector3(0.1, 50, sandbox_height)
+				wall_west.position = Vector3(-sandbox_width/2, 21, 0)
+				wall_west_collision.shape = wall_west_shape
+		
+		# 创建西墙网格
+		var wall_west_mesh = MeshInstance3D.new()
+		wall_west_mesh.name = "WallWestMesh"
+		wall_west_mesh.position = Vector3(-sandbox_width/2, -2.5, 0)
+		var wall_west_mesh_resource = BoxMesh.new()
+		wall_west_mesh_resource.size = Vector3(0.1, 3, sandbox_height)
+		wall_west_mesh.mesh = wall_west_mesh_resource
+		var west_wall_material = StandardMaterial3D.new()
+		west_wall_material.albedo_color = Color(0.3, 0.7, 0.3, 1)  # 西墙（屏幕左侧）：绿色
+		wall_west_mesh.material_override = west_wall_material
+		sandbox.add_child(wall_west_mesh)
+
+	# 增加重力加速度，加快骰子下落速度
+	# 在Godot 4中，通过ProjectSettings来设置重力
+	ProjectSettings.set_setting("physics/3d/default_gravity", 39.2)  # 4倍重力加速度，加快下落速度
+```
 
 ## 优化建议
 1. 可根据不同场景需求调整摄像机位置和FOV
