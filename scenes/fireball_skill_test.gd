@@ -19,11 +19,15 @@ var base_width = 24.0
 var base_height = 13.5
 
 var dice_csv_reader
+var skill_csv_reader: RefCounted
+var skill_system: RefCounted
 var power_dice_result: int = 0
 var agility_dice_result: int = 0
 var is_skill_active: bool = false
 var current_fireball: Node3D = null
 var target_dice: RigidBody3D = null
+var current_skill_id: String = "10001"
+var skill_attribute_dice: Dictionary = {}
 
 var is_preparation_mode: bool = true
 var is_charging: bool = false
@@ -39,6 +43,10 @@ var original_positions: Dictionary = {}
 
 func _ready():
 	dice_csv_reader = preload("res://scripts/dice_csv_reader.gd").new()
+	skill_csv_reader = preload("res://scripts/skill_csv_reader.gd").new()
+	skill_system = preload("res://scripts/skill_system.gd").new()
+	
+	_load_skill_config()
 	
 	_setup_camera()
 	_setup_light()
@@ -54,6 +62,16 @@ func _ready():
 	print("按 1 键：重置场景到初始化状态")
 	print("按空格键：蓄力投掷属性骰子")
 	print("======================================")
+
+func _load_skill_config():
+	var skill = skill_system.get_skill(current_skill_id)
+	if skill.is_empty():
+		print("Error: Skill ", current_skill_id, " not found!")
+		return
+	
+	print("Loaded skill config: ", skill.get("id"), " - ", skill.get("name"))
+	print("Attribute dice: ", skill.get("attribute_dice", {}))
+	skill_attribute_dice = skill.get("attribute_dice", {})
 
 func _setup_camera():
 	if camera:
@@ -92,17 +110,17 @@ func _setup_sandbox():
 			ground_material.albedo_color = Color(0.5, 0.5, 0.5, 1)
 			ground_mesh.material_override = ground_material
 		
-		var wall_north = CollisionShape3D.new()
-		wall_north.name = "WallNorth"
 		var wall_north_shape = BoxShape3D.new()
 		wall_north_shape.size = Vector3(sandbox_width, 50, 0.1)
+		var wall_north = CollisionShape3D.new()
+		wall_north.name = "WallNorth"
 		wall_north.shape = wall_north_shape
 		wall_north.position = Vector3(0, 21, -sandbox_height/2)
 		sandbox.add_child(wall_north)
 		
 		var wall_north_mesh = MeshInstance3D.new()
 		wall_north_mesh.name = "WallNorthMesh"
-		wall_north_mesh.position = Vector3(0, 0, -sandbox_height/2)
+		wall_north_mesh.position = Vector3(0, 1.5, -sandbox_height/2)
 		var wall_north_mesh_resource = BoxMesh.new()
 		wall_north_mesh_resource.size = Vector3(sandbox_width, 3, 0.1)
 		wall_north_mesh.mesh = wall_north_mesh_resource
@@ -111,17 +129,17 @@ func _setup_sandbox():
 		wall_north_mesh.material_override = north_wall_material
 		sandbox.add_child(wall_north_mesh)
 		
-		var wall_south = CollisionShape3D.new()
-		wall_south.name = "WallSouth"
 		var wall_south_shape = BoxShape3D.new()
 		wall_south_shape.size = Vector3(sandbox_width, 50, 0.1)
+		var wall_south = CollisionShape3D.new()
+		wall_south.name = "WallSouth"
 		wall_south.shape = wall_south_shape
 		wall_south.position = Vector3(0, 21, sandbox_height/2)
 		sandbox.add_child(wall_south)
 		
 		var wall_south_mesh = MeshInstance3D.new()
 		wall_south_mesh.name = "WallSouthMesh"
-		wall_south_mesh.position = Vector3(0, 0, sandbox_height/2)
+		wall_south_mesh.position = Vector3(0, 1.5, sandbox_height/2)
 		var wall_south_mesh_resource = BoxMesh.new()
 		wall_south_mesh_resource.size = Vector3(sandbox_width, 3, 0.1)
 		wall_south_mesh.mesh = wall_south_mesh_resource
@@ -130,17 +148,17 @@ func _setup_sandbox():
 		wall_south_mesh.material_override = south_wall_material
 		sandbox.add_child(wall_south_mesh)
 		
-		var wall_east = CollisionShape3D.new()
-		wall_east.name = "WallEast"
 		var wall_east_shape = BoxShape3D.new()
 		wall_east_shape.size = Vector3(0.1, 50, sandbox_height)
+		var wall_east = CollisionShape3D.new()
+		wall_east.name = "WallEast"
 		wall_east.shape = wall_east_shape
 		wall_east.position = Vector3(sandbox_width/2, 21, 0)
 		sandbox.add_child(wall_east)
 		
 		var wall_east_mesh = MeshInstance3D.new()
 		wall_east_mesh.name = "WallEastMesh"
-		wall_east_mesh.position = Vector3(sandbox_width/2, 0, 0)
+		wall_east_mesh.position = Vector3(sandbox_width/2, 1.5, 0)
 		var wall_east_mesh_resource = BoxMesh.new()
 		wall_east_mesh_resource.size = Vector3(0.1, 3, sandbox_height)
 		wall_east_mesh.mesh = wall_east_mesh_resource
@@ -149,17 +167,17 @@ func _setup_sandbox():
 		wall_east_mesh.material_override = east_wall_material
 		sandbox.add_child(wall_east_mesh)
 		
-		var wall_west = CollisionShape3D.new()
-		wall_west.name = "WallWest"
 		var wall_west_shape = BoxShape3D.new()
 		wall_west_shape.size = Vector3(0.1, 50, sandbox_height)
+		var wall_west = CollisionShape3D.new()
+		wall_west.name = "WallWest"
 		wall_west.shape = wall_west_shape
 		wall_west.position = Vector3(-sandbox_width/2, 21, 0)
 		sandbox.add_child(wall_west)
 		
 		var wall_west_mesh = MeshInstance3D.new()
 		wall_west_mesh.name = "WallWestMesh"
-		wall_west_mesh.position = Vector3(-sandbox_width/2, 0, 0)
+		wall_west_mesh.position = Vector3(-sandbox_width/2, 1.5, 0)
 		var wall_west_mesh_resource = BoxMesh.new()
 		wall_west_mesh_resource.size = Vector3(0.1, 3, sandbox_height)
 		wall_west_mesh.mesh = wall_west_mesh_resource
@@ -167,13 +185,6 @@ func _setup_sandbox():
 		west_wall_material.albedo_color = Color(0.3, 0.7, 0.3, 1)
 		wall_west_mesh.material_override = west_wall_material
 		sandbox.add_child(wall_west_mesh)
-		
-		var top_collision = sandbox.get_node("TopCollision")
-		if top_collision:
-			var top_shape = BoxShape3D.new()
-			top_shape.size = Vector3(sandbox_width, 0.5, sandbox_height)
-			top_collision.position = Vector3(0, 4, 0)
-			top_collision.shape = top_shape
 
 	ProjectSettings.set_setting("physics/3d/default_gravity", 39.2)
 
@@ -191,13 +202,16 @@ func _setup_attribute_dices():
 	
 	for i in range(dice_list.size()):
 		var dice = dice_list[i]
-		if dice:
+		if dice and is_instance_valid(dice):
 			dice.position = positions[i]
 			dice.visible = true
 			dice.gravity_scale = 0.0
 			dice.linear_velocity = Vector3.ZERO
 			dice.angular_velocity = Vector3.ZERO
-			dice.freeze = true
+			if dice.has_method("set_freeze"):
+				dice.set_freeze(true)
+			elif "freeze" in dice:
+				dice.freeze = true
 			
 			var config = null
 			if i == 0:
@@ -252,13 +266,16 @@ func reset_scene():
 	
 	for i in range(attr_dices.size()):
 		var dice = attr_dices[i]
-		if dice:
+		if dice and is_instance_valid(dice):
 			dice.position = positions[i]
 			dice.gravity_scale = 0.0
 			dice.linear_velocity = Vector3.ZERO
 			dice.angular_velocity = Vector3.ZERO
 			dice.visible = true
-			dice.freeze = true
+			if dice.has_method("set_freeze"):
+				dice.set_freeze(true)
+			elif "freeze" in dice:
+				dice.freeze = true
 			
 			var config = null
 			if i == 0:
@@ -393,6 +410,9 @@ func throw_all_dices_with_charge(charge_ratio: float):
 			dice.freeze = false
 			dice.linear_velocity = force
 			dice.angular_velocity = angular_force
+			
+			if dice.has_method("roll"):
+				dice.roll(force, angular_force)
 	
 	print("同时投掷所有属性骰子！")
 
@@ -408,11 +428,10 @@ func wait_for_dices_stopped():
 		check_count += 1
 		
 		var all_stopped = true
-		var all_have_result = true
 		var dice_list = [power_dice, agility_dice, intelligence_dice]
 		
 		for dice in dice_list:
-			if dice and not dice.freeze:
+			if dice and is_instance_valid(dice):
 				var lin_vel = dice.linear_velocity.length()
 				var ang_vel = dice.angular_velocity.length()
 				
@@ -421,73 +440,48 @@ func wait_for_dices_stopped():
 					if check_count % 6 == 0:
 						print("骰子未停止 - 线速度：%.2f, 角速度：%.2f" % [lin_vel, ang_vel])
 					break
-				
-				var has_result = false
-				if dice.has_method("get_has_valid_result"):
-					has_result = dice.get_has_valid_result()
-				elif "has_valid_result" in dice:
-					has_result = dice.has_valid_result
-				
-				if not has_result:
-					all_have_result = false
-					if check_count % 6 == 0:
-						print("骰子未计算出结果 - has_valid_result: false")
-					break
 		
-		if all_stopped and all_have_result:
-			print("所有骰子已停止运动并计算出结果")
+		if all_stopped:
+			print("所有骰子已停止运动")
 			break
 	
 	dice_are_stopping = false
 	
 	for dice in [power_dice, agility_dice, intelligence_dice]:
-		if dice and dice.has_method("check_dice_value"):
+		if dice and is_instance_valid(dice) and dice.has_method("check_dice_value"):
 			dice.check_dice_value()
 	
 	check_attribute_results()
 
 func check_attribute_results():
 	print("=== 检测骰子结果 ===")
+	print("Skill attribute dice config: ", skill_attribute_dice)
 	
-	var power_has_result = false
-	if power_dice and power_dice.has_method("get_dice_value"):
-		power_dice_result = power_dice.get_dice_value()
-		if power_dice.has_method("get_has_valid_result"):
-			power_has_result = power_dice.get_has_valid_result()
-		elif "has_valid_result" in power_dice:
-			power_has_result = power_dice.has_valid_result
-		print("力量骰子 - has_valid_result: ", power_has_result)
-		print("力量骰子 - dice_value: ", power_dice_result)
-	else:
-		power_dice_result = randi_range(1, 6)
-		print("力量骰子 - 使用随机值：", power_dice_result)
-	
-	var agility_has_result = false
-	if agility_dice and agility_dice.has_method("get_dice_value"):
-		agility_dice_result = agility_dice.get_dice_value()
-		if agility_dice.has_method("get_has_valid_result"):
-			agility_has_result = agility_dice.get_has_valid_result()
-		elif "has_valid_result" in agility_dice:
-			agility_has_result = agility_dice.has_valid_result
-		print("敏捷骰子 - has_valid_result: ", agility_has_result)
-		print("敏捷骰子 - dice_value: ", agility_dice_result)
-	else:
-		agility_dice_result = randi_range(1, 6)
-		print("敏捷骰子 - 使用随机值：", agility_dice_result)
-	
+	var power_result = 0
+	var agility_result = 0
 	var intelligence_result = 0
-	var intelligence_has_result = false
-	if intelligence_dice and intelligence_dice.has_method("get_dice_value"):
-		intelligence_result = intelligence_dice.get_dice_value()
-		if intelligence_dice.has_method("get_has_valid_result"):
-			intelligence_has_result = intelligence_dice.get_has_valid_result()
-		elif "has_valid_result" in intelligence_dice:
-			intelligence_has_result = intelligence_dice.has_valid_result
-		print("智力骰子 - has_valid_result: ", intelligence_has_result)
-		print("智力骰子 - dice_value: ", intelligence_result)
-	else:
-		intelligence_result = randi_range(1, 6)
-		print("智力骰子 - 使用随机值：", intelligence_result)
+	
+	if skill_attribute_dice.has("1"):
+		var attr_type = skill_attribute_dice["1"]
+		print("Attribute 1 type: ", attr_type)
+		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
+			power_result = power_dice.get_dice_value()
+			power_dice_result = power_result
+			print("力量骰子结果：", power_result)
+	
+	if skill_attribute_dice.has("2"):
+		var attr_type = skill_attribute_dice["2"]
+		print("Attribute 2 type: ", attr_type)
+		if attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+			agility_result = agility_dice.get_dice_value()
+			agility_dice_result = agility_result
+			print("敏捷骰子结果：", agility_result)
+	
+	if skill_attribute_dice.has("3"):
+		var attr_type = skill_attribute_dice["3"]
+		if attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+			intelligence_result = intelligence_dice.get_dice_value()
+			print("智力骰子结果：", intelligence_result)
 	
 	print("=== 属性骰子结果 ===")
 	print("力量骰子结果：", power_dice_result)
@@ -507,6 +501,9 @@ func release_fireball_skill():
 	
 	is_skill_active = true
 	print("=== 火球术技能释放 ===")
+	
+	if skill_system and skill_system.has_method("use_skill"):
+		skill_system.use_skill(current_skill_id, self, target_dice)
 	
 	_launch_fireball()
 
@@ -582,18 +579,116 @@ func _trigger_explosion(hit_position: Vector3):
 		print("爆炸粒子已触发，位置：", hit_position)
 
 func _calculate_damage():
-	var power_damage = power_dice_result * 2
-	var agility_damage = agility_dice_result * 2
-	
 	print("=== 伤害结算 ===")
-	print("力量骰子点数：", power_dice_result)
-	print("敏捷骰子点数：", agility_dice_result)
-	print("命中伤害：", power_damage, "点（力量骰子 × 2）")
-	print("爆炸伤害：", agility_damage, "点（敏捷骰子 × 2）")
+	
+	# 获取技能配置
+	var skill = skill_system.get_skill(current_skill_id)
+	if skill.is_empty():
+		print("Error: Skill configuration not found!")
+		return
+	
+	var parameters = skill.get("parameters", {})
+	var attribute_dice_map = skill.get("attribute_dice", {})
+	
+	print("Skill parameters: ", parameters)
+	print("Attribute dice map: ", attribute_dice_map)
+	
+	# 获取骰子结果
+	var dice_results = {}
+	if attribute_dice_map.has("1"):
+		var attr_type = attribute_dice_map["1"]
+		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
+			dice_results["str"] = power_dice.get_dice_value()
+			print("力量骰子结果 (str): ", dice_results["str"])
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+			dice_results["agi"] = agility_dice.get_dice_value()
+			print("敏捷骰子结果 (agi): ", dice_results["agi"])
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+			dice_results["int"] = intelligence_dice.get_dice_value()
+			print("智力骰子结果 (int): ", dice_results["int"])
+	
+	if attribute_dice_map.has("2"):
+		var attr_type = attribute_dice_map["2"]
+		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
+			dice_results["str"] = power_dice.get_dice_value()
+			print("力量骰子结果 (str): ", dice_results["str"])
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+			dice_results["agi"] = agility_dice.get_dice_value()
+			print("敏捷骰子结果 (agi): ", dice_results["agi"])
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+			dice_results["int"] = intelligence_dice.get_dice_value()
+			print("智力骰子结果 (int): ", dice_results["int"])
+	
+	# 根据参数公式计算伤害
+	var damage_results = {}
+	for param_name in parameters.keys():
+		var formula = parameters[param_name]
+		var damage = _calculate_formula(formula, dice_results)
+		damage_results[param_name] = damage
+		print("参数 ", param_name, " (", formula, ") = ", damage)
+	
+	# 显示伤害结算信息
+	print("=== 伤害结算详情 ===")
+	if damage_results.has("p1"):
+		print("p1 伤害：", damage_results["p1"], " 点")
+	if damage_results.has("p2"):
+		print("p2 伤害：", damage_results["p2"], " 点")
+	if damage_results.has("p3"):
+		print("p3 伤害：", damage_results["p3"], " 点")
 	
 	if target_dice:
 		print("命中目标：", target_dice.name)
 		print("目标位置：", target_dice.position)
+
+func _calculate_formula(formula: String, dice_results: Dictionary) -> int:
+	# 替换公式中的变量为实际值
+	var evaluated_formula = formula
+	
+	if dice_results.has("str"):
+		evaluated_formula = evaluated_formula.replace("str", str(dice_results["str"]))
+	if dice_results.has("agi"):
+		evaluated_formula = evaluated_formula.replace("agi", str(dice_results["agi"]))
+	if dice_results.has("int"):
+		evaluated_formula = evaluated_formula.replace("int", str(dice_results["int"]))
+	
+	# 计算表达式（支持 * / + - 运算）
+	var result = _evaluate_expression(evaluated_formula)
+	return result
+
+func _evaluate_expression(expr: String) -> int:
+	# 简单的表达式求值（支持乘除加减）
+	# 注意：这是一个简化实现，生产环境应该使用更安全的表达式解析器
+	var tokens = expr.replace(" ", "").split("+")
+	var total = 0.0
+	
+	for token in tokens:
+		if "-" in token and token != tokens[0]:
+			var parts = token.split("-")
+			if parts.size() == 2:
+				total += _evaluate_multiplication(parts[0])
+				total -= _evaluate_multiplication(parts[1])
+			else:
+				total += _evaluate_multiplication(token)
+		else:
+			total += _evaluate_multiplication(token)
+	
+	return int(total)
+
+func _evaluate_multiplication(expr: String) -> float:
+	var tokens = expr.split("*")
+	var result = 1.0
+	
+	for token in tokens:
+		if "/" in token:
+			var div_parts = token.split("/")
+			if div_parts.size() == 2:
+				result *= float(div_parts[0]) / float(div_parts[1])
+			else:
+				result *= float(token)
+		else:
+			result *= float(token)
+	
+	return result
 
 func get_attacker_dice() -> RigidBody3D:
 	return attacker_dice
