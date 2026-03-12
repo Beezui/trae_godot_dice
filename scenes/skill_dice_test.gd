@@ -62,11 +62,6 @@ func _ready():
 	await get_tree().process_frame
 	
 	reset_scene()
-	
-	print("=== 技能骰子战斗测试场景加载完成 ===")
-	print("按 1 键：重置场景到初始化状态")
-	print("按空格键：蓄力后同时投掷所有战斗骰子")
-	print("=========================================")
 
 
 func _load_skill_config():
@@ -74,9 +69,6 @@ func _load_skill_config():
 	if skill.is_empty():
 		print("Error: Skill ", current_skill_id, " not found!")
 		return
-	
-	print("Loaded skill config: ", skill.get("id"), " - ", skill.get("name"))
-	print("Attribute dice: ", skill.get("attribute_dice", {}))
 	skill_attribute_dice = skill.get("attribute_dice", {})
 
 
@@ -235,7 +227,6 @@ func _setup_attribute_dices():
 				var texture_config = config.get("textures", {})
 				var value_config = config.get("values", {})
 				dice.set_dice_face_config(texture_config, value_config)
-				print("Applied config to dice ", i, ": ", config.get("id", "unknown"))
 
 
 func _setup_skill_dice():
@@ -252,20 +243,7 @@ func _setup_skill_dice():
 		
 		var skill_dice_config = dice_csv_reader.get_skill_dice_config("4001")
 		if not skill_dice_config.is_empty():
-			print("=== 技能骰子配置 ===")
 			var skill_ids = skill_dice_config.get("skill_ids", [])
-			print("skill_ids 数组: ", skill_ids)
-			print("skill_ids 长度: ", skill_ids.size())
-			
-			# 详细打印每个面对应的技能
-			for i in range(skill_ids.size()):
-				var skill_id = skill_ids[i]
-				var skill_data = skill_system.get_skill(skill_id)
-				var skill_name = "未知"
-				if not skill_data.is_empty():
-					skill_name = skill_data.get("name", "未知")
-				print("  面索引 %d → 技能ID %s (%s)" % [i, skill_id, skill_name])
-			
 			var texture_config = {}
 			for i in range(6):
 				if i < skill_ids.size():
@@ -282,7 +260,6 @@ func _setup_skill_dice():
 			
 			if texture_config.size() > 0 and skill_dice.has_method("set_dice_face_config"):
 				skill_dice.set_dice_face_config(texture_config, value_config)
-				print("Applied skill dice config: ", texture_config)
 	
 	if skill_dice and is_instance_valid(skill_dice):
 		skill_dice.skip_skill_trigger = true
@@ -326,8 +303,6 @@ func _setup_particles():
 
 
 func reset_scene():
-	print("=== 重置场景到初始化状态 ===")
-	
 	is_preparation_mode = true
 	is_skill_active = false
 	is_charging = false
@@ -406,9 +381,6 @@ func reset_scene():
 				var texture_config = config.get("textures", {})
 				var value_config = config.get("values", {})
 				dice.set_dice_face_config(texture_config, value_config)
-	
-	print("场景已重置，进入战斗准备阶段")
-	print("按空格键蓄力后，同时投掷技能骰子和属性骰子")
 
 
 func _input(event):
@@ -434,8 +406,6 @@ func start_charging():
 	for dice in dice_list:
 		if dice and is_instance_valid(dice):
 			original_positions[dice.get_path()] = dice.position
-	
-	print("开始蓄力...")
 
 
 func _process(delta):
@@ -468,7 +438,7 @@ func _process(delta):
 					dice.position = original_positions[dice_path] + shake_offset
 		
 		if charge_power >= 1.0:
-			print("已达到最大蓄力！")
+			pass
 
 
 func throw_all_battle_dices():
@@ -479,10 +449,6 @@ func throw_all_battle_dices():
 	
 	var charge_duration = (Time.get_ticks_msec() - charge_start_time) / 1000.0
 	charge_power = min(charge_duration / max_charge_time, 1.0)
-	
-	print("=== 同时投掷所有战斗骰子 ===")
-	print("蓄力时间：%.2f 秒" % charge_duration)
-	print("蓄力强度：%.0f%%" % (charge_power * 100))
 	
 	for dice in [skill_dice]:
 		if dice and is_instance_valid(dice):
@@ -536,58 +502,64 @@ func throw_all_dices_with_charge(charge_ratio: float):
 			
 			if dice.has_method("roll"):
 				dice.roll(force, angular_force)
-	
-	print("同时投掷所有战斗骰子（属性骰子 + 技能骰子）！")
 
 
-func wait_for_all_dices_stopped():
-	var max_wait_time = 8.0
-	var wait_interval = 0.3
-	var waited_time = 0.0
-	var check_count = 0
+func _check_dices_stable(all_dices: Array, check_count: int):
+	if not dice_are_stopping:
+		return
 	
-	while waited_time < max_wait_time:
-		waited_time += wait_interval
-		await get_tree().create_timer(wait_interval).timeout
-		check_count += 1
-		
-		var all_stopped = true
-		var all_dices = [power_dice, agility_dice, intelligence_dice, skill_dice]
-		
-		for dice in all_dices:
-			if dice and is_instance_valid(dice):
-				var lin_vel = dice.linear_velocity.length()
-				var ang_vel = dice.angular_velocity.length()
-				
-				if lin_vel > 0.1 or ang_vel > 0.1:
-					all_stopped = false
-					if check_count % 6 == 0:
-						print("骰子未停止 - 线速度：%.2f, 角速度：%.2f" % [lin_vel, ang_vel])
-					break
-		
-		if all_stopped:
-			print("所有骰子已停止运动")
-			break
+	var all_stable = true
+	var velocity_threshold = 0.05
 	
-	check_battle_results()
+	for dice in all_dices:
+		if dice and is_instance_valid(dice):
+			var lin_vel = dice.linear_velocity.length()
+			var ang_vel = dice.angular_velocity.length()
+			
+			if lin_vel > velocity_threshold or ang_vel > velocity_threshold:
+				all_stable = false
+				break
+	
+	if all_stable:
+		if check_count >= 15:
+			_on_all_dices_stopped()
+		else:
+			await get_tree().create_timer(0.1).timeout
+			_check_dices_stable(all_dices, check_count + 1)
+	else:
+		await get_tree().create_timer(0.2).timeout
+		_check_dices_stable(all_dices, 0)
+
+
+func _on_all_dices_stopped():
+	for dice in [power_dice, agility_dice, intelligence_dice, skill_dice]:
+		if dice and is_instance_valid(dice):
+			dice.skip_skill_trigger = true
 	
 	dice_are_stopping = false
 	all_dices_stopped = true
 	
-	for dice in [power_dice, agility_dice, intelligence_dice, skill_dice]:
-		if dice and is_instance_valid(dice):
-			dice.skip_skill_trigger = true
+	await get_tree().create_timer(0.3).timeout
+	
+	check_battle_results()
+
+
+func wait_for_all_dices_stopped():
+	var all_dices = [power_dice, agility_dice, intelligence_dice, skill_dice]
+	
+	dice_are_stopping = true
+	all_dices_stopped = false
+	_check_dices_stable(all_dices, 0)
 
 
 func check_battle_results():
-	print("=== 检测所有骰子结果 ===")
-	
-	# 首先获取技能ID，然后根据技能ID获取属性配置
 	var current_skill_attribute_dice = {}
+	var skill_index = 0
+	var dice_value = 1
 	
 	if skill_dice and is_instance_valid(skill_dice):
-		var dice_value = skill_dice.dice_value
-		var skill_index = dice_value - 1
+		dice_value = skill_dice.dice_value
+		skill_index = dice_value - 1
 		
 		var skill_dice_config = dice_csv_reader.get_skill_dice_config("4001")
 		if not skill_dice_config.is_empty():
@@ -597,98 +569,43 @@ func check_battle_results():
 				var skill_data = skill_system.get_skill(current_skill_id)
 				if not skill_data.is_empty():
 					current_skill_attribute_dice = skill_data.get("attribute_dice", {})
-					print("当前技能 ", current_skill_id, " 的属性配置: ", current_skill_attribute_dice)
 	
-	print("使用的属性配置: ", current_skill_attribute_dice)
-	
-	var power_result = 0
-	var agility_result = 0
-	var intelligence_result = 0
+	power_dice_result = 0
+	agility_dice_result = 0
+	intelligence_dice_result = 0
 	
 	if current_skill_attribute_dice.has("1"):
 		var attr_type = current_skill_attribute_dice["1"]
-		print("Attribute 1 type: ", attr_type)
 		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
-			power_result = power_dice.get_dice_value()
-			power_dice_result = power_result
-			print("力量骰子结果：", power_result)
+			power_dice_result = power_dice.get_dice_value()
 	
 	if current_skill_attribute_dice.has("2"):
 		var attr_type = current_skill_attribute_dice["2"]
-		print("Attribute 2 type: ", attr_type)
 		if attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
-			agility_result = agility_dice.get_dice_value()
-			agility_dice_result = agility_result
-			print("敏捷骰子结果：", agility_result)
+			agility_dice_result = agility_dice.get_dice_value()
 	
 	if current_skill_attribute_dice.has("3"):
 		var attr_type = current_skill_attribute_dice["3"]
 		if attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
-			intelligence_result = intelligence_dice.get_dice_value()
-			intelligence_dice_result = intelligence_result
-			print("智力骰子结果：", intelligence_result)
+			intelligence_dice_result = intelligence_dice.get_dice_value()
 	
 	if skill_dice and is_instance_valid(skill_dice):
-		var face_index = skill_dice.get_dice_face_index()
-		var dice_value = skill_dice.dice_value
-		
-		print("=== 技能骰子调试 ===")
-		print("skill_dice.get_dice_face_index() 面索引: ", face_index)
-		print("skill_dice.dice_value (面值): ", dice_value)
-		
-		# 验证：dice_value - 1 应该等于 face_index（如果骰子已停止）
-		if face_index == dice_value - 1:
-			print("✓ 骰子已停止，索引一致")
-		else:
-			print("✗ 警告：骰子可能还在滚动！face_index=", face_index, " != dice_value-1=", dice_value-1)
-		
-		# 使用 dice_value - 1 来获取 skill_ids 数组索引
-		# 因为 dice_value 是 1-6，数组索引是 0-5
-		var skill_index = dice_value - 1
-		
 		var skill_dice_config = dice_csv_reader.get_skill_dice_config("4001")
-		
 		if not skill_dice_config.is_empty():
 			var skill_ids = skill_dice_config.get("skill_ids", [])
-			print("skill_ids 数组：", skill_ids)
-			
 			if skill_index >= 0 and skill_index < skill_ids.size():
 				skill_dice_result_id = skill_ids[skill_index]
-				print("skill_ids[", skill_index, "] = ", skill_ids[skill_index])
-				print("成功获取技能 ID: ", skill_dice_result_id)
-				
-				# 验证技能 ID 是否正确
-				var skill_data = skill_system.get_skill(skill_dice_result_id)
-				if not skill_data.is_empty():
-					print("技能名称：", skill_data.get("name", "Unknown"))
-			else:
-				print("索引超出范围！skill_index=", skill_index, ", skill_ids 大小=", skill_ids.size())
-		else:
-			print("skill_dice_config 为空！")
 	
-	print("=== 战斗骰子结果 ===")
-	print("力量骰子结果：", power_dice_result)
-	print("敏捷骰子结果：", agility_dice_result)
-	print("智力骰子结果：", intelligence_dice_result)
-	print("技能骰子技能ID：", skill_dice_result_id)
-	
-	await get_tree().create_timer(1.0).timeout
+	print("【投掷结果】索引=%d | 技能ID=%s | 力量=%d | 敏捷=%d | 智力=%d" % [dice_value, skill_dice_result_id, power_dice_result, agility_dice_result, intelligence_dice_result])
 	
 	release_skill_by_id(skill_dice_result_id)
 
 
 func release_skill_by_id(skill_id: String):
-	print("=== 根据技能 ID 释放技能 ===")
-	print("技能 ID: ", skill_id)
-	
-	# 设置固定的施法者位置（左侧标记点）
 	var caster_marker = $Marker3D
 	var caster_position = caster_marker.global_position
-	
-	# 设置固定的目标（右侧骰子）
 	var targets = [target_dice1]
 	
-	# 准备骰子结果
 	var dice_results = {
 		"str": power_dice_result,
 		"agi": agility_dice_result,
@@ -697,17 +614,43 @@ func release_skill_by_id(skill_id: String):
 	
 	var params = {
 		"dice_results": dice_results,
-		"scene": self,  # 传递当前场景
-		"caster_position": caster_position  # 传递施法者位置
+		"scene": self,
+		"caster_position": caster_position
 	}
 	
-	# 使用 SkillManager 调用技能
-	var success = SkillManager.use_skill(skill_id, caster_marker, targets, params)
+	print("【执行技能】技能ID=%s" % skill_id)
+	SkillManager.use_skill(skill_id, caster_marker, targets, params)
 	
-	if success:
-		print("技能 ", skill_id, " 释放成功")
-	else:
-		print("技能 ", skill_id, " 释放失败")
+	await get_tree().create_timer(3.0).timeout
+	
+	print("【技能释放后】力量=%d | 敏捷=%d | 智力=%d" % [power_dice_result, agility_dice_result, intelligence_dice_result])
+	_check_dice_state_after_skill()
+
+
+func _check_dice_state_after_skill():
+	if skill_dice and is_instance_valid(skill_dice):
+		var dice_value = skill_dice.dice_value
+		var skill_index = dice_value - 1
+		
+		var current_skill_id = ""
+		var skill_dice_config = dice_csv_reader.get_skill_dice_config("4001")
+		if not skill_dice_config.is_empty():
+			var skill_ids = skill_dice_config.get("skill_ids", [])
+			if skill_index >= 0 and skill_index < skill_ids.size():
+				current_skill_id = skill_ids[skill_index]
+		
+		var power_val = 0
+		var agility_val = 0
+		var intelligence_val = 0
+		
+		if power_dice and is_instance_valid(power_dice):
+			power_val = power_dice.get_dice_value()
+		if agility_dice and is_instance_valid(agility_dice):
+			agility_val = agility_dice.get_dice_value()
+		if intelligence_dice and is_instance_valid(intelligence_dice):
+			intelligence_val = intelligence_dice.get_dice_value()
+		
+		print("【技能释放后检测】骰面索引=%d | 技能ID=%s | 力量=%d | 敏捷=%d | 智力=%d" % [dice_value, current_skill_id, power_val, agility_val, intelligence_val])
 
 
 func get_skill_dice() -> RigidBody3D:
