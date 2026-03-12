@@ -7,6 +7,7 @@ var skill_dices_data = {}
 
 func _init():
 	load_num_dices()
+	load_skill_dices()
 
 func load_num_dices():
 	# 加载数字骰子配置
@@ -65,8 +66,47 @@ func get_num_dice_config(dice_id: String) -> Dictionary:
 	return num_dices_data.get(dice_id, {})
 
 func get_all_num_dice_ids() -> Array:
-	# 获取所有数字骰子ID
+	# 获取所有数字骰子 ID
 	return num_dices_data.keys()
+
+func load_skill_dices():
+	# 加载技能骰子配置
+	var json_path = "res://table/SkillDices.json"
+	var file = FileAccess.open(json_path, FileAccess.READ)
+	if file:
+		var json_text = file.get_as_text()
+		file.close()
+		
+		var json = JSON.new()
+		var parse_result = json.parse(json_text)
+		
+		if parse_result != OK:
+			print("Error parsing SkillDices.json: ", json.get_error_message())
+			return
+		
+		var data = json.get_data()
+		if not data is Dictionary or not data.has("skill_dices"):
+			print("Error: SkillDices.json missing 'skill_dices' array")
+			return
+		
+		var skill_dices_array = data["skill_dices"]
+		for dice_data in skill_dices_array:
+			if dice_data is Dictionary and dice_data.has("id"):
+				var dice_id = str(dice_data["id"])
+				skill_dices_data[dice_id] = dice_data
+				print("Loaded skill dice: ", dice_id, " with faces: ", dice_data.get("face_count", 0))
+		
+		print("Loaded skill dices data: ", skill_dices_data.keys())
+	else:
+		print("Failed to load SkillDices.json")
+
+func get_skill_dice_config(dice_id: String) -> Dictionary:
+	# 获取技能骰子配置
+	return skill_dices_data.get(dice_id, {})
+
+func get_all_skill_dice_ids() -> Array:
+	# 获取所有技能骰子 ID
+	return skill_dices_data.keys()
 
 func parse_csv_line(line: String) -> Array:
 	# 解析CSV行，处理带引号的字段
@@ -76,15 +116,15 @@ func parse_csv_line(line: String) -> Array:
 	var i = 0
 	
 	while i < line.length():
-		var char = line[i]
+		var c = line[i]
 		
-		if char == '"':
+		if c == '"':
 			in_quotes = !in_quotes
-		elif char == ',' and not in_quotes:
+		elif c == ',' and not in_quotes:
 			result.append(current_field)
 			current_field = ""
 		else:
-			current_field += char
+			current_field += c
 		
 		i += 1
 	
@@ -96,4 +136,6 @@ func parse_csv_line(line: String) -> Array:
 func reload():
 	# 重新加载所有配置
 	num_dices_data.clear()
+	skill_dices_data.clear()
 	load_num_dices()
+	load_skill_dices()

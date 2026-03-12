@@ -26,7 +26,11 @@ res://tools/
    ```bash
    cd res://tools/
    python convert_skill_csv_to_json.py
+  
    ```
+   #导出技能骰子表
+   
+   python convert_skill_csv_to_json.py --skill-dices
 
 3. **自动转换**：
    - 工具会自动读取 `res://table/skill.csv`

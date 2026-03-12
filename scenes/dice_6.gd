@@ -8,7 +8,9 @@ extends RigidBody3D
 
 var is_rolling: bool = false
 var roll_timer: Timer
+var skip_skill_trigger: bool = false
 var collision_count: int = 0
+var closest_index: int = 0
 var skill_system
 var particle_system
 var controlled_result: int = -1  # -1表示没有控制结果
@@ -404,7 +406,7 @@ func check_dice_value():
 	
 	# 找到最接近全局向上方向的面
 	var max_dot = -1
-	var closest_index = 0
+	closest_index = 0
 	
 	for i in range(global_directions.size()):
 		var dot = up_direction.dot(global_directions[i])
@@ -427,6 +429,11 @@ func check_dice_value():
 	# 不需要预防措施，因为我们总能找到一个面朝上
 
 func trigger_skill():
+	print("=== trigger_skill() 被调用 ===")
+	print("skip_skill_trigger = ", skip_skill_trigger)
+	if skip_skill_trigger:
+		return
+	
 	# 根据骰子点数触发对应技能
 	if skill_system and skill_system.has_method("get_skill_by_dice_value"):
 		var skill_id = skill_system.get_skill_by_dice_value(dice_value)
@@ -473,6 +480,9 @@ func _on_body_exited(_body):
 
 func get_dice_type() -> String:
 	return dice_type
+
+func get_dice_face_index() -> int:
+	return closest_index
 
 func get_collision_count() -> int:
 	return collision_count

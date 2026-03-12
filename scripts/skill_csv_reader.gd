@@ -41,7 +41,12 @@ func load_skills():
 	print("Skill JSON loading complete. Total skills: ", skills.size())
 
 func get_skill(skill_id: String) -> Dictionary:
-	return skills.get(skill_id, {})
+	print("=== skill_csv_reader.get_skill() 被调用 ===")
+	print("请求的 skill_id: ", skill_id)
+	print("已加载的技能列表: ", skills.keys())
+	var result = skills.get(skill_id, {})
+	print("返回的技能数据: ", result)
+	return result
 
 func get_all_skills() -> Dictionary:
 	return skills

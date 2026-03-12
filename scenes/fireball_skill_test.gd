@@ -23,10 +23,11 @@ var skill_csv_reader: RefCounted
 var skill_system: RefCounted
 var power_dice_result: int = 0
 var agility_dice_result: int = 0
+var intelligence_dice_result: int = 0
 var is_skill_active: bool = false
-var current_fireball: Node3D = null
+var current_skill_effect: Node3D = null
 var target_dice: RigidBody3D = null
-var current_skill_id: String = "10001"
+var current_skill_id: String = "10002"  # 改为暴风雪技能
 var skill_attribute_dice: Dictionary = {}
 
 var is_preparation_mode: bool = true
@@ -58,9 +59,10 @@ func _ready():
 	
 	reset_scene()
 	
-	print("=== 火球术技能测试场景加载完成 ===")
+	print("=== 暴风雪技能测试场景加载完成 ===")
 	print("按 1 键：重置场景到初始化状态")
 	print("按空格键：蓄力投掷属性骰子")
+	print("当前技能 ID: ", current_skill_id)
 	print("======================================")
 
 func _load_skill_config():
@@ -290,12 +292,12 @@ func reset_scene():
 				var value_config = config.get("values", {})
 				dice.set_dice_face_config(texture_config, value_config)
 	
-	if current_fireball:
-		current_fireball.queue_free()
-		current_fireball = null
+	if current_skill_effect:
+		current_skill_effect.queue_free()
+		current_skill_effect = null
 	
 	print("场景已重置，进入技能释放准备阶段")
-	print("请投掷属性骰子：力量骰子、敏捷骰子、智力骰子")
+	print("当前测试技能：", current_skill_id)
 
 func _input(event):
 	if event is InputEventKey:
@@ -455,7 +457,6 @@ func wait_for_dices_stopped():
 
 func check_attribute_results():
 	print("=== 检测骰子结果 ===")
-	print("Skill attribute dice config: ", skill_attribute_dice)
 	
 	var power_result = 0
 	var agility_result = 0
@@ -468,44 +469,91 @@ func check_attribute_results():
 			power_result = power_dice.get_dice_value()
 			power_dice_result = power_result
 			print("力量骰子结果：", power_result)
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+			agility_result = agility_dice.get_dice_value()
+			agility_dice_result = agility_result
+			print("敏捷骰子结果：", agility_result)
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+			intelligence_result = intelligence_dice.get_dice_value()
+			intelligence_dice_result = intelligence_result
+			print("智力骰子结果：", intelligence_result)
 	
 	if skill_attribute_dice.has("2"):
 		var attr_type = skill_attribute_dice["2"]
 		print("Attribute 2 type: ", attr_type)
-		if attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
+			power_result = power_dice.get_dice_value()
+			power_dice_result = power_result
+			print("力量骰子结果：", power_result)
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
 			agility_result = agility_dice.get_dice_value()
 			agility_dice_result = agility_result
 			print("敏捷骰子结果：", agility_result)
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+			intelligence_result = intelligence_dice.get_dice_value()
+			intelligence_dice_result = intelligence_result
+			print("智力骰子结果：", intelligence_result)
 	
 	if skill_attribute_dice.has("3"):
 		var attr_type = skill_attribute_dice["3"]
-		if attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
+			power_result = power_dice.get_dice_value()
+			power_dice_result = power_result
+			print("力量骰子结果：", power_result)
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+			agility_result = agility_dice.get_dice_value()
+			agility_dice_result = agility_result
+			print("敏捷骰子结果：", agility_result)
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
 			intelligence_result = intelligence_dice.get_dice_value()
+			intelligence_dice_result = intelligence_result
 			print("智力骰子结果：", intelligence_result)
 	
 	print("=== 属性骰子结果 ===")
 	print("力量骰子结果：", power_dice_result)
 	print("敏捷骰子结果：", agility_dice_result)
-	print("智力骰子结果：", intelligence_result)
+	print("智力骰子结果：", intelligence_dice_result)
 	
 	attribute_dices_thrown = true
 	is_preparation_mode = false
 	
 	await get_tree().create_timer(1.0).timeout
-	release_fireball_skill()
+	release_skill()
 
-func release_fireball_skill():
+func release_skill():
+	print("DEBUG: release_skill() called")
+	print("DEBUG: current_skill_id = ", current_skill_id)
+	
 	if is_skill_active:
 		print("技能正在冷却中...")
 		return
 	
 	is_skill_active = true
-	print("=== 火球术技能释放 ===")
+	
+	var skill = skill_system.get_skill(current_skill_id)
+	var skill_name = skill.get("name", "未知技能")
+	print("=== ", skill_name, " 技能释放 ===")
+	print("DEBUG: Skill name from system: ", skill_name)
+	print("DEBUG: Skill ID: ", current_skill_id)
 	
 	if skill_system and skill_system.has_method("use_skill"):
 		skill_system.use_skill(current_skill_id, self, target_dice)
 	
-	_launch_fireball()
+	# 根据技能ID执行相应的技能效果
+	print("DEBUG: About to execute skill effect")
+	if current_skill_id == "10001":
+		print("DEBUG: Executing fireball")
+		_launch_fireball()
+	elif current_skill_id == "10002":
+		print("DEBUG: Executing blizzard")
+		_launch_blizzard()
+	else:
+		print("DEBUG: Unknown skill ID: ", current_skill_id)
+	
+	# 重置技能状态
+	await get_tree().create_timer(3.0).timeout
+	is_skill_active = false
+	print("=== 技能释放完成 ===")
 
 func _launch_fireball():
 	print("【发射火球】")
@@ -519,6 +567,181 @@ func _launch_fireball():
 	var direction = (target_pos - start_pos).normalized()
 	
 	_create_fireball_effect(start_pos, direction, target_pos)
+
+func _launch_blizzard():
+	print("【释放暴风雪】")
+	print("DEBUG: _launch_blizzard() called")
+	
+	var target_list = [target_dice1, target_dice2, target_dice3]
+	target_dice = target_list[randi() % target_list.size()]
+	print("DEBUG: Selected target: ", target_dice.name, " at position: ", target_dice.position)
+	
+	var center_pos = target_dice.position
+	center_pos.y += 3  # 在目标上方生成暴风雪中心
+	print("DEBUG: Blizzard center position: ", center_pos)
+	
+	_create_blizzard_effect(center_pos)
+
+func _create_blizzard_effect(center_pos: Vector3):
+	print("DEBUG: Creating blizzard effect at: ", center_pos)
+	
+	var blizzard_area = Area3D.new()
+	blizzard_area.name = "BlizzardArea"
+	blizzard_area.position = center_pos
+	add_child(blizzard_area)
+	print("DEBUG: BlizzardArea added to scene, parent: ", blizzard_area.get_parent().name)
+	
+	# 创建碰撞形状以检测敌人
+	var sphere_shape = SphereShape3D.new()
+	sphere_shape.radius = 3.0
+	var collision_shape = CollisionShape3D.new()
+	collision_shape.shape = sphere_shape
+	blizzard_area.add_child(collision_shape)
+	
+	# 创建暴风雪粒子效果 - 使用 GPUParticles3D + ParticleProcessMaterial
+	var blizzard_particles = GPUParticles3D.new()
+	blizzard_particles.name = "BlizzardParticles"
+	blizzard_particles.amount = 300
+	blizzard_particles.lifetime = 5.0
+	blizzard_particles.speed_scale = 1.0
+	blizzard_particles.explosiveness = 0.0
+	blizzard_particles.randomness = 0.5
+	
+	# 创建粒子处理材质
+	var process_material = ParticleProcessMaterial.new()
+	
+	# 发射形状：盒体
+	process_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	process_material.emission_box_extents = Vector3(4, 2, 4)
+	
+	# 发射方向：向下
+	process_material.direction = Vector3(0, -1, 0)
+	process_material.spread = 10.0
+	
+	# 初始速度
+	process_material.initial_velocity_min = 0.5
+	process_material.initial_velocity_max = 2.0
+	
+	# 重力：让雪花缓慢飘落
+	process_material.gravity = Vector3(0, -0.5, 0)
+	
+	# 粒子大小
+	process_material.scale_min = 0.4
+	process_material.scale_max = 0.8
+	
+	# 设置颜色渐变（白色到蓝色）
+	var color_gradient = Gradient.new()
+	color_gradient.add_point(0.0, Color(1, 1, 1, 1))  # 白色
+	color_gradient.add_point(0.5, Color(0.8, 0.8, 1, 1))  # 淡蓝
+	color_gradient.add_point(1.0, Color(0.6, 0.6, 1, 1))  # 蓝色
+	process_material.color_ramp = color_gradient
+	
+	# 设置角速度让粒子旋转
+	process_material.angular_velocity_min = -90
+	process_material.angular_velocity_max = 90
+	
+	blizzard_particles.process_material = process_material
+	
+	# 创建粒子网格（使用球体）
+	var sphere_mesh = SphereMesh.new()
+	sphere_mesh.radius = 0.15
+	sphere_mesh.height = 0.3
+	blizzard_particles.draw_pass_1 = sphere_mesh
+	
+	blizzard_area.add_child(blizzard_particles)
+	print("DEBUG: BlizzardParticles added to BlizzardArea")
+	
+	blizzard_particles.emitting = true
+	print("DEBUG: BlizzardParticles emitting started")
+	
+	# 验证粒子是否在场景树中
+	print("DEBUG: BlizzardArea in scene tree: ", is_instance_valid(blizzard_area))
+	print("DEBUG: BlizzardParticles in scene tree: ", is_instance_valid(blizzard_particles))
+	print("DEBUG: BlizzardArea parent: ", blizzard_area.get_parent())
+	
+	# 计算技能伤害
+	var intelligence_value = intelligence_dice_result
+	var agility_value = agility_dice_result
+	var power_value = power_dice_result
+	
+	# 根据 skill.json 中的公式计算
+	# p1 = int*2 (范围)
+	# p2 = str*2 (持续时间)
+	# p3 = agi*3 (每秒伤害)
+	
+	var p1 = int(intelligence_value * 2)  # 根据智力计算范围
+	var p2 = int(power_value * 2)        # 根据力量计算持续时间
+	var p3 = int(agility_value * 3)      # 根据敏捷计算每秒伤害
+	
+	print("=== 暴风雪技能结算 ===")
+	print("智力骰子结果：", intelligence_value)
+	print("力量骰子结果：", power_value)
+	print("敏捷骰子结果：", agility_value)
+	print("技能参数 p1 (范围): ", p1, "单位")
+	print("技能参数 p2 (持续时间): ", p2, "秒")
+	print("技能参数 p3 (每秒伤害): ", p3, "点")
+	
+	# 模拟持续伤害效果
+	var duration = p2
+	var damage_per_second = p3
+	var total_damage = damage_per_second * duration
+	
+	print("总计伤害：", total_damage, "点")
+	
+	# 设置定时器结束粒子效果
+	var timer = Timer.new()
+	timer.wait_time = duration
+	timer.one_shot = true
+	timer.timeout.connect(func():
+		print("DEBUG: Blizzard timer timeout")
+		blizzard_particles.emitting = false
+		await get_tree().create_timer(2.0).timeout  # 等待粒子消失
+		print("DEBUG: Removing BlizzardArea")
+		blizzard_area.queue_free()
+	)
+	add_child(timer)
+	timer.start()
+	print("DEBUG: Timer started for duration: ", duration, " seconds")
+	
+	current_skill_effect = blizzard_area
+	print("DEBUG: current_skill_effect set to BlizzardArea")
+	
+	# 添加额外的视觉指示器，让暴风雪区域更容易看到
+	_create_visual_indicator(center_pos, p1)  # p1 是范围
+
+func _create_visual_indicator(effect_position: Vector3, radius: float):
+	# 创建一个视觉指示器，帮助用户看到暴风雪范围
+	var indicator = MeshInstance3D.new()
+	indicator.name = "BlizzardIndicator"
+	
+	var cylinder_mesh = CylinderMesh.new()
+	cylinder_mesh.top_radius = radius
+	cylinder_mesh.bottom_radius = radius
+	cylinder_mesh.height = 0.1  # 很薄的圆柱体作为地面标记
+	cylinder_mesh.radial_segments = 32
+	
+	indicator.mesh = cylinder_mesh
+	
+	var material = StandardMaterial3D.new()
+	material.albedo_color = Color(0.5, 0.8, 1, 0.3)  # 半透明蓝色
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	
+	indicator.material_override = material
+	indicator.position = Vector3(effect_position.x, 0.05, effect_position.z)  # 稍高于地面
+	indicator.rotation_degrees = Vector3(90, 0, 0)  # 平放在地面上
+	
+	add_child(indicator)
+	
+	# 让指示器随时间淡出
+	var indicator_timer = Timer.new()
+	indicator_timer.wait_time = 5.0  # 持续时间
+	indicator_timer.one_shot = true
+	indicator_timer.timeout.connect(func():
+		indicator.queue_free()
+	)
+	add_child(indicator_timer)
+	indicator_timer.start()
 
 func _create_fireball_effect(start_pos: Vector3, _direction: Vector3, target_pos: Vector3):
 	var fireball_mesh = SphereMesh.new()
@@ -538,14 +761,14 @@ func _create_fireball_effect(start_pos: Vector3, _direction: Vector3, target_pos
 	fireball_mesh_instance.name = "Fireball"
 	add_child(fireball_mesh_instance)
 	
-	current_fireball = fireball_mesh_instance
+	current_skill_effect = fireball_mesh_instance
 	
 	var fireball_speed = 25.0
 	var distance = start_pos.distance_to(target_pos)
 	var travel_time = distance / fireball_speed
 	
 	var tween = create_tween()
-	tween.tween_property(current_fireball, "position", target_pos, travel_time)
+	tween.tween_property(current_skill_effect, "position", target_pos, travel_time)
 	tween.tween_callback(_on_fireball_hit.bind(target_pos))
 	
 	print("火球已发射，目标：", target_dice.name)
@@ -554,15 +777,15 @@ func _create_fireball_effect(start_pos: Vector3, _direction: Vector3, target_pos
 func _on_fireball_hit(hit_position: Vector3):
 	print("=== 火球命中目标 ===")
 	
-	if current_fireball:
-		current_fireball.queue_free()
-		current_fireball = null
+	if current_skill_effect:
+		current_skill_effect.queue_free()
+		current_skill_effect = null
 	
 	_trigger_explosion(hit_position)
 	
 	await get_tree().create_timer(0.5).timeout
 	
-	_calculate_damage()
+	_calculate_fireball_damage()
 	
 	is_skill_active = false
 	print("=== 技能释放完成 ===")
@@ -578,67 +801,27 @@ func _trigger_explosion(hit_position: Vector3):
 		
 		print("爆炸粒子已触发，位置：", hit_position)
 
-func _calculate_damage():
+func _calculate_fireball_damage():
+	var power_damage = power_dice_result * 2
+	var agility_damage = agility_dice_result * 2
+	
 	print("=== 伤害结算 ===")
-	
-	# 获取技能配置
-	var skill = skill_system.get_skill(current_skill_id)
-	if skill.is_empty():
-		print("Error: Skill configuration not found!")
-		return
-	
-	var parameters = skill.get("parameters", {})
-	var attribute_dice_map = skill.get("attribute_dice", {})
-	
-	print("Skill parameters: ", parameters)
-	print("Attribute dice map: ", attribute_dice_map)
-	
-	# 获取骰子结果
-	var dice_results = {}
-	if attribute_dice_map.has("1"):
-		var attr_type = attribute_dice_map["1"]
-		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
-			dice_results["str"] = power_dice.get_dice_value()
-			print("力量骰子结果 (str): ", dice_results["str"])
-		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
-			dice_results["agi"] = agility_dice.get_dice_value()
-			print("敏捷骰子结果 (agi): ", dice_results["agi"])
-		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
-			dice_results["int"] = intelligence_dice.get_dice_value()
-			print("智力骰子结果 (int): ", dice_results["int"])
-	
-	if attribute_dice_map.has("2"):
-		var attr_type = attribute_dice_map["2"]
-		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
-			dice_results["str"] = power_dice.get_dice_value()
-			print("力量骰子结果 (str): ", dice_results["str"])
-		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
-			dice_results["agi"] = agility_dice.get_dice_value()
-			print("敏捷骰子结果 (agi): ", dice_results["agi"])
-		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
-			dice_results["int"] = intelligence_dice.get_dice_value()
-			print("智力骰子结果 (int): ", dice_results["int"])
-	
-	# 根据参数公式计算伤害
-	var damage_results = {}
-	for param_name in parameters.keys():
-		var formula = parameters[param_name]
-		var damage = _calculate_formula(formula, dice_results)
-		damage_results[param_name] = damage
-		print("参数 ", param_name, " (", formula, ") = ", damage)
-	
-	# 显示伤害结算信息
-	print("=== 伤害结算详情 ===")
-	if damage_results.has("p1"):
-		print("p1 伤害：", damage_results["p1"], " 点")
-	if damage_results.has("p2"):
-		print("p2 伤害：", damage_results["p2"], " 点")
-	if damage_results.has("p3"):
-		print("p3 伤害：", damage_results["p3"], " 点")
+	print("力量骰子点数：", power_dice_result)
+	print("敏捷骰子点数：", agility_dice_result)
+	print("命中伤害：", power_damage, "点（力量骰子 × 2）")
+	print("爆炸伤害：", agility_damage, "点（敏捷骰子 × 2）")
 	
 	if target_dice:
 		print("命中目标：", target_dice.name)
 		print("目标位置：", target_dice.position)
+
+func _calculate_damage():
+	# 根据当前技能 ID 调用相应的伤害计算
+	if current_skill_id == "10001":
+		_calculate_fireball_damage()
+	elif current_skill_id == "10002":
+		# 暴风雪的伤害已经在_create_blizzard_effect 中计算过了
+		pass
 
 func _calculate_formula(formula: String, dice_results: Dictionary) -> int:
 	# 替换公式中的变量为实际值

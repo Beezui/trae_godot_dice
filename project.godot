@@ -15,6 +15,10 @@ run/main_scene="uid://b5odtiq6e6jwh"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+SkillManager="*res://skills/skill_manager.gd"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")

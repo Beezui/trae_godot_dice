@@ -148,22 +148,126 @@ def convert_csv_to_json(csv_path, json_path):
     
     return True
 
+def convert_skill_dices_csv_to_json(csv_path, json_path):
+    """将 SkillDices.csv 转换为 JSON 格式"""
+    
+    print("=" * 50)
+    print("Skill Dices CSV to JSON Converter")
+    print("=" * 50)
+    print()
+    
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+    
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+    
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+    
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+    
+    skill_dices = []
+    
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+        
+        print(f"Processing line {i+1}...")
+        
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+        
+        if len(values) < 3:
+            print(f"  ✗ Warning: Insufficient columns, skipping")
+            continue
+        
+        dice_id = values[0].strip()
+        face_count = int(values[1].strip()) if values[1].strip().isdigit() else 6
+        skill_ids_str = values[2].strip()
+        
+        print(f"  Dice ID: {dice_id}")
+        print(f"  Face Count: {face_count}")
+        
+        skill_ids = []
+        if skill_ids_str:
+            skill_ids = [s.strip() for s in skill_ids_str.split(';')]
+        
+        print(f"  Skill IDs: {skill_ids}")
+        
+        skill_dice = {
+            'id': dice_id,
+            'face_count': face_count,
+            'skill_ids': skill_ids
+        }
+        
+        skill_dices.append(skill_dice)
+        print(f"  ✓ Added skill dice: {dice_id}")
+    
+    output = {
+        'skill_dices': skill_dices
+    }
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    
+    print()
+    print("=" * 50)
+    print("✓ Skill Dices conversion completed successfully!")
+    print(f"  Total skill dices: {len(skill_dices)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+    
+    return True
+
+
 if __name__ == '__main__':
-    # 获取脚本所在目录
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # 设置文件路径
-    csv_file = os.path.join(script_dir, '..', 'table', 'skill.csv')
-    json_file = os.path.join(script_dir, '..', 'table', 'skill.json')
-    
-    # 如果作为独立脚本运行，可以接受命令行参数
-    if len(sys.argv) > 1:
-        csv_file = sys.argv[1]
-    if len(sys.argv) > 2:
-        json_file = sys.argv[2]
-    
-    # 执行转换
-    success = convert_csv_to_json(csv_file, json_file)
-    
-    if not success:
-        sys.exit(1)
+    if len(sys.argv) > 1 and sys.argv[1] == '--skill-dices':
+        csv_file = os.path.join(script_dir, '..', 'table', 'SkillDices.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'SkillDices.json')
+        
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+        
+        success = convert_skill_dices_csv_to_json(csv_file, json_file)
+        
+        if not success:
+            sys.exit(1)
+    else:
+        csv_file = os.path.join(script_dir, '..', 'table', 'skill.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'skill.json')
+        
+        if len(sys.argv) > 1:
+            csv_file = sys.argv[1]
+        if len(sys.argv) > 2:
+            json_file = sys.argv[2]
+        
+        success = convert_csv_to_json(csv_file, json_file)
+        
+        if not success:
+            sys.exit(1)
