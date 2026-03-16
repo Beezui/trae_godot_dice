@@ -270,6 +270,11 @@ func create_fallback_mesh():
 	
 	print("Fallback cube mesh with 6 surfaces created")
 
+func stop_rolling():
+	if roll_timer:
+		roll_timer.stop()
+	is_rolling = false
+
 func roll(force: Vector3, angular_force: Vector3 = Vector3.ZERO):
 	# 恢复重力影响
 	gravity_scale = 1.0

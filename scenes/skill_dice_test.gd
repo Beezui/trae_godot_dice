@@ -381,6 +381,13 @@ func reset_scene():
 				var texture_config = config.get("textures", {})
 				var value_config = config.get("values", {})
 				dice.set_dice_face_config(texture_config, value_config)
+	
+	print("【重置】力量骰=%d | 敏捷骰=%d | 智力骰=%d | 技能骰=%d" % [
+		power_dice.get_dice_value() if power_dice else 0,
+		agility_dice.get_dice_value() if agility_dice else 0,
+		intelligence_dice.get_dice_value() if intelligence_dice else 0,
+		skill_dice.get_dice_value() if skill_dice else 0
+	])
 
 
 func _input(event):
@@ -508,38 +515,48 @@ func _check_dices_stable(all_dices: Array, check_count: int):
 	if not dice_are_stopping:
 		return
 	
-	var all_stable = true
-	var velocity_threshold = 0.05
+	var all_sleeping = true
 	
 	for dice in all_dices:
 		if dice and is_instance_valid(dice):
-			var lin_vel = dice.linear_velocity.length()
-			var ang_vel = dice.angular_velocity.length()
-			
-			if lin_vel > velocity_threshold or ang_vel > velocity_threshold:
-				all_stable = false
+			if not dice.sleeping:
+				all_sleeping = false
 				break
 	
-	if all_stable:
-		if check_count >= 15:
+	if all_sleeping:
+		if check_count >= 8:
 			_on_all_dices_stopped()
 		else:
 			await get_tree().create_timer(0.1).timeout
 			_check_dices_stable(all_dices, check_count + 1)
 	else:
-		await get_tree().create_timer(0.2).timeout
+		await get_tree().create_timer(0.15).timeout
 		_check_dices_stable(all_dices, 0)
 
 
 func _on_all_dices_stopped():
+	_perform_battle_results()
+
+
+func _perform_battle_results():
+	for dice in [power_dice, agility_dice, intelligence_dice, skill_dice]:
+		if dice and is_instance_valid(dice):
+			if dice.has_method("check_dice_value"):
+				dice.check_dice_value()
+	
+	await get_tree().create_timer(0.05).timeout
+	
 	for dice in [power_dice, agility_dice, intelligence_dice, skill_dice]:
 		if dice and is_instance_valid(dice):
 			dice.skip_skill_trigger = true
+			if dice.has_method("stop_rolling"):
+				dice.stop_rolling()
+			dice.freeze = true
+			dice.linear_velocity = Vector3.ZERO
+			dice.angular_velocity = Vector3.ZERO
 	
 	dice_are_stopping = false
 	all_dices_stopped = true
-	
-	await get_tree().create_timer(0.3).timeout
 	
 	check_battle_results()
 
@@ -553,6 +570,19 @@ func wait_for_all_dices_stopped():
 
 
 func check_battle_results():
+	if power_dice and is_instance_valid(power_dice):
+		if power_dice.has_method("check_dice_value"):
+			power_dice.check_dice_value()
+	if agility_dice and is_instance_valid(agility_dice):
+		if agility_dice.has_method("check_dice_value"):
+			agility_dice.check_dice_value()
+	if intelligence_dice and is_instance_valid(intelligence_dice):
+		if intelligence_dice.has_method("check_dice_value"):
+			intelligence_dice.check_dice_value()
+	if skill_dice and is_instance_valid(skill_dice):
+		if skill_dice.has_method("check_dice_value"):
+			skill_dice.check_dice_value()
+	
 	var current_skill_attribute_dice = {}
 	var skill_index = 0
 	var dice_value = 1
@@ -578,15 +608,27 @@ func check_battle_results():
 		var attr_type = current_skill_attribute_dice["1"]
 		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
 			power_dice_result = power_dice.get_dice_value()
-	
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+			agility_dice_result = agility_dice.get_dice_value()
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+			intelligence_dice_result = intelligence_dice.get_dice_value()
+
 	if current_skill_attribute_dice.has("2"):
 		var attr_type = current_skill_attribute_dice["2"]
-		if attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
+			power_dice_result = power_dice.get_dice_value()
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
 			agility_dice_result = agility_dice.get_dice_value()
-	
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+			intelligence_dice_result = intelligence_dice.get_dice_value()
+
 	if current_skill_attribute_dice.has("3"):
 		var attr_type = current_skill_attribute_dice["3"]
-		if attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
+		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
+			power_dice_result = power_dice.get_dice_value()
+		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
+			agility_dice_result = agility_dice.get_dice_value()
+		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
 			intelligence_dice_result = intelligence_dice.get_dice_value()
 	
 	if skill_dice and is_instance_valid(skill_dice):
