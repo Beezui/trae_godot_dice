@@ -2,7 +2,11 @@
 
 ## 概述
 
-本工具用于将 `skill.csv` 文件转换为 `skill.json` 格式，解决 CSV 编码问题并提供更好的数据结构支持。
+本工具用于将游戏中的各种 CSV 配置文件转换为 JSON 格式，解决 CSV 编码问题并提供更好的数据结构支持。支持转换的文件包括：
+- `skill.csv` → `skill.json`（技能配置）
+- `SkillDices.csv` → `SkillDices.json`（技能骰子配置）
+- `AttrDices.csv` → `AttrDices.json`（属性骰子配置）
+- `hero.csv` → `hero.json`（英雄角色配置）
 
 ## 工具位置
 
@@ -25,20 +29,32 @@ res://tools/
 2. **运行转换脚本**：
    ```bash
    cd res://tools/
-   python convert_skill_csv_to_json.py
-  
-   ```
-   #导出技能骰子表
    
+   # 导出技能配置表
+   python convert_skill_csv_to_json.py
+   
+   # 导出技能骰子表
    python convert_skill_csv_to_json.py --skill-dices
-
+   
+   # 导出属性骰子表
+   python convert_skill_csv_to_json.py --attr-dices
+   
+   # 导出英雄角色表
+   python convert_skill_csv_to_json.py --hero
+   ```
 3. **自动转换**：
-   - 工具会自动读取 `res://table/skill.csv`
-   - 转换为 `res://table/skill.json`
-   - 显示转换结果和技能列表
+   - 导出技能配置：读取 `res://table/skill.csv` → 转换为 `res://table/skill.json`
+   - 导出技能骰子：读取 `res://table/SkillDices.csv` → 转换为 `res://table/SkillDices.json`
+   - 导出属性骰子：读取 `res://table/AttrDices.csv` → 转换为 `res://table/AttrDices.json`
+   - 导出英雄角色：读取 `res://table/hero.csv` → 转换为 `res://table/hero.json`
+   - 显示转换结果和数据列表
 
 4. **查看结果**：
-   - 转换成功后，打开 `res://table/skill.json` 查看结果
+   - 转换成功后，打开相应的 JSON 文件查看结果：
+     - 技能配置：`res://table/skill.json`
+     - 技能骰子：`res://table/SkillDices.json`
+     - 属性骰子：`res://table/AttrDices.json`
+     - 英雄角色：`res://table/hero.json`
    - 中文正常显示，无乱码
 
 ### 方法二：PowerShell 版本（备选）
@@ -132,6 +148,12 @@ A: 检查 CSV 中 `属性类型` 列的格式是否为 `序号：属性名`，�
 ### Q: 如何在 Godot 中使用转换后的 JSON？
 A: 转换完成后重启 Godot 编辑器，技能系统会自动加载新的 JSON 配置。
 
+### Q: 英雄角色配置中的数组格式有什么要求？
+A: 英雄角色配置中的数组（如属性值、技能骰子 ID、纹理等）使用分号（;）作为分隔符，例如：`5;11;17;23;29;35`。
+
+### Q: 技能骰子 ID 现在是数组格式，如何配置？
+A: 技能骰子 ID 现在支持多个值，使用分号（;）分隔，例如：`4001;4002;4003`。
+
 ## 添加新技能
 
 1. **编辑 skill.csv**，添加新行：
@@ -172,6 +194,12 @@ A: 转换完成后重启 Godot 编辑器，技能系统会自动加载新的 JSO
 4. **编码统一**：建议统一使用 UTF-8 编码编辑 CSV 文件
 
 ## 更新日志
+
+- **v1.1** (2026-03-17)
+  - 新增属性骰子配置转换功能
+  - 新增英雄角色配置转换功能
+  - 优化英雄角色数组解析，支持分号分隔的数组格式
+  - 修复空数据行处理逻辑
 
 - **v1.0** (2026-03-11)
   - 初始版本发布

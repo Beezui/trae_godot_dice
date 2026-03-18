@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="晋升吧骰子"
-run/main_scene="uid://b5odtiq6e6jwh"
+run/main_scene="res://scenes/dice_demo_simple_final.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -30,3 +30,8 @@ enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 [rendering]
 
 rendering_device/driver.windows="d3d12"
+lights_and_shadows/environment/default_environment_light_energy=1.0
+lights_and_shadows/environment/default_environment_light_color=Color(1, 1, 1, 1)
+ambient_light/enable_ambient_light=true
+ambient_light/ambient_light_color=Color(0.8, 0.8, 0.8, 1)
+ambient_light/ambient_light_energy=1.0

@@ -242,6 +242,214 @@ def convert_skill_dices_csv_to_json(csv_path, json_path):
     return True
 
 
+def convert_attr_dices_csv_to_json(csv_path, json_path):
+    """将 AttrDices.csv 转换为 JSON 格式"""
+    
+    print("=" * 50)
+    print("Attribute Dices CSV to JSON Converter")
+    print("=" * 50)
+    print()
+    
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+    
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+    
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+    
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+    
+    attr_dices = []
+    
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+        
+        print(f"Processing line {i+1}...")
+        
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+        
+        if len(values) < 3:
+            print(f"  ✗ Warning: Insufficient columns, skipping")
+            continue
+        
+        dice_id = values[0].strip()
+        attr_name = values[1].strip()
+        points_color = values[2].strip()
+        
+        print(f"  Dice ID: {dice_id}")
+        print(f"  Attribute Name: {attr_name}")
+        print(f"  Points Color: {points_color}")
+        
+        attr_dice = {
+            'id': dice_id,
+            'attr_name': attr_name,
+            'points_color': points_color
+        }
+        
+        attr_dices.append(attr_dice)
+        print(f"  ✓ Added attribute dice: {dice_id}")
+    
+    output = {
+        'attr_dices': attr_dices
+    }
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    
+    print()
+    print("=" * 50)
+    print("✓ Attribute Dices conversion completed successfully!")
+    print(f"  Total attribute dices: {len(attr_dices)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+    
+    return True
+
+
+def convert_hero_csv_to_json(csv_path, json_path):
+    """将 hero.csv 转换为 JSON 格式"""
+    
+    print("=" * 50)
+    print("Hero CSV to JSON Converter")
+    print("=" * 50)
+    print()
+    
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+    
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+    
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+    
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+    
+    heroes = []
+    
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+        
+        print(f"Processing line {i+1}...")
+        
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+        
+        if len(values) < 10:
+            print(f"  ✗ Warning: Insufficient columns, skipping")
+            continue
+        
+        # 提取数据
+        hero_id = values[0].strip()
+        name = values[1].strip()
+        
+        # 跳过空数据行
+        if not hero_id or not name:
+            print(f"  ✗ Warning: Empty hero ID or name, skipping")
+            continue
+        
+        # 使用分号作为数组分隔符
+        attr_str = [s.strip() for s in values[2].strip().strip('"').split(';')] if values[2].strip() else []
+        attr_agi = [s.strip() for s in values[3].strip().strip('"').split(';')] if values[3].strip() else []
+        attr_int = [s.strip() for s in values[4].strip().strip('"').split(';')] if values[4].strip() else []
+        attr_hp = values[5].strip()
+        skill_slot = values[6].strip()
+        # skill_dice_id现在是个数组
+        skill_dice_id = [s.strip() for s in values[7].strip().strip('"').split(';')] if values[7].strip() else []
+        texture = [s.strip() for s in values[8].strip().strip('"').split(';')] if values[8].strip() else []
+        portrait = values[9].strip()
+        
+        print(f"  Hero ID: {hero_id}")
+        print(f"  Name: {name}")
+        print(f"  Strength: {attr_str}")
+        print(f"  Agility: {attr_agi}")
+        print(f"  Intelligence: {attr_int}")
+        print(f"  HP: {attr_hp}")
+        print(f"  Skill Slot: {skill_slot}")
+        print(f"  Skill Dice ID: {skill_dice_id}")
+        print(f"  Texture: {texture}")
+        print(f"  Portrait: {portrait}")
+        
+        hero = {
+            'id': hero_id,
+            'name': name,
+            'attr_str': attr_str,
+            'attr_agi': attr_agi,
+            'attr_int': attr_int,
+            'attr_hp': attr_hp,
+            'skill_slot': skill_slot,
+            'skill_dice_id': skill_dice_id,
+            'texture': texture,
+            'portrait': portrait
+        }
+        
+        heroes.append(hero)
+        print(f"  ✓ Added hero: {hero_id}")
+    
+    output = {
+        'heroes': heroes
+    }
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    
+    print()
+    print("=" * 50)
+    print("✓ Hero conversion completed successfully!")
+    print(f"  Total heroes: {len(heroes)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+    
+    return True
+
+
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -255,6 +463,32 @@ if __name__ == '__main__':
             json_file = sys.argv[3]
         
         success = convert_skill_dices_csv_to_json(csv_file, json_file)
+        
+        if not success:
+            sys.exit(1)
+    elif len(sys.argv) > 1 and sys.argv[1] == '--attr-dices':
+        csv_file = os.path.join(script_dir, '..', 'table', 'AttrDices.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'AttrDices.json')
+        
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+        
+        success = convert_attr_dices_csv_to_json(csv_file, json_file)
+        
+        if not success:
+            sys.exit(1)
+    elif len(sys.argv) > 1 and sys.argv[1] == '--hero':
+        csv_file = os.path.join(script_dir, '..', 'table', 'hero.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'hero.json')
+        
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+        
+        success = convert_hero_csv_to_json(csv_file, json_file)
         
         if not success:
             sys.exit(1)

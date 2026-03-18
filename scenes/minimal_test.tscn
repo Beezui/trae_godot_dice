@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[node name="minimal_test" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = BoxMesh {
+	size = Vector3(1, 1, 1)
+}

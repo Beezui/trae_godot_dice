@@ -2,7 +2,7 @@
 
 ## 基本信息
 - **创建日期**: 2026-03-03
-- **修改日期**: 2026-03-04
+- **修改日期**: 2026-03-17
 - **场景文件**: `res://scenes/dice_demo_simple_final.tscn`
 - **用途**: 作为日后创建新场景的标准模板
 
@@ -68,7 +68,7 @@
 #### 顶部碰撞
 - **说明**：已移除顶部碰撞形状，避免阻挡骰子下落
 - **原因**：顶部碰撞会阻挡骰子正常落到地面
-- **代码位置**：在 `dice_demo_script.gd` 第 160-162 行已注释掉
+- **代码位置**：在场景脚本中已实现
 
 ### 碰撞区域
 - **碰撞高度**: 50 (墙壁碰撞形状高度)
@@ -233,12 +233,10 @@ func _ready():
 		# 创建北墙碰撞形状（屏幕上方，z轴负方向）
 		var wall_north = sandbox.get_node("WallNorth")
 		if wall_north:
-			var wall_north_collision = wall_north.get_node("CollisionShape3D")
-			if wall_north_collision:
-				var wall_north_shape = BoxShape3D.new()
-				wall_north_shape.size = Vector3(sandbox_width, 50, 0.1)
-				wall_north.position = Vector3(0, 21, -sandbox_height/2)
-				wall_north_collision.shape = wall_north_shape
+			var wall_north_shape = BoxShape3D.new()
+			wall_north_shape.size = Vector3(sandbox_width, 50, 0.1)
+			wall_north.position = Vector3(0, 21, -sandbox_height/2)
+			wall_north.shape = wall_north_shape
 		
 		# 创建北墙网格
 		var wall_north_mesh = MeshInstance3D.new()
@@ -255,12 +253,10 @@ func _ready():
 		# 创建南墙碰撞形状（屏幕下方，z轴正方向）
 		var wall_south = sandbox.get_node("WallSouth")
 		if wall_south:
-			var wall_south_collision = wall_south.get_node("CollisionShape3D")
-			if wall_south_collision:
-				var wall_south_shape = BoxShape3D.new()
-				wall_south_shape.size = Vector3(sandbox_width, 50, 0.1)
-				wall_south.position = Vector3(0, 21, sandbox_height/2)
-				wall_south_collision.shape = wall_south_shape
+			var wall_south_shape = BoxShape3D.new()
+			wall_south_shape.size = Vector3(sandbox_width, 50, 0.1)
+			wall_south.position = Vector3(0, 21, sandbox_height/2)
+			wall_south.shape = wall_south_shape
 		
 		# 创建南墙网格
 		var wall_south_mesh = MeshInstance3D.new()
@@ -277,12 +273,10 @@ func _ready():
 		# 创建东墙碰撞形状（屏幕右侧，x轴正方向）
 		var wall_east = sandbox.get_node("WallEast")
 		if wall_east:
-			var wall_east_collision = wall_east.get_node("CollisionShape3D")
-			if wall_east_collision:
-				var wall_east_shape = BoxShape3D.new()
-				wall_east_shape.size = Vector3(0.1, 50, sandbox_height)
-				wall_east.position = Vector3(sandbox_width/2, 21, 0)
-				wall_east_collision.shape = wall_east_shape
+			var wall_east_shape = BoxShape3D.new()
+			wall_east_shape.size = Vector3(0.1, 50, sandbox_height)
+			wall_east.position = Vector3(sandbox_width/2, 21, 0)
+			wall_east.shape = wall_east_shape
 		
 		# 创建东墙网格
 		var wall_east_mesh = MeshInstance3D.new()
@@ -299,12 +293,10 @@ func _ready():
 		# 创建西墙碰撞形状（屏幕左侧，x轴负方向）
 		var wall_west = sandbox.get_node("WallWest")
 		if wall_west:
-			var wall_west_collision = wall_west.get_node("CollisionShape3D")
-			if wall_west_collision:
-				var wall_west_shape = BoxShape3D.new()
-				wall_west_shape.size = Vector3(0.1, 50, sandbox_height)
-				wall_west.position = Vector3(-sandbox_width/2, 21, 0)
-				wall_west_collision.shape = wall_west_shape
+			var wall_west_shape = BoxShape3D.new()
+			wall_west_shape.size = Vector3(0.1, 50, sandbox_height)
+			wall_west.position = Vector3(-sandbox_width/2, 21, 0)
+			wall_west.shape = wall_west_shape
 		
 		# 创建西墙网格
 		var wall_west_mesh = MeshInstance3D.new()
@@ -323,9 +315,47 @@ func _ready():
 	ProjectSettings.set_setting("physics/3d/default_gravity", 39.2)  # 4倍重力加速度，加快下落速度
 ```
 
+## 场景文件结构
+
+### 基础节点结构
+```
+- Node3D (主节点)
+  - Camera3D (摄像机)
+  - DirectionalLight3D (光源)
+  - Sandbox (StaticBody3D)
+    - Ground (CollisionShape3D)
+    - GroundMesh (MeshInstance3D)
+    - WallNorth (CollisionShape3D)
+    - WallSouth (CollisionShape3D)
+    - WallEast (CollisionShape3D)
+    - WallWest (CollisionShape3D)
+  - DiceManager (Node3D)
+```
+
+### 场景文件配置
+- **摄像机**: 位置 (0, 60, 0), 旋转 (-PI/2, 0, 0), FOV 15.0
+- **光源**: 位置 (10, 10, 10), 旋转 Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5)
+- **地面**: 位置 (0, -4, 0), 碰撞形状 BoxShape3D
+- **墙壁**: 位置与地面对齐 (y=-4)，碰撞形状高度 50
+
+## 继承方法
+
+### 创建新场景步骤
+1. 复制 `dice_demo_simple_final.tscn` 作为基础
+2. 修改场景名称和主节点脚本
+3. 保留相同的节点结构和配置
+4. 根据需要添加特定功能的节点
+
+### 脚本继承
+- 新场景脚本应继承 `Node3D`
+- 保留摄像机、灯光、沙盘的配置代码
+- 根据场景功能添加特定逻辑
+- 确保骰子初始化位置和投掷逻辑与模板一致
+
 ## 优化建议
 1. 可根据不同场景需求调整摄像机位置和FOV
 2. 可根据游戏风格调整墙壁和地面材质
 3. 可添加环境光和其他光源以增强视觉效果
 4. 可根据需要调整骰子物理参数以获得更佳的滚动效果
 5. 可添加音效和粒子效果以增强用户体验
+6. 确保所有新场景都遵循此模板的坐标系和配置规范
