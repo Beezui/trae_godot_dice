@@ -331,6 +331,121 @@ def convert_attr_dices_csv_to_json(csv_path, json_path):
     return True
 
 
+def convert_num_dices_csv_to_json(csv_path, json_path):
+    """将 NumDices.csv 转换为 JSON 格式"""
+    
+    print("=" * 50)
+    print("Num Dices CSV to JSON Converter")
+    print("=" * 50)
+    print()
+    
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+    
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+    
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+    
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+    
+    num_dices = []
+    
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+        
+        print(f"Processing line {i+1}...")
+        
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+        
+        if len(values) < 4:
+            print(f"  ✗ Warning: Insufficient columns, skipping")
+            continue
+        
+        dice_id = values[0].strip()
+        face_count = int(values[1].strip()) if values[1].strip().isdigit() else 6
+        values_str = values[2].strip()
+        textures_str = values[3].strip()
+        
+        print(f"  Dice ID: {dice_id}")
+        print(f"  Face Count: {face_count}")
+        
+        # 解析点数（处理引号内的逗号）- 使用数组格式
+        values = []
+        if values_str:
+            # 移除引号
+            values_str = values_str.strip('"')
+            value_array = values_str.split(',')
+            for idx in range(len(value_array)):
+                values.append(int(value_array[idx].strip()))
+        
+        print(f"  Values: {values}")
+        
+        # 解析贴图 ID（处理引号内的逗号）- 使用数组格式
+        textures = []
+        if textures_str:
+            # 移除引号
+            textures_str = textures_str.strip('"')
+            texture_array = textures_str.split(',')
+            for idx in range(len(texture_array)):
+                texture_id = texture_array[idx].strip()
+                texture_name = "dice_face_" + texture_id
+                texture_path = "res://textures/dice/" + texture_name + ".png"
+                textures.append(texture_path)
+        
+        print(f"  Textures: {textures}")
+        
+        num_dice = {
+            'id': dice_id,
+            'face_count': face_count,
+            'values': values,
+            'textures': textures
+        }
+        
+        num_dices.append(num_dice)
+        print(f"  ✓ Added num dice: {dice_id}")
+    
+    output = {
+        'num_dices': num_dices
+    }
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    
+    print()
+    print("=" * 50)
+    print("✓ Num Dices conversion completed successfully!")
+    print(f"  Total num dices: {len(num_dices)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+    
+    return True
+
+
 def convert_hero_csv_to_json(csv_path, json_path):
     """将 hero.csv 转换为 JSON 格式"""
     
@@ -401,7 +516,7 @@ def convert_hero_csv_to_json(csv_path, json_path):
         attr_int = [s.strip() for s in values[4].strip().strip('"').split(';')] if values[4].strip() else []
         attr_hp = values[5].strip()
         skill_slot = values[6].strip()
-        # skill_dice_id现在是个数组
+        # skill_dice_id 现在是个数组
         skill_dice_id = [s.strip() for s in values[7].strip().strip('"').split(';')] if values[7].strip() else []
         texture = [s.strip() for s in values[8].strip().strip('"').split(';')] if values[8].strip() else []
         portrait = values[9].strip()
@@ -453,7 +568,20 @@ def convert_hero_csv_to_json(csv_path, json_path):
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    if len(sys.argv) > 1 and sys.argv[1] == '--skill-dices':
+    if len(sys.argv) > 1 and sys.argv[1] == '--num-dices':
+        csv_file = os.path.join(script_dir, '..', 'table', 'NumDices.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'NumDices.json')
+        
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+        
+        success = convert_num_dices_csv_to_json(csv_file, json_file)
+        
+        if not success:
+            sys.exit(1)
+    elif len(sys.argv) > 1 and sys.argv[1] == '--skill-dices':
         csv_file = os.path.join(script_dir, '..', 'table', 'SkillDices.csv')
         json_file = os.path.join(script_dir, '..', 'table', 'SkillDices.json')
         

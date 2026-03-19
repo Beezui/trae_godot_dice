@@ -1,9 +1,9 @@
 extends Node3D
 
-@export var dice_count: int = 2  # 默认2个骰子
-@export var max_dice_count: int = 6  # 最大6个骰子
+@export var dice_count: int = 2  # 默认 2 个骰子
+@export var max_dice_count: int = 6  # 最大 6 个骰子
 @export var dice_scene: PackedScene  # 骰子场景
-@export var current_scene: String = "normal"  # 当前场景
+@export var current_scene: String = "1001"  # 当前场景（默认使用 1001 配置）
 
 var dice_csv_reader
 
@@ -36,9 +36,15 @@ func initialize_dice_pool():
 	dice_count = clamp(dice_count, 1, max_dice_count)
 	
 	# 获取当前骰子配置
+	print("【DiceManager】加载场景配置：", current_scene)
 	var dice_config = dice_csv_reader.get_num_dice_config(current_scene)
+	if dice_config.is_empty():
+		print("【警告】场景配置为空，current_scene=", current_scene)
+		print("【警告】可用配置：", dice_csv_reader.get_all_num_dice_ids())
 	var scene_config = dice_config.get("textures", {})
 	var value_config = dice_config.get("values", {})
+	print("【DiceManager】scene_config=", scene_config)
+	print("【DiceManager】value_config=", value_config)
 	
 	# 强制加载正确的骰子场景
 	var dice_scene_path = "res://scenes/dice_6.tscn"
@@ -51,7 +57,7 @@ func initialize_dice_pool():
 	for i in range(dice_count):
 		var dice = dice_scene.instantiate()
 		if dice:
-			print("Dice instance type:", dice.get_class())
+			print("【DiceManager】创建骰子 ", i, ", 类型=", dice.get_class())
 			dice.name = "Dice_%d" % i
 			add_child(dice)
 			dice_instances.append(dice)
@@ -64,9 +70,13 @@ func initialize_dice_pool():
 				print("Error: Dice is not RigidBody3D, cannot set physics properties")
 			dice.visible = true
 			
-			# 应用当前场景配置
-			if dice.has_method("set_dice_face_config"):
-				dice.set_dice_face_config(scene_config, value_config)
+			# 使用 DiceTextureManager 应用贴图配置
+			print("【DiceManager】使用贴图管理器应用配置到骰子 ", i)
+			if DiceTextureManager:
+				DiceTextureManager.apply_textures_to_dice(dice, scene_config)
+				print("已应用贴图配置：textures=%s" % scene_config)
+			else:
+				print("错误：DiceTextureManager 不存在")
 			
 			# 设置初始位置，沿着水平方向并排排列
 			var spacing = 1.5  # 骰子间距

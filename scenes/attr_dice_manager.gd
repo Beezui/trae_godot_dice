@@ -23,7 +23,7 @@ func create_attribute_dice(hero_id: int, attr_type: String, scene: Node = null) 
 		"attr_int": hero_info.get("attr_int", [10, 20, 30, 40, 50, 60])
 	}
 	
-	# 处理texture字段
+	# 处理 texture 字段
 	var hero_textures = []
 	var texture_data = hero_info.get("texture", [])
 	if typeof(texture_data) == TYPE_ARRAY:

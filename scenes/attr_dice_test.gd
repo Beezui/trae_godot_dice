@@ -11,6 +11,9 @@ var start_timer: Timer
 var is_in_initial_state = true
 var base_width = 24.0  # 基础宽度（屏幕水平方向）
 var base_height = 13.5   # 基础高度（屏幕竖直方向）
+var is_charging: bool = false  # 是否正在蓄力
+var original_positions: Dictionary = {}  # 存储骰子原始位置用于震动
+var global_time: float = 0.0  # 添加全局时间变量
 
 func _ready():
 	# 打印场景初始化信息
@@ -218,18 +221,11 @@ func create_attribute_dices():
 	print("Created ", attr_dices.size(), " attribute dices")
 
 func throw_dice():
-	# 投掷所有属性骰子
-	for dice in attr_dices:
-		if dice and is_instance_valid(dice):
-			# 根据文档要求，投掷方向：随机-45°到45°，朝向屏幕上方（z轴负方向）
-			var force = Vector3(
-				randf_range(-5, 5),
-				randf_range(5, 10),
-				randf_range(-10, -2)  # 确保朝向屏幕上方（z轴负方向）
-			)
-			dice.roll(force)
+	# ✅ 使用统一的投掷控制器进行普通投掷
+	var dices = attr_dices
+	DiceThrowController.throw_normal(dices, 1.0)
 	
-	# 3秒后检查结果
+	# 3 秒后检查结果
 	var result_timer = Timer.new()
 	result_timer.wait_time = 3.0
 	result_timer.one_shot = true
@@ -270,15 +266,46 @@ func update_hero_attributes():
 	attr_dice_manager.update_hero_attributes(test_hero_id)
 	print("Updated hero attributes for hero ", test_hero_id)
 
+func _process(delta):
+	# 更新全局时间 (如果需要)
+	global_time += delta
+	
+	# 蓄力阶段
+	if is_charging and is_in_initial_state:
+		# ✅ 使用统一的投掷控制器更新蓄力
+		var charge_ratio = DiceThrowController.update_charge(delta)
+		
+		# ✅ 使用统一的震动效果
+		DiceThrowController.apply_shake(attr_dices, original_positions, charge_ratio, delta)
+
 func _input(event):
-	# 按空格键手动投掷骰子
+	# 空格键开始蓄力
 	if event.is_action_pressed("ui_accept") and is_in_initial_state:
-		throw_dice()
-		# 标记为非初始状态
+		is_charging = true
+		# ✅ 使用统一的投掷控制器开始蓄力
+		DiceThrowController.start_charge()
+		
+		# 记录骰子的初始位置
+		original_positions.clear()
+		for dice in attr_dices:
+			if dice and is_instance_valid(dice):
+				original_positions[dice] = dice.position
+		print("开始蓄力...")
+	
+	# 空格键松开，投掷骰子
+	elif event.is_action_released("ui_accept") and is_charging:
+		is_charging = false
+		# ✅ 使用统一的投掷控制器结束蓄力并投掷
+		DiceThrowController.end_charge(attr_dices)
+		
+		# 清空原始位置
+		original_positions.clear()
+		print("投掷属性骰子！")
 		is_in_initial_state = false
-	# 按R键重置骰子
+	
+	# 按 R 键重置骰子
 	if event.is_action_pressed("ui_cancel"):
 		reset_dice()
-	# 按U键更新英雄属性
+	# 按 U 键更新英雄属性
 	if event.is_action_pressed("ui_up"):
 		update_hero_attributes()

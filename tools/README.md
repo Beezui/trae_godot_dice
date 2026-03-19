@@ -4,6 +4,7 @@
 
 本工具用于将游戏中的各种 CSV 配置文件转换为 JSON 格式，解决 CSV 编码问题并提供更好的数据结构支持。支持转换的文件包括：
 - `skill.csv` → `skill.json`（技能配置）
+- `NumDices.csv` → `NumDices.json`（数字骰子配置）
 - `SkillDices.csv` → `SkillDices.json`（技能骰子配置）
 - `AttrDices.csv` → `AttrDices.json`（属性骰子配置）
 - `hero.csv` → `hero.json`（英雄角色配置）
@@ -33,6 +34,9 @@ res://tools/
    # 导出技能配置表
    python convert_skill_csv_to_json.py
    
+   # 导出数字骰子表
+   python convert_skill_csv_to_json.py --num-dices
+   
    # 导出技能骰子表
    python convert_skill_csv_to_json.py --skill-dices
    
@@ -44,6 +48,7 @@ res://tools/
    ```
 3. **自动转换**：
    - 导出技能配置：读取 `res://table/skill.csv` → 转换为 `res://table/skill.json`
+   - 导出数字骰子：读取 `res://table/NumDices.csv` → 转换为 `res://table/NumDices.json`
    - 导出技能骰子：读取 `res://table/SkillDices.csv` → 转换为 `res://table/SkillDices.json`
    - 导出属性骰子：读取 `res://table/AttrDices.csv` → 转换为 `res://table/AttrDices.json`
    - 导出英雄角色：读取 `res://table/hero.csv` → 转换为 `res://table/hero.json`
@@ -52,6 +57,7 @@ res://tools/
 4. **查看结果**：
    - 转换成功后，打开相应的 JSON 文件查看结果：
      - 技能配置：`res://table/skill.json`
+     - 数字骰子：`res://table/NumDices.json`
      - 技能骰子：`res://table/SkillDices.json`
      - 属性骰子：`res://table/AttrDices.json`
      - 英雄角色：`res://table/hero.json`

@@ -18,6 +18,9 @@ config/icon="res://icon.svg"
 [autoload]
 
 SkillManager="*res://skills/skill_manager.gd"
+DiceTextureManager="*res://scripts/dice/dice_texture_manager.gd"
+DiceThrowController="*res://scripts/dice/dice_throw_controller.gd"
+DiceResultDetector="*res://scripts/dice/dice_result_detector.gd"
 
 [editor_plugins]
 

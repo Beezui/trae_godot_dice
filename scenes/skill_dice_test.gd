@@ -9,10 +9,13 @@ extends Node3D
 @onready var target_dice2 = $TargetDice2
 @onready var marker = $Marker3D
 
-@onready var power_dice = $AttributeDices/PowerDice
-@onready var agility_dice = $AttributeDices/AgilityDice
-@onready var intelligence_dice = $AttributeDices/IntelligenceDice
 @onready var charge_label = $ChargeLabel
+
+# 属性骰子管理器
+var attr_dice_manager = null
+var power_dice = null
+var agility_dice = null
+var intelligence_dice = null
 
 var base_width = 24.0
 var base_height = 13.5
@@ -28,27 +31,27 @@ var is_skill_active: bool = false
 var current_skill_id: String = "10001"
 var skill_attribute_dice: Dictionary = {}
 
-var is_preparation_mode: bool = true
 var is_charging: bool = false
-var charge_start_time: float = 0
-var charge_power: float = 0
-var max_charge_time: float = 2.0
-var max_charge_power: float = 20.0
+var is_preparation_mode: bool = true
+var original_positions: Dictionary = {}
 
+# 兼容旧代码的变量 (已废弃，保留以避免编译错误)
 var dices_thrown: bool = false
 var dice_are_stopping: bool = false
+var all_dices_stopped: bool = false
 var global_time: float = 0.0
-var original_positions: Dictionary = {}
 
 var skill_dice_result: int = 0
 var skill_dice_result_id: String = ""
-var all_dices_stopped: bool = false
 
 
 func _ready():
 	dice_csv_reader = preload("res://scripts/dice_csv_reader.gd").new()
 	skill_csv_reader = preload("res://scripts/skill_csv_reader.gd").new()
 	skill_system = preload("res://scripts/skill_system.gd").new()
+	
+	# 初始化属性骰子管理器（使用全局单例）
+	attr_dice_manager = $AttributeDiceManager
 	
 	_load_skill_config()
 	
@@ -191,42 +194,31 @@ func _setup_sandbox():
 
 
 func _setup_attribute_dices():
-	var dice_list = [power_dice, agility_dice, intelligence_dice]
-	var positions = [
-		Vector3(-2, 4, 6),
-		Vector3(0, 4, 6),
-		Vector3(2, 4, 6)
-	]
+	# 使用 attr_dice_manager 创建正式的属性骰子（参考 attr_dice_test.tscn）
+	var test_hero_id = 1  # 使用 hero id: 1
 	
-	var power_config = dice_csv_reader.get_num_dice_config("1001")
-	var agility_config = dice_csv_reader.get_num_dice_config("1002")
-	var intelligence_config = dice_csv_reader.get_num_dice_config("1001")
+	# 力量骰子
+	power_dice = attr_dice_manager.create_attribute_dice(test_hero_id, "str", self)
+	if power_dice:
+		power_dice.position = Vector3(-2, 4, 6)
+		power_dice.gravity_scale = 0.0  # 初始时禁用重力，使骰子悬浮
+		power_dice.visible = true
 	
-	for i in range(dice_list.size()):
-		var dice = dice_list[i]
-		if dice and is_instance_valid(dice):
-			dice.position = positions[i]
-			dice.visible = true
-			dice.gravity_scale = 0.0
-			dice.linear_velocity = Vector3.ZERO
-			dice.angular_velocity = Vector3.ZERO
-			if dice.has_method("set_freeze"):
-				dice.set_freeze(true)
-			elif "freeze" in dice:
-				dice.freeze = true
-			
-			var config = null
-			if i == 0:
-				config = power_config
-			elif i == 1:
-				config = agility_config
-			else:
-				config = intelligence_config
-			
-			if config and dice.has_method("set_dice_face_config"):
-				var texture_config = config.get("textures", {})
-				var value_config = config.get("values", {})
-				dice.set_dice_face_config(texture_config, value_config)
+	# 敏捷骰子
+	agility_dice = attr_dice_manager.create_attribute_dice(test_hero_id, "agi", self)
+	if agility_dice:
+		agility_dice.position = Vector3(0, 4, 6)
+		agility_dice.gravity_scale = 0.0
+		agility_dice.visible = true
+	
+	# 智力骰子
+	intelligence_dice = attr_dice_manager.create_attribute_dice(test_hero_id, "int", self)
+	if intelligence_dice:
+		intelligence_dice.position = Vector3(2, 4, 6)
+		intelligence_dice.gravity_scale = 0.0
+		intelligence_dice.visible = true
+	
+	print("【属性骰子】创建了 ", 3, " 个属性骰子（使用 attr_dice_manager）")
 
 
 func _setup_skill_dice():
@@ -329,6 +321,7 @@ func reset_scene():
 			dice.angular_velocity = Vector3.ZERO
 			dice.freeze = true
 	
+	# 重置属性骰子位置（由 attr_dice_manager 创建）
 	var attr_dices = [power_dice, agility_dice, intelligence_dice, skill_dice]
 	var positions = [
 		Vector3(-2, 4, 6),
@@ -336,10 +329,6 @@ func reset_scene():
 		Vector3(2, 4, 6),
 		Vector3(-4, 4, 6)
 	]
-	
-	var power_config = dice_csv_reader.get_num_dice_config("1001")
-	var agility_config = dice_csv_reader.get_num_dice_config("1002")
-	var intelligence_config = dice_csv_reader.get_num_dice_config("1001")
 	
 	for i in range(attr_dices.size()):
 		var dice = attr_dices[i]
@@ -353,39 +342,11 @@ func reset_scene():
 				dice.set_freeze(true)
 			elif "freeze" in dice:
 				dice.freeze = true
-			
-			var config = null
-			if i == 0:
-				config = power_config
-			elif i == 1:
-				config = agility_config
-			elif i == 2:
-				config = intelligence_config
-			elif i == 3:
-				config = dice_csv_reader.get_skill_dice_config("4001")
-				if not config.is_empty():
-					var skill_ids = config.get("skill_ids", [])
-					var texture_config = {}
-					for j in range(6):
-						if j < skill_ids.size():
-							var skill_id = skill_ids[j]
-							texture_config[j] = "res://textures/skill/skill_" + skill_id + ".png"
-					var value_config = {}
-					for j in range(6):
-						value_config[j] = j + 1
-					if texture_config.size() > 0 and dice.has_method("set_dice_face_config"):
-						dice.set_dice_face_config(texture_config, value_config)
-				continue
-			
-			if config and dice.has_method("set_dice_face_config"):
-				var texture_config = config.get("textures", {})
-				var value_config = config.get("values", {})
-				dice.set_dice_face_config(texture_config, value_config)
 	
-	print("【重置】力量骰=%d | 敏捷骰=%d | 智力骰=%d | 技能骰=%d" % [
-		power_dice.get_dice_value() if power_dice else 0,
-		agility_dice.get_dice_value() if agility_dice else 0,
-		intelligence_dice.get_dice_value() if intelligence_dice else 0,
+	print("【重置】力量骰=%s | 敏捷骰=%s | 智力骰=%s | 技能骰=%d" % [
+		power_dice.get_attribute_value() if power_dice else "0",
+		agility_dice.get_attribute_value() if agility_dice else "0",
+		intelligence_dice.get_attribute_value() if intelligence_dice else "0",
 		skill_dice.get_dice_value() if skill_dice else 0
 	])
 
@@ -395,120 +356,86 @@ func _input(event):
 		if event.keycode == KEY_1 and event.pressed:
 			reset_scene()
 		
-		if event.keycode == KEY_SPACE and event.pressed and is_preparation_mode and not dices_thrown and not is_charging and not dice_are_stopping:
+		# 空格键开始蓄力
+		if event.keycode == KEY_SPACE and event.pressed and is_preparation_mode and not is_charging:
 			start_charging()
 		
+		# 空格键松开投掷
 		if event.keycode == KEY_SPACE and not event.pressed and is_charging:
 			throw_all_battle_dices()
 
 
 func start_charging():
 	is_charging = true
-	charge_start_time = Time.get_ticks_msec()
-	charge_power = 0
-	global_time = 0.0
+	# ✅ 使用统一的投掷控制器开始蓄力
+	DiceThrowController.start_charge()
 	
+	# 记录骰子的初始位置
 	original_positions.clear()
-	var dice_list = [power_dice, agility_dice, intelligence_dice, skill_dice]
-	for dice in dice_list:
+	for dice in [power_dice, agility_dice, intelligence_dice, skill_dice]:
 		if dice and is_instance_valid(dice):
-			original_positions[dice.get_path()] = dice.position
+			original_positions[dice] = dice.position
+	
+	print("开始蓄力...")
 
 
 func _process(delta):
 	global_time += delta
 	
 	if is_charging:
-		var charge_duration = (Time.get_ticks_msec() - charge_start_time) / 1000.0
-		charge_power = min(charge_duration / max_charge_time, 1.0)
+		# ✅ 使用统一的投掷控制器更新蓄力
+		var charge_ratio = DiceThrowController.update_charge(delta)
 		
-		if charge_label:
-			var charge_percent = int(charge_power * 100)
-			charge_label.text = "蓄力：%d%%" % charge_percent
-		
-		var charge_ratio = charge_power
-		var shake_amplitude = charge_ratio * 0.05
-		var shake_frequency = 15.0 + (charge_ratio * 25.0)
-		
-		var time = global_time * shake_frequency
-		var shake_offset = Vector3(
-			sin(time * 3.14159) * shake_amplitude,
-			sin(time * 3.14159 * 1.5) * shake_amplitude,
-			sin(time * 3.14159 * 2.0) * shake_amplitude
-		)
-		
+		# ✅ 使用统一的震动效果
 		var dice_list = [power_dice, agility_dice, intelligence_dice, skill_dice]
-		for dice in dice_list:
-			if dice and is_instance_valid(dice):
-				var dice_path = dice.get_path()
-				if original_positions.has(dice_path):
-					dice.position = original_positions[dice_path] + shake_offset
-		
-		if charge_power >= 1.0:
-			pass
+		DiceThrowController.apply_shake(dice_list, original_positions, charge_ratio, delta)
 
 
 func throw_all_battle_dices():
 	is_charging = false
-	dice_are_stopping = true
-	dices_thrown = true
-	original_positions.clear()
+	var charge_ratio = DiceThrowController.get_charge_ratio()
+	print("【投掷】蓄力比例：", charge_ratio)
 	
-	var charge_duration = (Time.get_ticks_msec() - charge_start_time) / 1000.0
-	charge_power = min(charge_duration / max_charge_time, 1.0)
+	# ✅ 使用统一的投掷控制器结束蓄力并投掷
+	var dice_list = [power_dice, agility_dice, intelligence_dice, skill_dice]
+	
+	# 检查骰子是否有效并解除 freeze
+	for dice in dice_list:
+		if not dice or not is_instance_valid(dice):
+			print("警告：骰子无效！")
+		else:
+			# 解除 freeze 状态
+			if dice.has_method("set_freeze"):
+				dice.set_freeze(false)
+			elif "freeze" in dice:
+				dice.freeze = false
+			
+			# 重置物理状态
+			dice.linear_velocity = Vector3.ZERO
+			dice.angular_velocity = Vector3.ZERO
+			dice.sleeping = false
+			
+			print("骰子已解除 freeze: ", dice.name, ", 位置=", dice.position)
+	
+	# 使用 DiceThrowController 投掷
+	DiceThrowController.end_charge(dice_list)
+	
+	# 清空原始位置
+	original_positions.clear()
+	print("投掷战斗骰子！")
 	
 	for dice in [skill_dice]:
 		if dice and is_instance_valid(dice):
 			dice.skip_skill_trigger = false
-	
-	throw_all_dices_with_charge(charge_power)
 	
 	await get_tree().create_timer(1.0).timeout
 	wait_for_all_dices_stopped()
 
 
 func throw_all_dices_with_charge(charge_ratio: float):
-	var all_dices = [power_dice, agility_dice, intelligence_dice, skill_dice]
-	
-	var max_force = 20.0
-	var min_force_ratio = 0.3
-	var force_magnitude = (min_force_ratio + (charge_ratio * (1.0 - min_force_ratio))) * max_force
-	
-	for dice in all_dices:
-		if dice and is_instance_valid(dice):
-			var angle = deg_to_rad(randf_range(-45, 45))
-			
-			var force = Vector3(
-				sin(angle) * 0.25 * force_magnitude,
-				(0.3 + (charge_ratio * 0.7)) * force_magnitude * 0.5,
-				-0.25 * force_magnitude
-			)
-			
-			var min_angular_force = 11.2
-			var max_angular_force = 31.5
-			var angular_force_magnitude = min_angular_force + (charge_ratio * (max_angular_force - min_angular_force))
-			
-			var x_rot = randf_range(-1.0, 1.0)
-			var y_rot = randf_range(-1.0, 1.0)
-			var z_rot = randf_range(-1.0, 1.0)
-			
-			if abs(x_rot) < 0.5:
-				x_rot = randf_range(0.5, 1.0) * sign(x_rot) if x_rot != 0 else 0.7
-			if abs(y_rot) < 0.5:
-				y_rot = randf_range(0.5, 1.0) * sign(y_rot) if y_rot != 0 else 0.7
-			if abs(z_rot) < 0.5:
-				z_rot = randf_range(0.5, 1.0) * sign(z_rot) if z_rot != 0 else 0.7
-			
-			var angular_force = Vector3(x_rot, y_rot, z_rot).normalized() * angular_force_magnitude
-			
-			dice.visible = true
-			dice.gravity_scale = 1.0
-			dice.freeze = false
-			dice.linear_velocity = force
-			dice.angular_velocity = angular_force
-			
-			if dice.has_method("roll"):
-				dice.roll(force, angular_force)
+	# ✅ 此方法已废弃，使用 DiceThrowController 替代
+	# 保留此空方法以避免编译错误，如有调用会自动忽略
+	pass
 
 
 func _check_dices_stable(all_dices: Array, check_count: int):
@@ -607,29 +534,29 @@ func check_battle_results():
 	if current_skill_attribute_dice.has("1"):
 		var attr_type = current_skill_attribute_dice["1"]
 		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
-			power_dice_result = power_dice.get_dice_value()
+			power_dice_result = int(power_dice.get_attribute_value())
 		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
-			agility_dice_result = agility_dice.get_dice_value()
+			agility_dice_result = int(agility_dice.get_attribute_value())
 		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
-			intelligence_dice_result = intelligence_dice.get_dice_value()
+			intelligence_dice_result = int(intelligence_dice.get_attribute_value())
 
 	if current_skill_attribute_dice.has("2"):
 		var attr_type = current_skill_attribute_dice["2"]
 		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
-			power_dice_result = power_dice.get_dice_value()
+			power_dice_result = int(power_dice.get_attribute_value())
 		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
-			agility_dice_result = agility_dice.get_dice_value()
+			agility_dice_result = int(agility_dice.get_attribute_value())
 		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
-			intelligence_dice_result = intelligence_dice.get_dice_value()
+			intelligence_dice_result = int(intelligence_dice.get_attribute_value())
 
 	if current_skill_attribute_dice.has("3"):
 		var attr_type = current_skill_attribute_dice["3"]
 		if attr_type == "力量" and power_dice and is_instance_valid(power_dice):
-			power_dice_result = power_dice.get_dice_value()
+			power_dice_result = int(power_dice.get_attribute_value())
 		elif attr_type == "敏捷" and agility_dice and is_instance_valid(agility_dice):
-			agility_dice_result = agility_dice.get_dice_value()
+			agility_dice_result = int(agility_dice.get_attribute_value())
 		elif attr_type == "智力" and intelligence_dice and is_instance_valid(intelligence_dice):
-			intelligence_dice_result = intelligence_dice.get_dice_value()
+			intelligence_dice_result = int(intelligence_dice.get_attribute_value())
 	
 	if skill_dice and is_instance_valid(skill_dice):
 		var skill_dice_config = dice_csv_reader.get_skill_dice_config("4001")
@@ -686,13 +613,13 @@ func _check_dice_state_after_skill():
 		var intelligence_val = 0
 		
 		if power_dice and is_instance_valid(power_dice):
-			power_val = power_dice.get_dice_value()
+			power_val = int(power_dice.get_attribute_value())
 		if agility_dice and is_instance_valid(agility_dice):
-			agility_val = agility_dice.get_dice_value()
+			agility_val = int(agility_dice.get_attribute_value())
 		if intelligence_dice and is_instance_valid(intelligence_dice):
-			intelligence_val = intelligence_dice.get_dice_value()
+			intelligence_val = int(intelligence_dice.get_attribute_value())
 		
-		print("【技能释放后检测】骰面索引=%d | 技能ID=%s | 力量=%d | 敏捷=%d | 智力=%d" % [dice_value, current_skill_id, power_val, agility_val, intelligence_val])
+		print("【技能释放后检测】骰面索引=%d | 技能 ID=%s | 力量=%d | 敏捷=%d | 智力=%d" % [dice_value, current_skill_id, power_val, agility_val, intelligence_val])
 
 
 func get_skill_dice() -> RigidBody3D:

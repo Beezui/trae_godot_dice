@@ -5,6 +5,7 @@ extends RigidBody3D
 @export var attr_values: Array = []
 @export var attr_textures: Array = []
 @export var attr_color: Color = Color(1, 1, 1, 1)
+@export var points_color: Color = Color.BLACK  # 属性数值文字颜色
 
 var is_rolling: bool = false
 var roll_timer: Timer
@@ -116,76 +117,72 @@ func init_dice_model():
 		create_fallback_mesh()
 
 func apply_dice_textures(mesh_instance):
-	# 为骰子应用材质
+	# 使用 DiceTextureManager 统一管理属性骰子贴图
+	# 构建配置字典（使用新格式：hero.json 格式）
+	var config = {
+		"hero_id": hero_id,
+		"attr_type": attr_type,
+		"values": attr_values,
+		"textures": attr_textures,
+		"points_color": points_color  # 传递文字颜色配置
+	}
 	
+	# 调用 DiceTextureManager 应用贴图
+	if DiceTextureManager.get_instance():
+		DiceTextureManager.get_instance().apply_textures_to_dice(self, config)
+		print("【属性骰子】使用 DiceTextureManager 统一管理贴图，文字颜色：", points_color)
+	else:
+		# 备用方案：如果 DiceTextureManager 不可用，使用本地方法
+		print("【属性骰子】警告：DiceTextureManager 不可用，使用本地方法")
+		_apply_dice_textures_local(mesh_instance)
+
+
+# 备用方法：本地贴图应用（仅在 DiceTextureManager 不可用时使用）
+func _apply_dice_textures_local(mesh_instance):
 	# 尝试加载静态贴图
 	var static_texture = null
 	if attr_textures.size() > 0 and attr_textures[0] and not attr_textures[0].is_empty():
 		var texture_path = "res://textures/hero/hero_" + attr_textures[0] + ".png"
-		print("Loading texture from path: ", texture_path)
+		print("【本地方法】加载贴图：", texture_path)
 		static_texture = load(texture_path)
-		if static_texture:
-			print("Successfully loaded texture: ", texture_path)
-		else:
-			print("Failed to load texture: ", texture_path)
 	
-	# 获取骰面的实际尺寸
+	# 获取骰面尺寸
 	var face_size = Vector2i(512, 512)
 	if mesh_instance and mesh_instance.mesh:
-		# 获取网格的边界框
 		var aabb = mesh_instance.mesh.get_aabb()
-		# 使用 AABB 的 x 和 y 尺寸作为骰面尺寸
 		face_size = Vector2i(int(aabb.size.x), int(aabb.size.y))
-		print("Dice face AABB size: ", face_size)
 	
 	# 为每个面创建动态纹理和材质
 	var materials = []
 	for i in range(6):
-		# 获取对应面的属性值
 		var attr_value = "0"
 		if i < attr_values.size():
 			attr_value = format_attribute_value(attr_values[i])
 		
-		# 创建包含属性文字的动态纹理
+		# 使用本地方法创建动态纹理
 		var dynamic_texture = create_face_texture(i, static_texture, attr_value, face_size)
 		
-		# 创建材质
 		var material = StandardMaterial3D.new()
 		material.roughness = 0.8
 		material.metallic = 0.0
 		
 		if dynamic_texture:
-			# 使用动态纹理
 			material.albedo_texture = dynamic_texture
-			# 设置UV变换为默认值
 			material.uv1_scale = Vector3(1, 1, 1)
 			material.uv1_offset = Vector3(0, 0, 0)
-			# 设置纹理过滤
 			material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 		else:
-			# 没有贴图，使用彩色材质
 			material.albedo_color = get_attr_color()
-			print("Using fallback color for face ", i, ": ", material.albedo_color)
 		
 		materials.append(material)
 	
 	# 应用材质到网格
 	if mesh_instance and mesh_instance.mesh:
 		var surface_count = mesh_instance.mesh.get_surface_count()
-		print("Applying materials to mesh with ", surface_count, " surfaces")
-		
-		# 为每个表面应用材质
 		for i in range(min(6, surface_count, materials.size())):
 			if i < materials.size():
 				mesh_instance.mesh.surface_set_material(i, materials[i])
-				print("Applied material ", i, " to surface ", i)
-		print("Applied per-face materials to dice model")
-		
-		# 确保网格可见
 		mesh_instance.visible = true
-		print("Mesh visibility set to true")
-	else:
-		print("Error: mesh_instance or mesh is null")
 
 func create_face_texture(face_index: int, static_texture: Texture2D, dynamic_text: String, face_size: Vector2i) -> Texture2D:
 	# 创建一个 SubViewport 用于生成动态纹理
@@ -580,7 +577,7 @@ func set_controlled_result(value: int):
 		print("Set controlled result: ", value)
 
 func update_attributes(hero_attributes: Dictionary, hero_textures: Array):
-	# 更新属性值和贴图
+	# 更新属性值
 	match attr_type:
 		"str":
 			attr_values = _convert_to_int_array(hero_attributes.get("attr_str", [10, 20, 30, 40, 50, 60]))
@@ -594,11 +591,58 @@ func update_attributes(hero_attributes: Dictionary, hero_textures: Array):
 	# 更新贴图
 	attr_textures = hero_textures
 	
+	# 从 attr_dices.json 读取文字颜色配置
+	_update_points_color_from_config()
+	
 	# 更新骰子贴图
 	update_dice_textures()
 	print("Updated attribute dice: ", attr_type, " for hero ", hero_id)
 	print("Attribute values: ", attr_values)
 	print("Texture paths: ", attr_textures)
+	print("Points color: ", points_color)
+
+
+func _update_points_color_from_config():
+	# 从 attr_dices.json 读取文字颜色配置
+	var DiceCSVReaderClass = load("res://scripts/dice_csv_reader.gd")
+	var dice_csv_reader = DiceCSVReaderClass.new()
+	var attr_dices_config = dice_csv_reader.load_attr_dices()
+	
+	# 检查配置是否有效（空字典也是有效的，表示没有配置）
+	if attr_dices_config.size() > 0:
+		var hero_key = str(hero_id)
+		if attr_dices_config.has(hero_key):
+			var hero_config = attr_dices_config[hero_key]
+			
+			# 根据 attr_type 获取对应的配置
+			var attr_config = null
+			match attr_type:
+				"str":
+					attr_config = hero_config.get("power", null)
+				"agi":
+					attr_config = hero_config.get("agility", null)
+				"int":
+					attr_config = hero_config.get("intelligence", null)
+			
+			if attr_config and attr_config.has("points_color"):
+				var color_str = attr_config["points_color"]
+				if color_str is String:
+					points_color = Color(color_str)
+				else:
+					points_color = color_str
+				print("【文字颜色】从配置读取：", attr_type, " = ", points_color)
+			else:
+				# 默认颜色
+				points_color = Color.BLACK
+				print("【文字颜色】配置中未找到 points_color，使用默认黑色")
+		else:
+			# 默认颜色
+			points_color = Color.BLACK
+			print("【文字颜色】未找到英雄 ", hero_id, " 的配置，使用默认黑色")
+	else:
+		# 默认颜色
+		points_color = Color.BLACK
+		print("【文字颜色】未找到 attr_dices.json 配置，使用默认黑色")
 
 func _convert_to_int_array(array: Array) -> Array:
 	# 将数组中的元素转换为整数

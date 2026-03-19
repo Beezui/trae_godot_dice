@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c5154heba0d87" path="res://scenes/skill_dice_test.gd" id="1_skill_test"]
 [ext_resource type="PackedScene" uid="uid://c2x0x5e4k0rag" path="res://scenes/dice_6.tscn" id="2_dice"]
+[ext_resource type="Script" path="res://scenes/attr_dice_manager.gd" id="1_attr_dice_manager"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fireball"]
 direction = Vector3(0, 0, 1)
@@ -79,16 +80,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.5, -2)
 [node name="TargetDice2" parent="." unique_id=1990669963 instance=ExtResource("2_dice")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.5, 2)
 
-[node name="AttributeDices" type="Node3D" parent="." unique_id=1615607112]
-
-[node name="PowerDice" parent="AttributeDices" unique_id=455012324 instance=ExtResource("2_dice")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 4, 6)
-
-[node name="AgilityDice" parent="AttributeDices" unique_id=1795237593 instance=ExtResource("2_dice")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 6)
-
-[node name="IntelligenceDice" parent="AttributeDices" unique_id=971992853 instance=ExtResource("2_dice")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 4, 6)
+[node name="AttributeDiceManager" type="Node3D" parent="." unique_id=1615607112]
+script = ExtResource("1_attr_dice_manager")
 
 [node name="FireballParticles" type="GPUParticles3D" parent="." unique_id=193314916]
 emitting = false

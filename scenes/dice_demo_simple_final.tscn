@@ -40,3 +40,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, -4, 0)
 script = ExtResource("3_dicemanager")
 dice_count = 2
 dice_scene = ExtResource("2_jh1g7")
+
+[node name="ChargeLabel" type="Label3D" parent="." unique_id=1358290827]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+text = "蓄力：0%"
+font_size = 24

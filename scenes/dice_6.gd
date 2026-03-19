@@ -20,6 +20,7 @@ var result_check_timer: Timer  # 用于定期检查骰子状态
 
 func _ready():
 	# 初始化系统
+	print("【骰子】_ready() 开始执行")
 	skill_system = preload("res://scripts/skill_system.gd").new()
 	particle_system = preload("res://scripts/particle_system.gd").new()
 	
@@ -36,7 +37,7 @@ func _ready():
 	
 	# 设置物理材质
 	var physics_material = PhysicsMaterial.new()
-	physics_material.bounce = 0.1404  # 提升反弹效果50%
+	physics_material.bounce = 0.1404  # 提升反弹效果 50%
 	physics_material.friction = 0.8  # 增加摩擦力
 	
 	# 应用物理材质到刚体
@@ -77,14 +78,14 @@ func _ready():
 	
 	# 创建结果检查计时器
 	result_check_timer = Timer.new()
-	result_check_timer.wait_time = 0.5  # 每0.5秒检查一次
+	result_check_timer.wait_time = 0.5  # 每 0.5 秒检查一次
 	result_check_timer.timeout.connect(_on_result_check_timeout)
 	add_child(result_check_timer)
 	
 	# 初始化骰子模型
 	init_dice_model()
 	
-	print("Dice initialization complete")
+	print("【骰子】_ready() 执行完成，等待配置加载")
 	
 	# 连接碰撞信号
 	body_entered.connect(_on_body_entered)
@@ -99,88 +100,26 @@ func init_dice_model():
 		# 确保网格实例可见
 		mesh_instance.visible = true
 		
-		# 检查是否有有效的mesh
+		# 检查是否有有效的 mesh
 		if mesh_instance.mesh:
 			print("Using imported dice model")
 			# 缩放模型以适应场景
 			mesh_instance.scale = Vector3(1, 1, 1)
-			# 应用六面贴图
-			apply_dice_textures(mesh_instance)
+			# 注意：不在这里应用贴图，等 set_dice_face_config 调用时再应用
+			print("【初始化】等待配置加载，暂不应用贴图")
 		else:
-			print("No mesh found, trying to load model")
-			# 尝试加载模型
-			load_dice_model(mesh_instance)
+			print("No mesh found, creating fallback mesh")
+			# 创建备用网格实例（会创建 ArrayMesh）
+			create_fallback_mesh()
+			# 重新获取 mesh_instance
+			mesh_instance = $MeshInstance3D
+			if mesh_instance and mesh_instance.mesh:
+				print("【初始化】备用网格创建完成，等待配置加载")
 	else:
 		print("MeshInstance3D not found, creating fallback")
 		# 创建备用网格实例
 		create_fallback_mesh()
 
-func apply_dice_textures(mesh_instance):
-	# 为骰子的六个面应用不同的材质
-	var materials = []
-	
-	# 定义不同ID对应的颜色（作为备用）
-	var id_colors = {
-		1: Color(1, 0, 0, 1),   # 红色
-		2: Color(0, 1, 0, 1),   # 绿色
-		3: Color(0, 0, 1, 1),   # 蓝色
-		4: Color(1, 1, 0, 1),   # 黄色
-		5: Color(1, 0, 1, 1),   # 紫色
-		6: Color(0, 1, 1, 1),   # 青色
-		7: Color(1, 0.5, 0, 1), # 橙色
-		8: Color(0.5, 0, 0.5, 1), # 深紫色
-		9: Color(0, 0.5, 0.5, 1)  # 深青色
-	}
-	
-	# 创建六个面的材质
-	for i in range(6):
-		# 获取当前面的贴图路径
-		var texture_path = dice_face_config.get(i, "")
-		# 创建材质
-		var material = StandardMaterial3D.new()
-		material.roughness = 0.8
-		
-		# 尝试加载贴图
-		if texture_path and not texture_path.is_empty():
-			print("Loading texture for face ", i, " from path: ", texture_path)
-			var texture = load(texture_path)
-			if texture:
-				print("Successfully loaded texture: ", texture_path)
-				material.albedo_texture = texture
-			else:
-				print("Failed to load texture: ", texture_path)
-				# 加载失败，使用彩色材质
-				var color = id_colors.get(i + 1, Color(0.5, 0.5, 0.5, 1))  # 默认灰色
-				material.albedo_color = color
-				print("Using fallback color: ", color)
-		else:
-			# 没有贴图路径，使用彩色材质
-			var color = id_colors.get(i + 1, Color(0.5, 0.5, 0.5, 1))  # 默认灰色
-			material.albedo_color = color
-			print("No texture path, using color: ", color)
-		
-		materials.append(material)
-	
-	# 应用材质到网格
-	if mesh_instance.mesh and materials.size() > 0:
-		# 尝试为每个面设置不同的材质
-		var surface_count = mesh_instance.mesh.get_surface_count()
-		print("Mesh surface count: ", surface_count)
-		
-		# 对于多面体网格，为每个面设置材质
-		if surface_count >= 6:
-			for i in range(6):
-				if i < surface_count:
-					mesh_instance.mesh.surface_set_material(i, materials[i])
-					print("Applied material ", i, " to surface ", i)
-			print("Applied materials to mesh surfaces")
-		else:
-			# 对于单一表面的网格，使用材质覆盖
-			mesh_instance.material_override = materials[0]
-			print("Applied default material to dice model")
-		
-		# 存储材质数组，以便在运行时切换
-		mesh_instance.set_meta("dice_materials", materials)
 
 func load_dice_model(_mesh_instance):
 	# 直接使用 fallback mesh，确保有 6 个独立表面
@@ -265,9 +204,7 @@ func create_fallback_mesh():
 	# 设置网格
 	mesh_instance.mesh = mesh
 	
-	# 应用贴图
-	apply_dice_textures(mesh_instance)
-	
+	# 注意：不在这里应用贴图，等 set_dice_face_config 调用时再应用
 	print("Fallback cube mesh with 6 surfaces created")
 
 func stop_rolling():
@@ -508,17 +445,28 @@ func set_controlled_result(value: int):
 
 func set_dice_face_config(config: Dictionary, value_config: Dictionary = {}):
 	# 设置骰子面的贴图配置
+	print("【骰子】set_dice_face_config 被调用，config=", config)
 	dice_face_config = config
+	print("【骰子】dice_face_config 已赋值：", dice_face_config)
 	# 设置骰子面的点数配置
 	dice_value_config = value_config
-	# 更新贴图
-	update_dice_textures()
+	# 使用 DiceTextureManager 统一应用贴图
+	print("【骰子】准备调用 apply_textures_from_manager")
+	apply_textures_from_manager()
 	print("Set dice face config: ", config)
 	print("Set dice value config: ", value_config)
 
+
+func apply_textures_from_manager():
+	# 使用 DiceTextureManager 统一应用贴图
+	print("【骰子】apply_textures_from_manager 被调用，dice_face_config=", dice_face_config)
+	if DiceTextureManager:
+		print("【骰子】调用 DiceTextureManager.apply_textures_to_dice，config=", dice_face_config)
+		DiceTextureManager.apply_textures_to_dice(self, dice_face_config)
+	else:
+		print("【骰子】错误：DiceTextureManager 不存在")
+
+
 func update_dice_textures():
-	# 动态更新骰子贴图
-	var mesh_instance = $MeshInstance3D
-	if mesh_instance:
-		apply_dice_textures(mesh_instance)
-		print("Updated dice textures")
+	# 动态更新骰子贴图（已废弃，使用 apply_textures_from_manager 替代）
+	apply_textures_from_manager()
