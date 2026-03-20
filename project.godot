@@ -22,6 +22,7 @@ DiceTextureManager="*res://scripts/dice/dice_texture_manager.gd"
 DiceThrowController="*res://scripts/dice/dice_throw_controller.gd"
 DiceResultDetector="*res://scripts/dice/dice_result_detector.gd"
 CharacterManager="*res://scripts/character/CharacterManager.gd"
+CameraManager="*res://scripts/camera_manager.gd"
 
 [editor_plugins]
 

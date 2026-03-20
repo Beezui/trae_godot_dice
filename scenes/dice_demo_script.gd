@@ -18,11 +18,10 @@ func _ready():
 	# 打印场景初始化信息
 	print("=== Dice Demo Simple Final Scene Initializing ===")
 	
-	# 调整摄像机位置和 FOV
+	# ✅ 使用 CameraManager 统一管理摄像机配置
 	if camera:
-		camera.position = Vector3(0, 60, 0)
-		camera.fov = 15.0
-		camera.rotation = Vector3(-PI/2, 0, 0)
+		CameraManager.register_camera(camera)
+		print("【摄像机】已注册到 CameraManager，使用统一配置")
 
 	# 确保光照正确指向原点
 	if light:
@@ -226,6 +225,20 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_S:
 		if dice_manager:
 			dice_manager.remove_dice()
+	
+	# ✅ 摄像机控制快捷键
+	if event.is_action_pressed("ui_home"):
+		CameraManager.set_preset("high")
+		print("【摄像机】切换至高位视角")
+	elif event.is_action_pressed("ui_end"):
+		CameraManager.set_preset("low")
+		print("【摄像机】切换至低位视角")
+	elif event.is_action_pressed("ui_page_up"):
+		CameraManager.set_preset("wide")
+		print("【摄像机】切换至广角视角")
+	elif event.is_action_pressed("ui_page_down"):
+		CameraManager.reset_to_default()
+		print("【摄像机】重置为默认视角")
 
 func reset_dice():
 	if dice_manager:

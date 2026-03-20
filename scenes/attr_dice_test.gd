@@ -19,14 +19,10 @@ func _ready():
 	# 打印场景初始化信息
 	print("=== Attribute Dice Test Scene Initializing ===")
 	
-	# 调整摄像机位置和FOV，使其拉远并更接近2D效果
+	# ✅ 使用 CameraManager 统一管理摄像机配置
 	if camera:
-		# 设置摄像机位置，进一步拉高镜头以看到整个沙盘
-		camera.position = Vector3(0, 60, 0)  # 进一步拉高摄像机
-		# 进一步减小FOV，更贴近俯视2D效果
-		camera.fov = 15.0  # 进一步减小FOV值
-		# 直接设置相机旋转，避免look_at的共线问题
-		camera.rotation = Vector3(-PI/2, 0, 0)
+		CameraManager.register_camera(camera)
+		print("【摄像机】已注册到 CameraManager，使用统一配置")
 
 	# 确保光照正确指向原点
 	if light:
@@ -302,6 +298,26 @@ func _input(event):
 		original_positions.clear()
 		print("投掷属性骰子！")
 		is_in_initial_state = false
+	
+	# ✅ 按 Q 键切换高位视角
+	if event.is_action_pressed("ui_home"):
+		CameraManager.set_preset("high")
+		print("【摄像机】切换至高位视角")
+	
+	# ✅ 按 End 键切换低位视角
+	if event.is_action_pressed("ui_end"):
+		CameraManager.set_preset("low")
+		print("【摄像机】切换至低位视角")
+	
+	# ✅ 按 Page Up 键切换广角视角
+	if event.is_action_pressed("ui_page_up"):
+		CameraManager.set_preset("wide")
+		print("【摄像机】切换至广角视角")
+	
+	# ✅ 按 Page Down 键重置为默认视角
+	if event.is_action_pressed("ui_page_down"):
+		CameraManager.reset_to_default()
+		print("【摄像机】重置为默认视角")
 	
 	# 按 R 键重置骰子
 	if event.is_action_pressed("ui_cancel"):

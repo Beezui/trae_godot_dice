@@ -55,6 +55,7 @@ func _ready():
 	
 	_load_skill_config()
 	
+	# ✅ 使用 CameraManager 统一管理摄像机配置
 	_setup_camera()
 	_setup_light()
 	_setup_sandbox()
@@ -76,10 +77,10 @@ func _load_skill_config():
 
 
 func _setup_camera():
+	# ✅ 使用 CameraManager 统一管理摄像机配置
 	if camera:
-		camera.position = Vector3(0, 60, 0)
-		camera.fov = 15.0
-		camera.rotation = Vector3(-PI/2, 0, 0)
+		CameraManager.register_camera(camera)
+		print("【摄像机】已注册到 CameraManager，使用统一配置")
 
 
 func _setup_light():
@@ -363,6 +364,20 @@ func _input(event):
 		# 空格键松开投掷
 		if event.keycode == KEY_SPACE and not event.pressed and is_charging:
 			throw_all_battle_dices()
+		
+		# ✅ 摄像机控制快捷键
+		if event.keycode == KEY_HOME and event.pressed:
+			CameraManager.set_preset("high")
+			print("【摄像机】切换至高位视角")
+		elif event.keycode == KEY_END and event.pressed:
+			CameraManager.set_preset("low")
+			print("【摄像机】切换至低位视角")
+		elif event.keycode == KEY_PAGEUP and event.pressed:
+			CameraManager.set_preset("wide")
+			print("【摄像机】切换至广角视角")
+		elif event.keycode == KEY_PAGEDOWN and event.pressed:
+			CameraManager.reset_to_default()
+			print("【摄像机】重置为默认视角")
 
 
 func start_charging():

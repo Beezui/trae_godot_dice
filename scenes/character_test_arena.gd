@@ -45,11 +45,10 @@ func _ready():
 	attr_dice_manager = preload("res://scenes/attr_dice_manager.gd").new()
 	add_child(attr_dice_manager)
 	
-	# 设置摄像机
+	# ✅ 使用 CameraManager 统一管理摄像机配置
 	if camera:
-		camera.position = Vector3(0, 60, 0)
-		camera.fov = 15.0
-		camera.rotation = Vector3(-PI/2, 0, 0)
+		CameraManager.register_camera(camera)
+		print("【摄像机】已注册到 CameraManager，使用统一配置")
 	
 	# 设置光源
 	if light:
@@ -447,6 +446,14 @@ func _input(event):
 			player_character.heal(10)
 			_update_hp_display()
 			print("【场景】玩家恢复 10 点 HP")
+	
+	# ✅ 摄像机控制快捷键
+	elif event.is_action_pressed("ui_page_up"):
+		CameraManager.set_preset("wide")
+		print("【摄像机】切换至广角视角")
+	elif event.is_action_pressed("ui_page_down"):
+		CameraManager.reset_to_default()
+		print("【摄像机】重置为默认视角")
 
 
 func get_all_dices() -> Array:
