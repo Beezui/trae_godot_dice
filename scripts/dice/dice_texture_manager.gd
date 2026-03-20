@@ -64,6 +64,7 @@ func apply_textures_to_dice(dice: RigidBody3D, config: Dictionary):
 		- 普通骰子：{"0": "res://...", "1": "res://...", ...}
 		- 属性骰子（旧）：{"attr_name": "str", "points_color": "#C00000", "values": [5, 11, ...]}
 		- 属性骰子（新）：{"hero_id": 1, "attr_type": "str", "values": [10, 20, ...], "textures": ["1001"]}
+		- 技能骰子：{"0": "res://textures/skill/skill_10001.png", ...} + value_config 包含 skill_id
 	"""
 	if not dice or not is_instance_valid(dice):
 		print("【贴图管理器】错误：骰子实例无效")
@@ -89,9 +90,22 @@ func apply_textures_to_dice(dice: RigidBody3D, config: Dictionary):
 		# 旧格式：使用 attr_name
 		is_attr_dice = true
 	
+	# 判断是否是技能骰子配置
+	var is_skill_dice = false
+	# 检查 config 中是否包含技能 ID 格式的值（"10001" 这种格式）
+	if config.size() > 0:
+		var first_key = config.keys()[0]
+		var first_value = config[first_key]
+		if typeof(first_value) == TYPE_STRING and first_value.length() >= 5 and first_value.substr(0, 1) == "1":
+			# 可能是技能 ID（如 "10001"）
+			is_skill_dice = true
+	
 	if is_attr_dice:
 		# 属性骰子：动态生成带数值的贴图
 		_apply_attr_dice_textures(mesh_instance, config)
+	elif is_skill_dice:
+		# 技能骰子：使用技能图标贴图
+		_apply_skill_dice_textures(mesh_instance, config)
 	else:
 		# 普通骰子：使用贴图路径
 		_apply_normal_dice_textures(mesh_instance, config)
@@ -479,12 +493,16 @@ func _apply_normal_dice_textures(mesh_instance: MeshInstance3D, config: Dictiona
 		
 		var material = StandardMaterial3D.new()
 		material.roughness = 0.8
+		material.metallic = 0.0  # 与属性骰子保持一致
 		
 		if texture_path and not texture_path.is_empty():
 			# 从缓存获取贴图（或加载）
 			var texture = get_texture(texture_path)
 			if texture:
 				material.albedo_texture = texture
+				material.uv1_scale = Vector3(1, 1, 1)  # 确保 UV 缩放正确
+				material.uv1_offset = Vector3(0, 0, 0)
+				material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 				print("【贴图管理器】面 ", i, " 加载贴图：", texture_path)
 			else:
 				print("【贴图管理器】面 ", i, " 贴图加载失败：", texture_path)
@@ -492,6 +510,54 @@ func _apply_normal_dice_textures(mesh_instance: MeshInstance3D, config: Dictiona
 		else:
 			print("【贴图管理器】面 ", i, " 无贴图配置，使用颜色")
 			material.albedo_color = id_colors.get(i, Color(0.5, 0.5, 0.5, 1))
+		
+		materials.append(material)
+	
+	# 应用材质到网格
+	_apply_materials_to_mesh(mesh_instance, materials)
+
+
+## 应用技能骰子贴图（使用技能图标）
+func _apply_skill_dice_textures(mesh_instance: MeshInstance3D, config: Dictionary):
+	print("【贴图管理器】应用技能骰子贴图")
+	
+	# 为每个面创建材质
+	var materials = []
+	
+	# 定义备用颜色（技能骰子使用紫色）
+	var skill_colors = {
+		0: Color(0.8, 0.2, 0.8, 1),
+		1: Color(0.8, 0.2, 0.8, 1),
+		2: Color(0.8, 0.2, 0.8, 1),
+		3: Color(0.8, 0.2, 0.8, 1),
+		4: Color(0.8, 0.2, 0.8, 1),
+		5: Color(0.8, 0.2, 0.8, 1)
+	}
+	
+	for i in range(6):
+		# 支持字符串键和整数键
+		var texture_path = ""
+		if config.has(str(i)):
+			texture_path = config.get(str(i), "")
+		elif config.has(i):
+			texture_path = config.get(i, "")
+		
+		var material = StandardMaterial3D.new()
+		material.roughness = 0.8
+		material.metallic = 0.2  # 技能骰子稍微增加金属感
+		
+		if texture_path and not texture_path.is_empty():
+			# 从缓存获取贴图（或加载）
+			var texture = get_texture(texture_path)
+			if texture:
+				material.albedo_texture = texture
+				print("【贴图管理器】技能骰子面 ", i, " 加载贴图：", texture_path)
+			else:
+				print("【贴图管理器】技能骰子面 ", i, " 贴图加载失败：", texture_path)
+				material.albedo_color = skill_colors.get(i, Color(0.5, 0.5, 0.5, 1))
+		else:
+			print("【贴图管理器】技能骰子面 ", i, " 无贴图配置，使用颜色")
+			material.albedo_color = skill_colors.get(i, Color(0.5, 0.5, 0.5, 1))
 		
 		materials.append(material)
 	

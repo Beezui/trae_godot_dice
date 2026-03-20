@@ -2,7 +2,7 @@
 
 ## 基本信息
 - **创建日期**: 2026-03-03
-- **修改日期**: 2026-03-17
+- **修改日期**: 2026-03-20（修复 PhysicsMaterial 赋值和墙体可见网格说明）
 - **场景文件**: `res://scenes/dice_demo_simple_final.tscn`
 - **用途**: 作为日后创建新场景的标准模板
 
@@ -95,13 +95,103 @@
 - **效果**: 提供良好的阴影和光照效果
 
 ## 骰子设置
-- **初始位置**: (0, 4, sandbox_height/2 - 2) (水平方向屏幕中间，靠近下方墙体（南墙），悬浮状态)
-- **投掷位置**: (0, 5, sandbox_height/2 - 2) (水平方向屏幕中间，靠近下方墙体（南墙），离地面5个骰子高度)
-- **类型**: 实例化的骰子场景
-- **投掷力**: 
-  - 蓄力投掷：根据蓄力时间计算，最大力度20
-  - 方向：随机-45°到45°，朝向屏幕上方（z轴负方向）
-- **Godot坐标系重点**: 骰子初始位置靠近南墙（z轴正方向），投掷方向朝向北墙（z轴负方向）
+
+### 投掷区域标准（统一标准）
+**所有场景的骰子投掷位置必须遵循以下标准**：
+
+- **投掷区域**：屏幕下方，靠近南墙（z 轴正方向），但不超出南墙
+- **南墙位置**：z = sandbox_height/2 = 6.75
+- **投掷区域 z 坐标**：z = sandbox_height/2 - 2 = 4.75（距离南墙 2 个单位）
+- **投掷区域范围**：
+  - x 轴：-12 到 12（沙盘宽度范围内）
+  - y 轴：4（悬浮高度）
+  - z 轴：4.75（固定值，靠近南墙）
+
+### 骰子位置配置
+- **默认投掷位置**：(0, 4, 4.75) - 屏幕下方中间，靠近南墙
+- **多骰子布局**：
+  - 单个骰子：(0, 4, 4.75)
+  - 三个骰子并排：
+    - 左侧骰子：(-4, 4, 4.75)
+    - 中间骰子：(0, 4, 4.75)
+    - 右侧骰子：(4, 4, 4.75)
+  - **更多骰子并排（支持最多 10 个）**：
+    - 使用 `DiceThrowController.calculate_dice_positions()` 自动计算居中位置
+    - 或参考下方的多骰子布局表
+  - **骰子间距**：标准间距 2.0，超出边界时自动调整
+
+### 多骰子布局参考表（标准间距 2.0）
+
+| 骰子数量 | 布局说明 | x 坐标（从左到右） | 总宽度 | 是否居中 |
+|---------|---------|------------------|--------|---------|
+| **1** | 单个骰子 | 0 | 0 | ✅ |
+| **2** | 对称分布 | -1, 1 | 2 | ✅ |
+| **3** | 对称分布 | -2, 0, 2 | 4 | ✅ |
+| **4** | 对称分布 | -3, -1, 1, 3 | 6 | ✅ |
+| **5** | 对称分布 | -4, -2, 0, 2, 4 | 8 | ✅ |
+| **6** | 对称分布 | -5, -3, -1, 1, 3, 5 | 10 | ✅ |
+| **7** | 对称分布 | -6, -4, -2, 0, 2, 4, 6 | 12 | ✅ |
+| **8** | 对称分布 | -7, -5, -3, -1, 1, 3, 5, 7 | 14 | ✅ |
+| **9** | 对称分布 | -8, -6, -4, -2, 0, 2, 4, 6, 8 | 16 | ✅ |
+| **10** | 对称分布 | -9, -7, -5, -3, -1, 1, 3, 5, 7, 9 | 18 | ✅ |
+
+**说明**：
+- 所有布局都自动居中（x=0 为中心）
+- 沙盘可用宽度：24.0 - 2×1.5（安全边距）= 21.0
+- 10 个骰子总宽度 18，小于 21.0，不会超出沙盘
+- 如果间距调整为 2.5，最多支持 8 个骰子（总宽度 17.5）
+- 如果间距调整为 3.0，最多支持 7 个骰子（总宽度 18.0）
+
+### 边界自动调整
+
+当骰子数量过多或间距过大时，系统会自动调整：
+
+```gdscript
+# 示例：10 个骰子，间距 2.5（总宽度 22.5，接近边界）
+# 系统会自动缩小间距到安全范围
+var positions = DiceThrowController.calculate_dice_positions(10, 4.75, 2.5)
+# 实际间距会调整为约 2.1，确保不超出沙盘
+```
+
+**自动调整规则**：
+1. 计算理论总宽度：`(dice_count - 1) * spacing`
+2. 检查是否超出沙盘边界（考虑安全边距 1.5）
+3. 如果超出，自动缩小间距：`spacing = (24.0 - 2*1.5) / (dice_count - 1)`
+4. 重新计算起始位置，确保居中
+- **投掷位置**：(0, 5, 4.75) - 离地面 5 个骰子高度
+- **Godot 坐标系重点**：骰子初始位置靠近南墙（z 轴正方向），投掷方向朝向北墙（z 轴负方向）
+
+### 投掷力
+- **蓄力投掷**：根据蓄力时间计算，最大力度 20
+- **方向**：随机 -45°到 45°，朝向屏幕上方（z 轴负方向）
+- **统一控制器**：所有场景使用 `DiceThrowController` 进行投掷
+
+### 代码实现
+```gdscript
+# 在 DiceThrowController 中定义的统一标准
+@export var default_start_position: Vector3 = Vector3(0, 4, 4.75)  # 默认投掷位置
+@export var dice_spacing: float = 2.0  # 多骰子之间的间距
+
+# 场景脚本中使用统一位置
+var initial_z = sandbox_height / 2 - 2  # 4.75
+str_dice.position = Vector3(-4, 4, initial_z)
+agi_dice.position = Vector3(0, 4, initial_z)
+int_dice.position = Vector3(4, 4, initial_z)
+
+# 使用自动布局（推荐，支持任意数量骰子）
+var dice_array = [dice1, dice2, dice3, dice4, dice5]
+DiceThrowController.apply_centered_layout(dice_array, 4.75, 2.0)
+
+# 或手动计算位置
+var positions = DiceThrowController.calculate_dice_positions(5, 4.75, 2.0)
+for i in range(dice_array.size()):
+    dice_array[i].position = positions[i]
+
+# 自定义间距（例如 10 个骰子，间距 1.5）
+var many_dices = [dice1, dice2, dice3, dice4, dice5, dice6, dice7, dice8, dice9, dice10]
+DiceThrowController.apply_centered_layout(many_dices, 4.75, 1.5)
+# 系统会自动检查边界，如果超出会自动调整间距
+```
 
 ## 视窗设置
 - **分辨率**: 固定比例 16:9
@@ -132,16 +222,7 @@
 - 墙壁底部已与地面完全连接，确保无间隙
 - 骰子模型已使用圆滑边缘设计，提升滚动效果
 - 顶部碰撞已移除，确保骰子能正常落到地面
-- **重要：墙体由两部分组成**
-  1. **碰撞形状** (CollisionShape3D) - 在场景文件中定义
-     - 必须在场景文件中预设 transform（位置）
-     - 代码中只需设置 shape 属性
-  2. **可见网格** (MeshInstance3D) - 在代码中动态创建
-     - 必须创建 MeshInstance3D 才能让墙体可见
-     - 位置：y=-2.5（与地面对齐）
-     - 可见高度：3
-     - 材质：带颜色的 StandardMaterial3D
-  3. **参考正确做法**：查看 dice_demo_simple_final.tscn 和 dice_demo_script.gd
+- 参考正确做法：查看 dice_demo_simple_final.tscn 和 dice_demo_script.gd
 
 ## Godot坐标系说明
 
@@ -232,13 +313,14 @@ func _ready():
 			ground_shape.size = Vector3(sandbox_width, 0.1, sandbox_height)
 			ground_collision.shape = ground_shape
 			
-		# 为地面添加物理材质，提升反弹系数50%
+		# 为地面添加物理材质，提升反弹系数 50%
 		var ground_physics_material = PhysicsMaterial.new()
-		ground_physics_material.bounce = 0.3  # 提升反弹效果50%
+		ground_physics_material.bounce = 0.3  # 提升反弹效果 50%
 		ground_physics_material.friction = 0.8  # 增加摩擦力
-		# 为沙盒静态体设置物理材质
-		if sandbox:
-			sandbox.physics_material_override = ground_physics_material
+		# 为地面设置物理材质（注意：必须设置在地面节点上，而不是 sandbox 容器上）
+		var ground = sandbox.get_node("Ground")
+		if ground:
+			ground.physics_material_override = ground_physics_material
 		
 		# 创建地面网格
 		var ground_mesh = sandbox.get_node("GroundMesh")
@@ -260,7 +342,7 @@ func _ready():
 			wall_north.shape = wall_north_shape
 			# 注意：墙体的位置已经在场景文件的 transform 中预设，不需要在代码中设置 position
 		
-		# 创建北墙可见网格
+		# 创建北墙可见网格（重要：必须创建可见网格，否则墙体不会显示）
 		var wall_north_mesh = MeshInstance3D.new()
 		wall_north_mesh.name = "WallNorthMesh"
 		wall_north_mesh.position = Vector3(0, -2.5, -sandbox_height/2)

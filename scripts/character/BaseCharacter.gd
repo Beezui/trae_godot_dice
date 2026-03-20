@@ -172,6 +172,18 @@ func set_state(state: String):
 		print("【BaseCharacter】", name, " 状态变更为：", state)
 
 
+func set_character_dice_scale(scale: Vector3):
+	"""
+	设置角色骰子的缩放比例
+	:param scale: 缩放比例向量
+	"""
+	if character_dice and is_instance_valid(character_dice):
+		var mesh = character_dice.get_node("MeshInstance3D")
+		if mesh:
+			mesh.scale = scale
+			print("【BaseCharacter】", name, " 角色骰子缩放已设置为：", scale)
+
+
 func get_attribute_value(attr_type: String, face_index: int = 0) -> int:
 	"""
 	获取属性值

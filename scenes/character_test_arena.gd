@@ -247,15 +247,38 @@ func _create_character_dice():
 		printerr("【场景】无法加载骰子场景")
 		return
 	
-	# 从 CSV 读取骰子配置
-	var dice_config = dice_csv_reader.get_num_dice_config("1001")
-	var scene_config = dice_config.get("textures", {})
-	var value_config = dice_config.get("values", {})
+	# 从 hero.json 读取角色贴图配置
+	var hero_config = player_character.get_config()
+	var hero_texture_ids = hero_config.get("hero_textures", [])
+	var hero_id = hero_config.get("hero_id", 1)
 	
-	# 创建角色骰子
+	# 构建贴图配置：使用 hero.json 中的 hero_texture 字段
+	# 格式：["hit", "idle", "idle", "idle", "idle", "idle"]
+	# 需要转换为完整路径：res://textures/hero/hero_1_hit.png 等
+	var scene_config = {}
+	for i in range(6):
+		if i < hero_texture_ids.size():
+			var texture_state = hero_texture_ids[i]
+			var texture_path = "res://textures/hero/hero_" + str(hero_id) + "_" + texture_state + ".png"
+			scene_config[i] = texture_path
+			print("【场景】角色骰子面 ", i, " 贴图：", texture_path)
+		else:
+			# 默认使用 idle 状态
+			var default_path = "res://textures/hero/hero_" + str(hero_id) + "_idle.png"
+			scene_config[i] = default_path
+			print("【场景】角色骰子面 ", i, " 使用默认贴图：", default_path)
+	
+	# 点数配置使用默认值 1-6
+	var value_config = {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
+	
+	# 创建角色骰子（调整初始位置到地面上方）
 	character_dice = dice_scene.instantiate()
-	character_dice.position = Vector3(0, 4, 0)  # 放在沙盘中央
+	character_dice.position = Vector3(0, 4, 0)  # y=4 与其他骰子初始高度一致
+	character_dice.scale = Vector3(1, 1, 1)  # 父节点保持默认缩放，MeshInstance3D 由 CharacterManager 设置
 	sandbox.add_child(character_dice)
+	
+	# 启用重力，让角色骰子落到地面
+	character_dice.gravity_scale = 1.0
 	
 	# 设置骰子配置（使用 set_dice_face_config 方法）
 	if character_dice.has_method("set_dice_face_config"):
@@ -264,30 +287,35 @@ func _create_character_dice():
 	# 将角色骰子与角色关联
 	if player_character:
 		player_character.character_dice = character_dice
+		# 使用 CharacterManager 集中设置角色骰子缩放（1.5 倍）
+		CharacterManager.set_character_dice_scale(1, Vector3(1.5, 1.5, 1.5))
 		print("【场景】角色骰子已与角色关联")
 	
-	print("【场景】角色骰子已创建，配置：", scene_config)
+	print("【场景】角色骰子已创建，使用 hero.json 的 hero_texture 配置")
 
 
 func _create_attribute_dices():
 	# 使用 AttrDiceManager 创建属性骰子（hero_id = 1）
+	# 投掷区域标准：z = sandbox_height/2 - 2 = 4.75
+	var initial_z = base_height / 2 - 2  # 4.75
+	
 	# 力量骰子
 	str_dice = attr_dice_manager.create_attribute_dice(1, "str", sandbox)
 	if str_dice:
-		str_dice.position = Vector3(-3, 4, 4)
-		print("【场景】力量骰子已创建")
+		str_dice.position = Vector3(-1, 4, initial_z)  # 使用自动布局计算的位置
+		print("【场景】力量骰子已创建，位置：", str_dice.position)
 	
 	# 敏捷骰子
 	agi_dice = attr_dice_manager.create_attribute_dice(1, "agi", sandbox)
 	if agi_dice:
-		agi_dice.position = Vector3(0, 4, 4)
-		print("【场景】敏捷骰子已创建")
+		agi_dice.position = Vector3(1, 4, initial_z)  # 使用自动布局计算的位置
+		print("【场景】敏捷骰子已创建，位置：", agi_dice.position)
 	
 	# 智力骰子
 	int_dice = attr_dice_manager.create_attribute_dice(1, "int", sandbox)
 	if int_dice:
-		int_dice.position = Vector3(3, 4, 4)
-		print("【场景】智力骰子已创建")
+		int_dice.position = Vector3(3, 4, initial_z)  # 使用自动布局计算的位置
+		print("【场景】智力骰子已创建，位置：", int_dice.position)
 	
 	# 关联属性骰子到角色
 	if player_character:
@@ -295,7 +323,7 @@ func _create_attribute_dices():
 		player_character.attribute_dices["agi"] = agi_dice
 		player_character.attribute_dices["int"] = int_dice
 	
-	print("【场景】属性骰子已创建 (str, agi, int)")
+	print("【场景】属性骰子已创建 (str, agi, int)，位于投掷区域")
 
 
 func _create_skill_dices():
@@ -309,13 +337,16 @@ func _create_skill_dices():
 		printerr("【技能骰子】无法加载骰子场景")
 		return
 	
+	# 投掷区域标准：z = sandbox_height/2 - 2 = 4.75
+	var initial_z = base_height / 2 - 2  # 4.75
+	
 	# 创建技能骰子 (根据 skill_slot)
 	if player_character and player_character.skill_slot > 0:
 		print("【技能骰子】开始创建技能骰子...")
 		skill_dice = dice_scene.instantiate()
-		skill_dice.position = Vector3(0, 4, 8)
+		skill_dice.position = Vector3(-3, 4, initial_z)  # 使用自动布局计算的位置（4 个骰子最左侧）
 		sandbox.add_child(skill_dice)
-		print("【技能骰子】骰子实例已创建")
+		print("【技能骰子】骰子实例已创建，位置：", skill_dice.position)
 		
 		# 设置骰子类型为 skill
 		if skill_dice.has_method("set_dice_type"):
@@ -330,6 +361,8 @@ func _create_skill_dices():
 		
 		# 技能骰子需要从 skill.json 获取贴图
 		# 构建贴图配置和值配置（转换为字典格式）
+		# 注意：value_config 必须是整数类型，因为 dice_value 是 int
+		# 技能骰子的值使用面索引 (0-5)，技能 ID 通过贴图配置关联
 		var scene_config = {}
 		var value_config = {}
 		if skill_ids_array.size() > 0:
@@ -342,24 +375,25 @@ func _create_skill_dices():
 						if skill_data and skill_data.has("icon"):
 							# 注意：skill.json 的 icon 是 "10001"，但文件是 "skill_10001.png"
 							scene_config[i] = "res://textures/skill/skill_" + skill_data["icon"] + ".png"
-						value_config[i] = skill_id
+						# value_config 使用面索引（整数），而不是技能 ID（字符串）
+						value_config[i] = i + 1  # 1-6
 					else:
-						value_config[i] = "0"
+						value_config[i] = i + 1
 				else:
-					value_config[i] = "0"
+					value_config[i] = i + 1
 		
 		print("【技能骰子】scene_config = ", scene_config)
 		print("【技能骰子】value_config = ", value_config)
 		
-		# 设置技能骰子配置
+		# 设置技能骰子配置（使用统一的 set_dice_face_config 方法）
 		if skill_dice.has_method("set_dice_face_config"):
 			skill_dice.set_dice_face_config(scene_config, value_config)
-			print("【技能骰子】已应用配置")
+			print("【技能骰子】已应用配置（通过 DiceTextureManager 统一管理）")
 		
 		# 关联技能骰子到角色
 		player_character.skill_dices.append(skill_dice)
 		
-		print("【技能骰子】技能骰子已创建，使用配置 4001")
+		print("【技能骰子】技能骰子已创建，使用配置 4001，位于投掷区域")
 	else:
 		print("【技能骰子】不满足创建条件：player_character = ", player_character, ", skill_slot = ", player_character.skill_slot if player_character else "N/A")
 
@@ -374,6 +408,11 @@ func _process(delta):
 		var charge_ratio = DiceThrowController.update_charge(delta)
 		if charge_label:
 			charge_label.text = "蓄力：%d%%" % int(charge_ratio * 100)
+		
+		# 应用震动效果（只对可投掷的骰子）
+		var throwable_dices = get_throwable_dices()
+		if throwable_dices.size() > 0 and DiceThrowController.original_positions.size() > 0:
+			DiceThrowController.apply_shake(throwable_dices, DiceThrowController.original_positions, charge_ratio, delta)
 
 
 func _input(event):
@@ -381,6 +420,9 @@ func _input(event):
 		is_charging = true
 		if DiceThrowController:
 			DiceThrowController.start_charge()
+			# 注册可投掷骰子的原始位置
+			var throwable_dices = get_throwable_dices()
+			DiceThrowController.register_all_positions(throwable_dices)
 		if charge_label:
 			charge_label.text = "开始蓄力..."
 	
@@ -389,10 +431,10 @@ func _input(event):
 		if charge_label:
 			charge_label.text = "按空格键投掷骰子"
 		
-		# 投掷所有骰子
-		var all_dices = get_all_dices()
-		if DiceThrowController and all_dices.size() > 0:
-			DiceThrowController.end_charge(all_dices)
+		# 投掷所有骰子（排除角色骰子）
+		var throwable_dices = get_throwable_dices()
+		if DiceThrowController and throwable_dices.size() > 0:
+			DiceThrowController.end_charge(throwable_dices)
 	
 	elif event.is_action_pressed("ui_home"):  # Home 键：测试受击
 		if player_character:
@@ -411,6 +453,20 @@ func get_all_dices() -> Array:
 	var dices = []
 	if character_dice:
 		dices.append(character_dice)
+	if str_dice:
+		dices.append(str_dice)
+	if agi_dice:
+		dices.append(agi_dice)
+	if int_dice:
+		dices.append(int_dice)
+	if skill_dice:
+		dices.append(skill_dice)
+	return dices
+
+
+func get_throwable_dices() -> Array:
+	# 获取可投掷的骰子（排除角色骰子）
+	var dices = []
 	if str_dice:
 		dices.append(str_dice)
 	if agi_dice:

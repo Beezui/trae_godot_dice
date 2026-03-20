@@ -224,3 +224,30 @@ func get_character_count() -> int:
 	:return: 角色数量
 	"""
 	return characters.size()
+
+
+func set_all_character_dice_scale(scale: Vector3):
+	"""
+	设置所有角色骰子的缩放比例
+	:param scale: 缩放比例向量
+	"""
+	for hero_key in characters:
+		var character = characters[hero_key]
+		if character:
+			character.set_character_dice_scale(scale)
+	print("【CharacterManager】已设置所有角色骰子缩放比例为：", scale)
+
+
+func set_character_dice_scale(hero_id: int, scale: Vector3) -> bool:
+	"""
+	设置指定角色骰子的缩放比例
+	:param hero_id: 英雄 ID
+	:param scale: 缩放比例向量
+	:return: true 如果设置成功
+	"""
+	var character = get_character(hero_id)
+	if character:
+		character.set_character_dice_scale(scale)
+		return true
+	printerr("【CharacterManager】设置角色骰子缩放失败：角色 ID ", hero_id, " 不存在")
+	return false

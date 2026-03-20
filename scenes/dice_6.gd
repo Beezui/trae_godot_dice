@@ -1,10 +1,10 @@
 extends RigidBody3D
 
-@export var dice_value: int = 1
-@export var dice_faces: Array = [1, 2, 3, 4, 5, 6]
-@export var dice_type: String = "normal"
-@export var dice_face_config: Dictionary = {}
-@export var dice_value_config: Dictionary = {}
+@export var dice_value: int = 1              # 当前点数
+@export var dice_faces: Array = [1,2,3,4,5,6]  # 骰子面数组
+@export var dice_type: String = "normal"      # 骰子类型
+@export var dice_face_config: Dictionary = {}  # 贴图配置
+@export var dice_value_config: Dictionary = {} # 点数配置
 
 var is_rolling: bool = false
 var roll_timer: Timer
