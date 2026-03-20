@@ -40,7 +40,15 @@
         "1001",
         "1001"
       ],
-      "portrait": "1"
+      "portrait": "1",
+      "hero_texture": [
+        "hit",
+        "idle",
+        "idle",
+        "idle",
+        "idle",
+        "idle"
+      ]
     }
   ]
 }

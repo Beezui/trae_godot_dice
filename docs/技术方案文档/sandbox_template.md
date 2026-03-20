@@ -34,35 +34,47 @@
 ### 墙壁
 
 #### 北墙（屏幕上方）
+- **碰撞节点**: CollisionShape3D（在场景文件中定义）
 - **碰撞形状**: BoxShape3D(size = Vector3(sandbox_width, 50, 0.1))
-- **碰撞位置**: (0, 21, -sandbox_height/2) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
-- **网格位置**: (0, -2.5, -sandbox_height/2) (在 Sandbox 局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(sandbox_width, 3, 0.1) (可见高度 3)
-- **材质**: 蓝色 (albedo_color = Color(0.3, 0.3, 0.7, 1))
+- **场景文件预设 transform**: Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, -6.75)
+- **代码设置**: 只需设置 shape 属性
+- **可见网格**: 在代码中创建 MeshInstance3D
+  - 位置：Vector3(0, -2.5, -sandbox_height/2)
+  - 尺寸：Vector3(sandbox_width, 3, 0.1)
+  - 材质：蓝色 (albedo_color = Color(0.3, 0.3, 0.7, 1))
 - **Godot 坐标系重点**: 北墙位于 z 轴负方向，对应屏幕上方
 
 #### 南墙（屏幕下方）
+- **碰撞节点**: CollisionShape3D
 - **碰撞形状**: BoxShape3D(size = Vector3(sandbox_width, 50, 0.1))
-- **碰撞位置**: (0, 21, sandbox_height/2) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
-- **网格位置**: (0, -2.5, sandbox_height/2) (在 Sandbox 局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(sandbox_width, 3, 0.1) (可见高度 3)
-- **材质**: 红色 (albedo_color = Color(0.7, 0.3, 0.3, 1))
+- **场景文件预设 transform**: Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 6.75)
+- **代码设置**: 只需设置 shape 属性
+- **可见网格**: 在代码中创建 MeshInstance3D
+  - 位置：Vector3(0, -2.5, sandbox_height/2)
+  - 尺寸：Vector3(sandbox_width, 3, 0.1)
+  - 材质：红色 (albedo_color = Color(0.7, 0.3, 0.3, 1))
 - **Godot 坐标系重点**: 南墙位于 z 轴正方向，对应屏幕下方
 
 #### 东墙（屏幕右侧）
+- **碰撞节点**: CollisionShape3D
 - **碰撞形状**: BoxShape3D(size = Vector3(0.1, 50, sandbox_height))
-- **碰撞位置**: (sandbox_width/2, 21, 0) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
-- **网格位置**: (sandbox_width/2, -2.5, 0) (在 Sandbox 局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(0.1, 3, sandbox_height) (可见高度 3)
-- **材质**: 黄色 (albedo_color = Color(0.7, 0.7, 0.3, 1))
+- **场景文件预设 transform**: Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -4, 0)
+- **代码设置**: 只需设置 shape 属性
+- **可见网格**: 在代码中创建 MeshInstance3D
+  - 位置：Vector3(sandbox_width/2, -2.5, 0)
+  - 尺寸：Vector3(0.1, 3, sandbox_height)
+  - 材质：黄色 (albedo_color = Color(0.7, 0.7, 0.3, 1))
 - **Godot 坐标系重点**: 东墙位于 x 轴正方向，对应屏幕右侧
 
 #### 西墙（屏幕左侧）
+- **碰撞节点**: CollisionShape3D
 - **碰撞形状**: BoxShape3D(size = Vector3(0.1, 50, sandbox_height))
-- **碰撞位置**: (-sandbox_width/2, 21, 0) (在 Sandbox 局部坐标系中，碰撞形状高度 50)
-- **网格位置**: (-sandbox_width/2, -2.5, 0) (在 Sandbox 局部坐标系中，与地面对齐)
-- **网格缩放**: Vector3(0.1, 3, sandbox_height) (可见高度 3)
-- **材质**: 绿色 (albedo_color = Color(0.3, 0.7, 0.3, 1))
+- **场景文件预设 transform**: Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, -4, 0)
+- **代码设置**: 只需设置 shape 属性
+- **可见网格**: 在代码中创建 MeshInstance3D
+  - 位置：Vector3(-sandbox_width/2, -2.5, 0)
+  - 尺寸：Vector3(0.1, 3, sandbox_height)
+  - 材质：绿色 (albedo_color = Color(0.3, 0.7, 0.3, 1))
 - **Godot 坐标系重点**: 西墙位于 x 轴负方向，对应屏幕左侧
 
 #### 顶部碰撞
@@ -120,6 +132,16 @@
 - 墙壁底部已与地面完全连接，确保无间隙
 - 骰子模型已使用圆滑边缘设计，提升滚动效果
 - 顶部碰撞已移除，确保骰子能正常落到地面
+- **重要：墙体由两部分组成**
+  1. **碰撞形状** (CollisionShape3D) - 在场景文件中定义
+     - 必须在场景文件中预设 transform（位置）
+     - 代码中只需设置 shape 属性
+  2. **可见网格** (MeshInstance3D) - 在代码中动态创建
+     - 必须创建 MeshInstance3D 才能让墙体可见
+     - 位置：y=-2.5（与地面对齐）
+     - 可见高度：3
+     - 材质：带颜色的 StandardMaterial3D
+  3. **参考正确做法**：查看 dice_demo_simple_final.tscn 和 dice_demo_script.gd
 
 ## Godot坐标系说明
 
@@ -230,15 +252,15 @@ func _ready():
 			ground_material.albedo_color = Color(0.5, 0.5, 0.5, 1)
 			ground_mesh.material_override = ground_material
 		
-		# 创建北墙碰撞形状（屏幕上方，z轴负方向）
+		# 创建北墙碰撞形状（屏幕上方，z 轴负方向）
 		var wall_north = sandbox.get_node("WallNorth")
 		if wall_north:
 			var wall_north_shape = BoxShape3D.new()
 			wall_north_shape.size = Vector3(sandbox_width, 50, 0.1)
-			wall_north.position = Vector3(0, 21, -sandbox_height/2)
 			wall_north.shape = wall_north_shape
+			# 注意：墙体的位置已经在场景文件的 transform 中预设，不需要在代码中设置 position
 		
-		# 创建北墙网格
+		# 创建北墙可见网格
 		var wall_north_mesh = MeshInstance3D.new()
 		wall_north_mesh.name = "WallNorthMesh"
 		wall_north_mesh.position = Vector3(0, -2.5, -sandbox_height/2)
@@ -250,15 +272,14 @@ func _ready():
 		wall_north_mesh.material_override = north_wall_material
 		sandbox.add_child(wall_north_mesh)
 		
-		# 创建南墙碰撞形状（屏幕下方，z轴正方向）
+		# 创建南墙碰撞形状（屏幕下方，z 轴正方向）
 		var wall_south = sandbox.get_node("WallSouth")
 		if wall_south:
 			var wall_south_shape = BoxShape3D.new()
 			wall_south_shape.size = Vector3(sandbox_width, 50, 0.1)
-			wall_south.position = Vector3(0, 21, sandbox_height/2)
 			wall_south.shape = wall_south_shape
 		
-		# 创建南墙网格
+		# 创建南墙可见网格
 		var wall_south_mesh = MeshInstance3D.new()
 		wall_south_mesh.name = "WallSouthMesh"
 		wall_south_mesh.position = Vector3(0, -2.5, sandbox_height/2)
@@ -270,15 +291,14 @@ func _ready():
 		wall_south_mesh.material_override = south_wall_material
 		sandbox.add_child(wall_south_mesh)
 		
-		# 创建东墙碰撞形状（屏幕右侧，x轴正方向）
+		# 创建东墙碰撞形状（屏幕右侧，x 轴正方向）
 		var wall_east = sandbox.get_node("WallEast")
 		if wall_east:
 			var wall_east_shape = BoxShape3D.new()
 			wall_east_shape.size = Vector3(0.1, 50, sandbox_height)
-			wall_east.position = Vector3(sandbox_width/2, 21, 0)
 			wall_east.shape = wall_east_shape
 		
-		# 创建东墙网格
+		# 创建东墙可见网格
 		var wall_east_mesh = MeshInstance3D.new()
 		wall_east_mesh.name = "WallEastMesh"
 		wall_east_mesh.position = Vector3(sandbox_width/2, -2.5, 0)
@@ -290,15 +310,14 @@ func _ready():
 		wall_east_mesh.material_override = east_wall_material
 		sandbox.add_child(wall_east_mesh)
 		
-		# 创建西墙碰撞形状（屏幕左侧，x轴负方向）
+		# 创建西墙碰撞形状（屏幕左侧，x 轴负方向）
 		var wall_west = sandbox.get_node("WallWest")
 		if wall_west:
 			var wall_west_shape = BoxShape3D.new()
 			wall_west_shape.size = Vector3(0.1, 50, sandbox_height)
-			wall_west.position = Vector3(-sandbox_width/2, 21, 0)
 			wall_west.shape = wall_west_shape
 		
-		# 创建西墙网格
+		# 创建西墙可见网格
 		var wall_west_mesh = MeshInstance3D.new()
 		wall_west_mesh.name = "WallWestMesh"
 		wall_west_mesh.position = Vector3(-sandbox_width/2, -2.5, 0)
@@ -323,20 +342,21 @@ func _ready():
   - Camera3D (摄像机)
   - DirectionalLight3D (光源)
   - Sandbox (StaticBody3D)
-    - Ground (CollisionShape3D)
-    - GroundMesh (MeshInstance3D)
-    - WallNorth (CollisionShape3D)
-    - WallSouth (CollisionShape3D)
-    - WallEast (CollisionShape3D)
-    - WallWest (CollisionShape3D)
+    - Ground (CollisionShape3D) - transform: (0, -4, 0)
+    - GroundMesh (MeshInstance3D) - transform: (0, -4, 0)
+    - WallNorth (CollisionShape3D) - transform: (0, -4, -6.75)
+    - WallSouth (CollisionShape3D) - transform: (0, -4, 6.75)
+    - WallEast (CollisionShape3D) - transform: (12, -4, 0)
+    - WallWest (CollisionShape3D) - transform: (-12, -4, 0)
   - DiceManager (Node3D)
 ```
 
 ### 场景文件配置
 - **摄像机**: 位置 (0, 60, 0), 旋转 (-PI/2, 0, 0), FOV 15.0
 - **光源**: 位置 (10, 10, 10), 旋转 Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5)
-- **地面**: 位置 (0, -4, 0), 碰撞形状 BoxShape3D
-- **墙壁**: 位置与地面对齐 (y=-4)，碰撞形状高度 50
+- **地面**: transform (0, -4, 0), 碰撞形状在代码中设置
+- **墙体**: transform 在场景文件中预设，代码中只需设置 shape 属性
+- **重要**: 墙体节点必须在场景文件中定义，不能在代码中动态创建
 
 ## 继承方法
 

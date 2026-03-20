@@ -11,170 +11,334 @@ DiceTextureManager 初始化完成
 【贴图管理器】预加载：res://textures/dice/dice_face_6.png
 DiceThrowController 初始化完成
 DiceResultDetector 初始化完成
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
+【CharacterManager】角色管理器已就绪
+【CharacterManager】已加载 1 个英雄数据到缓存
+=== 角色测试场景初始化 ===
 【JSON】开始加载 NumDices.json，路径：res://table/NumDices.json
 【JSON】加载数字骰子配置 ID=1001
 【JSON】加载数字骰子配置 ID=1002
 【JSON】NumDices.json 加载完成，配置数=2
-【骰子】set_dice_face_config 被调用，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】dice_face_config 已赋值：{ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
+【JSON】开始加载 attr_dices.json，路径：res://table/attr_dices.json
+【JSON】加载属性骰子配置 hero_id=1, hero_name=测试角色
+【JSON】attr_dices.json 加载完成，配置数=1
+Attribute Dice Manager initialized
+【BaseCharacter】加载角色数据：测试角色 (ID: 1)
+【PlayerCharacter】创建玩家角色：测试角色
+【CharacterManager】创建 player 角色：测试角色 (ID: 1)
+【场景】玩家角色创建成功：测试角色
+【场景】HP: 100/100
+=== 角色测试场景初始化完成 ===
+【骰子】_ready() 开始执行
+MeshInstance3D found: MeshInstance3D
+No mesh found, creating fallback mesh
+Fallback cube mesh with 6 surfaces created
+【初始化】备用网格创建完成，等待配置加载
+【骰子】_ready() 执行完成，等待配置加载
+【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/dice/dice_face_1.png", 1: "res://textures/dice/dice_face_2.png", 2: "res://textures/dice/dice_face_3.png", 3: "res://textures/dice/dice_face_4.png", 4: "res://textures/dice/dice_face_5.png", 5: "res://textures/dice/dice_face_6.png" }
+【骰子】dice_face_config 已赋值：{ 0: "res://textures/dice/dice_face_1.png", 1: "res://textures/dice/dice_face_2.png", 2: "res://textures/dice/dice_face_3.png", 3: "res://textures/dice/dice_face_4.png", 4: "res://textures/dice/dice_face_5.png", 5: "res://textures/dice/dice_face_6.png" }
 【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【贴图管理器】开始应用贴图到 PowerDice
+【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/dice/dice_face_1.png", 1: "res://textures/dice/dice_face_2.png", 2: "res://textures/dice/dice_face_3.png", 3: "res://textures/dice/dice_face_4.png", 4: "res://textures/dice/dice_face_5.png", 5: "res://textures/dice/dice_face_6.png" }
+【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/dice/dice_face_1.png", 1: "res://textures/dice/dice_face_2.png", 2: "res://textures/dice/dice_face_3.png", 3: "res://textures/dice/dice_face_4.png", 4: "res://textures/dice/dice_face_5.png", 5: "res://textures/dice/dice_face_6.png" }
+【贴图管理器】开始应用贴图到 Dice6
 【贴图管理器】面 0 加载贴图：res://textures/dice/dice_face_1.png
 【贴图管理器】面 1 加载贴图：res://textures/dice/dice_face_2.png
 【贴图管理器】面 2 加载贴图：res://textures/dice/dice_face_3.png
 【贴图管理器】面 3 加载贴图：res://textures/dice/dice_face_4.png
 【贴图管理器】面 4 加载贴图：res://textures/dice/dice_face_5.png
 【贴图管理器】面 5 加载贴图：res://textures/dice/dice_face_6.png
+【贴图管理器】网格表面数：6, 需要材质数：6
+【贴图管理器】网格类型：ArrayMesh
+【贴图管理器】应用材质 0 到表面 0
+【贴图管理器】应用材质 1 到表面 1
+【贴图管理器】应用材质 2 到表面 2
+【贴图管理器】应用材质 3 到表面 3
+【贴图管理器】应用材质 4 到表面 4
+【贴图管理器】应用材质 5 到表面 5
 【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-Set dice value config: { "0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0 }
-【骰子】set_dice_face_config 被调用，config={ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】dice_face_config 已赋值：{ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
+Set dice face config: { 0: "res://textures/dice/dice_face_1.png", 1: "res://textures/dice/dice_face_2.png", 2: "res://textures/dice/dice_face_3.png", 3: "res://textures/dice/dice_face_4.png", 4: "res://textures/dice/dice_face_5.png", 5: "res://textures/dice/dice_face_6.png" }
+Set dice value config: { 0: 1.0, 1: 2.0, 2: 3.0, 3: 4.0, 4: 5.0, 5: 6.0 }
+【场景】角色骰子已与角色关联
+【场景】角色骰子已创建，配置：{ 0: "res://textures/dice/dice_face_1.png", 1: "res://textures/dice/dice_face_2.png", 2: "res://textures/dice/dice_face_3.png", 3: "res://textures/dice/dice_face_4.png", 4: "res://textures/dice/dice_face_5.png", 5: "res://textures/dice/dice_face_6.png" }
+【JSON】开始加载 NumDices.json，路径：res://table/NumDices.json
+【JSON】加载数字骰子配置 ID=1001
+【JSON】加载数字骰子配置 ID=1002
+【JSON】NumDices.json 加载完成，配置数=2
+【JSON】开始加载 attr_dices.json，路径：res://table/attr_dices.json
+【JSON】加载属性骰子配置 hero_id=1, hero_name=测试角色
+【JSON】attr_dices.json 加载完成，配置数=1
+【JSON】开始加载 attr_dices.json，路径：res://table/attr_dices.json
+【JSON】加载属性骰子配置 hero_id=1, hero_name=测试角色
+【JSON】attr_dices.json 加载完成，配置数=1
+【文字颜色】从配置读取：str = (0.7529, 0.0, 0.0, 1.0)
+Cleaned up old viewports
+
+[更新纹理] 开始更新骰子纹理
+  属性类型：str
+  属性值：[5, 11, 17, 23, 29, 35]
+  贴图路径：["1001", "1001", "1001", "1001", "1001", "1001"]
+【贴图管理器】错误：MeshInstance3D 没有 mesh
+【属性骰子】使用 DiceTextureManager 统一管理贴图，文字颜色：(0.7529, 0.0, 0.0, 1.0)
+  [成功] 更新骰子纹理
+[更新纹理] 结束
+
+Updated attribute dice: str for hero 1
+Attribute values: [5, 11, 17, 23, 29, 35]
+Texture paths: ["1001", "1001", "1001", "1001", "1001", "1001"]
+Points color: (0.7529, 0.0, 0.0, 1.0)
+Created attribute dice for hero 1 (str)
+Texture paths: ["1001", "1001", "1001", "1001", "1001", "1001"]
+【场景】力量骰子已创建
+【JSON】开始加载 NumDices.json，路径：res://table/NumDices.json
+【JSON】加载数字骰子配置 ID=1001
+【JSON】加载数字骰子配置 ID=1002
+【JSON】NumDices.json 加载完成，配置数=2
+【JSON】开始加载 attr_dices.json，路径：res://table/attr_dices.json
+【JSON】加载属性骰子配置 hero_id=1, hero_name=测试角色
+【JSON】attr_dices.json 加载完成，配置数=1
+【JSON】开始加载 attr_dices.json，路径：res://table/attr_dices.json
+【JSON】加载属性骰子配置 hero_id=1, hero_name=测试角色
+【JSON】attr_dices.json 加载完成，配置数=1
+【文字颜色】从配置读取：agi = (0.6627, 0.8157, 0.5569, 1.0)
+Cleaned up old viewports
+
+[更新纹理] 开始更新骰子纹理
+  属性类型：agi
+  属性值：[4, 10, 16, 22, 30, 32]
+  贴图路径：["1001", "1001", "1001", "1001", "1001", "1001"]
+【贴图管理器】错误：MeshInstance3D 没有 mesh
+【属性骰子】使用 DiceTextureManager 统一管理贴图，文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+  [成功] 更新骰子纹理
+[更新纹理] 结束
+
+Updated attribute dice: agi for hero 1
+Attribute values: [4, 10, 16, 22, 30, 32]
+Texture paths: ["1001", "1001", "1001", "1001", "1001", "1001"]
+Points color: (0.6627, 0.8157, 0.5569, 1.0)
+Created attribute dice for hero 1 (agi)
+Texture paths: ["1001", "1001", "1001", "1001", "1001", "1001"]
+【场景】敏捷骰子已创建
+【JSON】开始加载 NumDices.json，路径：res://table/NumDices.json
+【JSON】加载数字骰子配置 ID=1001
+【JSON】加载数字骰子配置 ID=1002
+【JSON】NumDices.json 加载完成，配置数=2
+【JSON】开始加载 attr_dices.json，路径：res://table/attr_dices.json
+【JSON】加载属性骰子配置 hero_id=1, hero_name=测试角色
+【JSON】attr_dices.json 加载完成，配置数=1
+【JSON】开始加载 attr_dices.json，路径：res://table/attr_dices.json
+【JSON】加载属性骰子配置 hero_id=1, hero_name=测试角色
+【JSON】attr_dices.json 加载完成，配置数=1
+【文字颜色】从配置读取：int = (0.5569, 0.6627, 0.8588, 1.0)
+Cleaned up old viewports
+
+[更新纹理] 开始更新骰子纹理
+  属性类型：int
+  属性值：[1, 2, 3, 4, 5, 10]
+  贴图路径：["1001", "1001", "1001", "1001", "1001", "1001"]
+【贴图管理器】错误：MeshInstance3D 没有 mesh
+【属性骰子】使用 DiceTextureManager 统一管理贴图，文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+  [成功] 更新骰子纹理
+[更新纹理] 结束
+
+Updated attribute dice: int for hero 1
+Attribute values: [1, 2, 3, 4, 5, 10]
+Texture paths: ["1001", "1001", "1001", "1001", "1001", "1001"]
+Points color: (0.5569, 0.6627, 0.8588, 1.0)
+Created attribute dice for hero 1 (int)
+Texture paths: ["1001", "1001", "1001", "1001", "1001", "1001"]
+【场景】智力骰子已创建
+【场景】属性骰子已创建 (str, agi, int)
+
+=== 开始创建技能骰子 ===
+【技能骰子】player_character = <RefCounted#-9223371990297999848>
+【技能骰子】player_character.skill_slot = 1
+【技能骰子】开始创建技能骰子...
+【骰子】_ready() 开始执行
+MeshInstance3D found: MeshInstance3D
+No mesh found, creating fallback mesh
+Fallback cube mesh with 6 surfaces created
+【初始化】备用网格创建完成，等待配置加载
+【骰子】_ready() 执行完成，等待配置加载
+【技能骰子】骰子实例已创建
+【技能骰子】skill_config = { "id": "4001", "face_count": 6.0, "skill_ids": ["10002", "10001", "10002", "10001", "10002", "10001"] }
+【技能骰子】skill_ids_array = ["10002", "10001", "10002", "10001", "10002", "10001"]
+【技能骰子】scene_config = { 0: "res://textures/skill/10002.png", 1: "res://textures/skill/10001.png", 2: "res://textures/skill/10002.png", 3: "res://textures/skill/10001.png", 4: "res://textures/skill/10002.png", 5: "res://textures/skill/10001.png" }
+【技能骰子】value_config = { 0: "10002", 1: "10001", 2: "10002", 3: "10001", 4: "10002", 5: "10001" }
+【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/skill/10002.png", 1: "res://textures/skill/10001.png", 2: "res://textures/skill/10002.png", 3: "res://textures/skill/10001.png", 4: "res://textures/skill/10002.png", 5: "res://textures/skill/10001.png" }
+【骰子】dice_face_config 已赋值：{ 0: "res://textures/skill/10002.png", 1: "res://textures/skill/10001.png", 2: "res://textures/skill/10002.png", 3: "res://textures/skill/10001.png", 4: "res://textures/skill/10002.png", 5: "res://textures/skill/10001.png" }
 【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-【贴图管理器】开始应用贴图到 AgilityDice
-【贴图管理器】面 0 加载贴图：res://textures/dice/dice_face_2.png
-【贴图管理器】面 1 加载贴图：res://textures/dice/dice_face_2.png
-【贴图管理器】面 2 加载贴图：res://textures/dice/dice_face_4.png
-【贴图管理器】面 3 加载贴图：res://textures/dice/dice_face_4.png
-【贴图管理器】面 4 加载贴图：res://textures/dice/dice_face_6.png
-【贴图管理器】面 5 加载贴图：res://textures/dice/dice_face_6.png
+【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/skill/10002.png", 1: "res://textures/skill/10001.png", 2: "res://textures/skill/10002.png", 3: "res://textures/skill/10001.png", 4: "res://textures/skill/10002.png", 5: "res://textures/skill/10001.png" }
+【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/skill/10002.png", 1: "res://textures/skill/10001.png", 2: "res://textures/skill/10002.png", 3: "res://textures/skill/10001.png", 4: "res://textures/skill/10002.png", 5: "res://textures/skill/10001.png" }
+【贴图管理器】开始应用贴图到 @RigidBody3D@7
+【贴图管理器】面 0 贴图加载失败：res://textures/skill/10002.png
+【贴图管理器】面 1 贴图加载失败：res://textures/skill/10001.png
+【贴图管理器】面 2 贴图加载失败：res://textures/skill/10002.png
+【贴图管理器】面 3 贴图加载失败：res://textures/skill/10001.png
+【贴图管理器】面 4 贴图加载失败：res://textures/skill/10002.png
+【贴图管理器】面 5 贴图加载失败：res://textures/skill/10001.png
+【贴图管理器】网格表面数：6, 需要材质数：6
+【贴图管理器】网格类型：ArrayMesh
+【贴图管理器】应用材质 0 到表面 0
+【贴图管理器】应用材质 1 到表面 1
+【贴图管理器】应用材质 2 到表面 2
+【贴图管理器】应用材质 3 到表面 3
+【贴图管理器】应用材质 4 到表面 4
+【贴图管理器】应用材质 5 到表面 5
 【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-Set dice value config: { "0": 2.0, "1": 2.0, "2": 4.0, "3": 4.0, "4": 6.0, "5": 6.0 }
-【骰子】set_dice_face_config 被调用，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】dice_face_config 已赋值：{ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【贴图管理器】开始应用贴图到 IntelligenceDice
-【贴图管理器】面 0 加载贴图：res://textures/dice/dice_face_1.png
-【贴图管理器】面 1 加载贴图：res://textures/dice/dice_face_2.png
-【贴图管理器】面 2 加载贴图：res://textures/dice/dice_face_3.png
-【贴图管理器】面 3 加载贴图：res://textures/dice/dice_face_4.png
-【贴图管理器】面 4 加载贴图：res://textures/dice/dice_face_5.png
-【贴图管理器】面 5 加载贴图：res://textures/dice/dice_face_6.png
+Set dice face config: { 0: "res://textures/skill/10002.png", 1: "res://textures/skill/10001.png", 2: "res://textures/skill/10002.png", 3: "res://textures/skill/10001.png", 4: "res://textures/skill/10002.png", 5: "res://textures/skill/10001.png" }
+Set dice value config: { 0: "10002", 1: "10001", 2: "10002", 3: "10001", 4: "10002", 5: "10001" }
+【技能骰子】已应用配置
+【技能骰子】技能骰子已创建，使用配置 4001
+
+=== 当前场景中的所有骰子 ===
+总骰子数：5
+骰子 0: name = Dice6, type = RigidBody3D
+  - dice_type = normal
+骰子 1: name = attr_dice, type = RigidBody3D
+  - dice_type = attribute
+  - attr_type = str
+  - hero_id = 1
+骰子 2: name = attr_dice, type = RigidBody3D
+  - dice_type = attribute
+  - attr_type = agi
+  - hero_id = 1
+骰子 3: name = attr_dice, type = RigidBody3D
+  - dice_type = attribute
+  - attr_type = int
+  - hero_id = 1
+骰子 4: name = @RigidBody3D@7, type = RigidBody3D
+  - dice_type = normal
+MeshInstance3D found: MeshInstance3D
+No mesh found, trying to load model
+Using fallback mesh with 6 surfaces
+【贴图管理器】开始应用贴图到 attr_dice
+【贴图管理器】应用属性骰子贴图（集成方法）
+【贴图管理器】使用新格式：hero_id=1, attr_type=str, 文字颜色=(0.7529, 0.0, 0.0, 1.0)
+【贴图管理器】加载英雄贴图：res://textures/hero/hero_1001.png
+【贴图管理器】英雄贴图加载成功
+【贴图管理器】骰面尺寸：(1, 1)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：5, 长度：1, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_0
+【贴图管理器】属性骰子面 0 生成动态贴图，数值：5, 文字颜色：(0.7529, 0.0, 0.0, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：11, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_1
+【贴图管理器】属性骰子面 1 生成动态贴图，数值：11, 文字颜色：(0.7529, 0.0, 0.0, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：17, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_2
+【贴图管理器】属性骰子面 2 生成动态贴图，数值：17, 文字颜色：(0.7529, 0.0, 0.0, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：23, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_3
+【贴图管理器】属性骰子面 3 生成动态贴图，数值：23, 文字颜色：(0.7529, 0.0, 0.0, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：29, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_4
+【贴图管理器】属性骰子面 4 生成动态贴图，数值：29, 文字颜色：(0.7529, 0.0, 0.0, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：35, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_5
+【贴图管理器】属性骰子面 5 生成动态贴图，数值：35, 文字颜色：(0.7529, 0.0, 0.0, 1.0)
+【贴图管理器】网格表面数：6, 需要材质数：6
+【贴图管理器】网格类型：ArrayMesh
+【贴图管理器】应用材质 0 到表面 0
+【贴图管理器】应用材质 1 到表面 1
+【贴图管理器】应用材质 2 到表面 2
+【贴图管理器】应用材质 3 到表面 3
+【贴图管理器】应用材质 4 到表面 4
+【贴图管理器】应用材质 5 到表面 5
 【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-Set dice value config: { "0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0 }
-【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】dice_face_config 已赋值：{ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【贴图管理器】开始应用贴图到 SkillDice
-【贴图管理器】面 0 无贴图配置，使用颜色
-【贴图管理器】面 1 无贴图配置，使用颜色
-【贴图管理器】面 2 无贴图配置，使用颜色
-【贴图管理器】面 3 无贴图配置，使用颜色
-【贴图管理器】面 4 无贴图配置，使用颜色
-【贴图管理器】面 5 无贴图配置，使用颜色
+【属性骰子】使用 DiceTextureManager 统一管理贴图，文字颜色：(0.7529, 0.0, 0.0, 1.0)
+Fallback cube mesh with 6 surfaces created
+Attribute dice initialization complete
+MeshInstance3D found: MeshInstance3D
+No mesh found, trying to load model
+Using fallback mesh with 6 surfaces
+【贴图管理器】开始应用贴图到 @RigidBody3D@26
+【贴图管理器】应用属性骰子贴图（集成方法）
+【贴图管理器】使用新格式：hero_id=1, attr_type=agi, 文字颜色=(0.6627, 0.8157, 0.5569, 1.0)
+【贴图管理器】加载英雄贴图：res://textures/hero/hero_1001.png
+【贴图管理器】英雄贴图加载成功
+【贴图管理器】骰面尺寸：(1, 1)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：4, 长度：1, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_0
+【贴图管理器】属性骰子面 0 生成动态贴图，数值：4, 文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：10, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_1
+【贴图管理器】属性骰子面 1 生成动态贴图，数值：10, 文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：16, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_2
+【贴图管理器】属性骰子面 2 生成动态贴图，数值：16, 文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：22, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_3
+【贴图管理器】属性骰子面 3 生成动态贴图，数值：22, 文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：30, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_4
+【贴图管理器】属性骰子面 4 生成动态贴图，数值：30, 文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：32, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_5
+【贴图管理器】属性骰子面 5 生成动态贴图，数值：32, 文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+【贴图管理器】网格表面数：6, 需要材质数：6
+【贴图管理器】网格类型：ArrayMesh
+【贴图管理器】应用材质 0 到表面 0
+【贴图管理器】应用材质 1 到表面 1
+【贴图管理器】应用材质 2 到表面 2
+【贴图管理器】应用材质 3 到表面 3
+【贴图管理器】应用材质 4 到表面 4
+【贴图管理器】应用材质 5 到表面 5
 【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-Set dice value config: { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6 }
-【骰子】set_dice_face_config 被调用，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】dice_face_config 已赋值：{ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【贴图管理器】开始应用贴图到 PowerDice
-【贴图管理器】面 0 加载贴图：res://textures/dice/dice_face_1.png
-【贴图管理器】面 1 加载贴图：res://textures/dice/dice_face_2.png
-【贴图管理器】面 2 加载贴图：res://textures/dice/dice_face_3.png
-【贴图管理器】面 3 加载贴图：res://textures/dice/dice_face_4.png
-【贴图管理器】面 4 加载贴图：res://textures/dice/dice_face_5.png
-【贴图管理器】面 5 加载贴图：res://textures/dice/dice_face_6.png
+【属性骰子】使用 DiceTextureManager 统一管理贴图，文字颜色：(0.6627, 0.8157, 0.5569, 1.0)
+Fallback cube mesh with 6 surfaces created
+Attribute dice initialization complete
+MeshInstance3D found: MeshInstance3D
+No mesh found, trying to load model
+Using fallback mesh with 6 surfaces
+【贴图管理器】开始应用贴图到 @RigidBody3D@42
+【贴图管理器】应用属性骰子贴图（集成方法）
+【贴图管理器】使用新格式：hero_id=1, attr_type=int, 文字颜色=(0.5569, 0.6627, 0.8588, 1.0)
+【贴图管理器】加载英雄贴图：res://textures/hero/hero_1001.png
+【贴图管理器】英雄贴图加载成功
+【贴图管理器】骰面尺寸：(1, 1)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：1, 长度：1, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_0
+【贴图管理器】属性骰子面 0 生成动态贴图，数值：1, 文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：2, 长度：1, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_1
+【贴图管理器】属性骰子面 1 生成动态贴图，数值：2, 文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：3, 长度：1, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_2
+【贴图管理器】属性骰子面 2 生成动态贴图，数值：3, 文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：4, 长度：1, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_3
+【贴图管理器】属性骰子面 3 生成动态贴图，数值：4, 文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：5, 长度：1, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_4
+【贴图管理器】属性骰子面 4 生成动态贴图，数值：5, 文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+【动态贴图】加载英雄贴图成功
+(2) 【字体自适应】文字：10, 长度：2, 最终字号：288
+【动态贴图】Viewport 已添加到场景树：AttrDiceFace_5
+【贴图管理器】属性骰子面 5 生成动态贴图，数值：10, 文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+【贴图管理器】网格表面数：6, 需要材质数：6
+【贴图管理器】网格类型：ArrayMesh
+【贴图管理器】应用材质 0 到表面 0
+【贴图管理器】应用材质 1 到表面 1
+【贴图管理器】应用材质 2 到表面 2
+【贴图管理器】应用材质 3 到表面 3
+【贴图管理器】应用材质 4 到表面 4
+【贴图管理器】应用材质 5 到表面 5
 【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-Set dice value config: { "0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0 }
-【骰子】set_dice_face_config 被调用，config={ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】dice_face_config 已赋值：{ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-【贴图管理器】开始应用贴图到 AgilityDice
-【贴图管理器】面 0 加载贴图：res://textures/dice/dice_face_2.png
-【贴图管理器】面 1 加载贴图：res://textures/dice/dice_face_2.png
-【贴图管理器】面 2 加载贴图：res://textures/dice/dice_face_4.png
-【贴图管理器】面 3 加载贴图：res://textures/dice/dice_face_4.png
-【贴图管理器】面 4 加载贴图：res://textures/dice/dice_face_6.png
-【贴图管理器】面 5 加载贴图：res://textures/dice/dice_face_6.png
-【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { "0": "res://textures/dice/dice_face_2.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_4.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_6.png", "5": "res://textures/dice/dice_face_6.png" }
-Set dice value config: { "0": 2.0, "1": 2.0, "2": 4.0, "3": 4.0, "4": 6.0, "5": 6.0 }
-【骰子】set_dice_face_config 被调用，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】dice_face_config 已赋值：{ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-【贴图管理器】开始应用贴图到 IntelligenceDice
-【贴图管理器】面 0 加载贴图：res://textures/dice/dice_face_1.png
-【贴图管理器】面 1 加载贴图：res://textures/dice/dice_face_2.png
-【贴图管理器】面 2 加载贴图：res://textures/dice/dice_face_3.png
-【贴图管理器】面 3 加载贴图：res://textures/dice/dice_face_4.png
-【贴图管理器】面 4 加载贴图：res://textures/dice/dice_face_5.png
-【贴图管理器】面 5 加载贴图：res://textures/dice/dice_face_6.png
-【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { "0": "res://textures/dice/dice_face_1.png", "1": "res://textures/dice/dice_face_2.png", "2": "res://textures/dice/dice_face_3.png", "3": "res://textures/dice/dice_face_4.png", "4": "res://textures/dice/dice_face_5.png", "5": "res://textures/dice/dice_face_6.png" }
-Set dice value config: { "0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0 }
-【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】dice_face_config 已赋值：{ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-【贴图管理器】开始应用贴图到 SkillDice
-【贴图管理器】面 0 无贴图配置，使用颜色
-【贴图管理器】面 1 无贴图配置，使用颜色
-【贴图管理器】面 2 无贴图配置，使用颜色
-【贴图管理器】面 3 无贴图配置，使用颜色
-【贴图管理器】面 4 无贴图配置，使用颜色
-【贴图管理器】面 5 无贴图配置，使用颜色
-【贴图管理器】贴图应用完成，表面数=6
-Set dice face config: { 0: "res://textures/skill/skill_10002.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10002.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10002.png", 5: "res://textures/skill/skill_10001.png" }
-Set dice value config: { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6 }
-【重置】力量骰=1 | 敏捷骰=1 | 智力骰=1 | 技能骰=1
+【属性骰子】使用 DiceTextureManager 统一管理贴图，文字颜色：(0.5569, 0.6627, 0.8588, 1.0)
+Fallback cube mesh with 6 surfaces created
+Attribute dice initialization complete

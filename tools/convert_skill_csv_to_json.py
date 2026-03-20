@@ -497,7 +497,7 @@ def convert_hero_csv_to_json(csv_path, json_path):
             print(f"  ✗ Error parsing line: {e}")
             continue
         
-        if len(values) < 10:
+        if len(values) < 11:
             print(f"  ✗ Warning: Insufficient columns, skipping")
             continue
         
@@ -520,6 +520,8 @@ def convert_hero_csv_to_json(csv_path, json_path):
         skill_dice_id = [s.strip() for s in values[7].strip().strip('"').split(';')] if values[7].strip() else []
         texture = [s.strip() for s in values[8].strip().strip('"').split(';')] if values[8].strip() else []
         portrait = values[9].strip()
+        # hero_texture 是角色属性骰子的六个状态贴图（idle, hit, attack, anger, happy, die）
+        hero_texture = [s.strip() for s in values[10].strip().strip('"').split(';')] if values[10].strip() else []
         
         print(f"  Hero ID: {hero_id}")
         print(f"  Name: {name}")
@@ -531,6 +533,7 @@ def convert_hero_csv_to_json(csv_path, json_path):
         print(f"  Skill Dice ID: {skill_dice_id}")
         print(f"  Texture: {texture}")
         print(f"  Portrait: {portrait}")
+        print(f"  Hero Texture: {hero_texture}")
         
         hero = {
             'id': hero_id,
@@ -542,7 +545,8 @@ def convert_hero_csv_to_json(csv_path, json_path):
             'skill_slot': skill_slot,
             'skill_dice_id': skill_dice_id,
             'texture': texture,
-            'portrait': portrait
+            'portrait': portrait,
+            'hero_texture': hero_texture
         }
         
         heroes.append(hero)
