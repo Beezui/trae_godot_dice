@@ -214,29 +214,10 @@ func _on_start_timer_timeout():
 	# 创建角色骰子
 	_create_character_dice()
 	
-	# 创建属性骰子
-	_create_attribute_dices()
-	
-	# 创建技能骰子
-	_create_skill_dices()
+	# 注意：属性骰子和技能骰子会在角色骰子落地后自动生成（见 _on_character_dice_land）
 	
 	# 更新 HP 显示
 	_update_hp_display()
-	
-	# 输出所有骰子信息
-	print("\n=== 当前场景中的所有骰子 ===")
-	var all_dices = get_all_dices()
-	print("总骰子数：", all_dices.size())
-	for i in range(all_dices.size()):
-		var dice = all_dices[i]
-		if dice:
-			print("骰子 ", i, ": name = ", dice.name, ", type = ", dice.get_class())
-			if dice.has_method("get_dice_type"):
-				print("  - dice_type = ", dice.get_dice_type())
-			if dice.has_method("get_attr_type"):
-				print("  - attr_type = ", dice.get_attr_type())
-			if dice.has_method("get_hero_id"):
-				print("  - hero_id = ", dice.get_hero_id())
 
 
 func _create_character_dice():
@@ -252,8 +233,6 @@ func _create_character_dice():
 	var hero_id = hero_config.get("hero_id", 1)
 	
 	# 构建贴图配置：使用 hero.json 中的 hero_texture 字段
-	# 格式：["hit", "idle", "idle", "idle", "idle", "idle"]
-	# 需要转换为完整路径：res://textures/hero/hero_1_hit.png 等
 	var scene_config = {}
 	for i in range(6):
 		if i < hero_texture_ids.size():
@@ -262,7 +241,6 @@ func _create_character_dice():
 			scene_config[i] = texture_path
 			print("【场景】角色骰子面 ", i, " 贴图：", texture_path)
 		else:
-			# 默认使用 idle 状态
 			var default_path = "res://textures/hero/hero_" + str(hero_id) + "_idle.png"
 			scene_config[i] = default_path
 			print("【场景】角色骰子面 ", i, " 使用默认贴图：", default_path)
@@ -270,27 +248,72 @@ func _create_character_dice():
 	# 点数配置使用默认值 1-6
 	var value_config = {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
 	
-	# 创建角色骰子（调整初始位置到地面上方）
+	# 创建角色骰子
 	character_dice = dice_scene.instantiate()
-	character_dice.position = Vector3(0, 4, 0)  # y=4 与其他骰子初始高度一致
-	character_dice.scale = Vector3(1, 1, 1)  # 父节点保持默认缩放，MeshInstance3D 由 CharacterManager 设置
+	
+	# 玩家角色从屏幕下方（南墙内侧）投掷，NPC 从上方（北墙内侧）投掷
+	# 初始位置必须在沙盘内，否则会被墙挡住
+	var is_player = player_character.is_player_controlled
+	var throw_start_z = (base_height/2 - 2) if is_player else (-base_height/2 + 2)  # 玩家：4.75（南墙内），NPC：-4.75（北墙内）
+	var random_x = randf_range(-base_width/4, base_width/4)  # x 轴随机范围：-6 到 6
+	character_dice.position = Vector3(random_x, 8, throw_start_z)  # y=8 从高处落下
+	character_dice.scale = Vector3(1, 1, 1)
 	sandbox.add_child(character_dice)
 	
-	# 启用重力，让角色骰子落到地面
+	# 启用重力
 	character_dice.gravity_scale = 1.0
 	
-	# 设置骰子配置（使用 set_dice_face_config 方法）
+	# 设置骰子配置
 	if character_dice.has_method("set_dice_face_config"):
 		character_dice.set_dice_face_config(scene_config, value_config)
+	
+	# 设置骰子类型为角色骰子
+	if character_dice.has_method("set_dice_type"):
+		character_dice.set_dice_type("character")
 	
 	# 将角色骰子与角色关联
 	if player_character:
 		player_character.character_dice = character_dice
-		# 使用 CharacterManager 集中设置角色骰子缩放（1.5 倍）
 		CharacterManager.set_character_dice_scale(1, Vector3(1.5, 1.5, 1.5))
 		print("【场景】角色骰子已与角色关联")
 	
-	print("【场景】角色骰子已创建，使用 hero.json 的 hero_texture 配置")
+	# 自动投掷：玩家角色向前（z 负方向），NPC 向后（z 正方向）
+	var throw_direction = -1 if is_player else 1  # 玩家：-1（向前），NPC: 1（向后）
+	var throw_force = Vector3(0, -5, throw_direction * 20)  # 向前/后方投掷
+	var angular_force = Vector3(
+		randf_range(-10, 10),
+		randf_range(-10, 10),
+		randf_range(-10, 10)
+	)
+	
+	if character_dice.has_method("roll"):
+		# 延迟投掷，确保配置已应用
+		var throw_timer = Timer.new()
+		throw_timer.wait_time = 0.3
+		throw_timer.one_shot = true
+		throw_timer.timeout.connect(func():
+			character_dice.roll(throw_force, angular_force)
+			print("【场景】角色骰子自动投掷：力 =", throw_force, ", 旋转 =", angular_force)
+			
+			# 投掷后延迟生成属性骰子和技能骰子（等待角色骰子基本停止）
+			var spawn_timer = Timer.new()
+			spawn_timer.wait_time = 2.0  # 2 秒后生成
+			spawn_timer.one_shot = true
+			spawn_timer.timeout.connect(_on_character_dice_land)
+			add_child(spawn_timer)
+			spawn_timer.start()
+		)
+		add_child(throw_timer)
+		throw_timer.start()
+	
+	print("【场景】角色骰子已创建，入场位置：", character_dice.position, ", 类型：", "玩家" if is_player else "NPC")
+
+
+func _on_character_dice_land():
+	"""角色骰子落地后生成属性骰子和技能骰子"""
+	print("【场景】角色骰子已落地，开始生成属性骰子和技能骰子")
+	_create_attribute_dices()
+	_create_skill_dices()
 
 
 func _create_attribute_dices():

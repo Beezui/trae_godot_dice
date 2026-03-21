@@ -4,9 +4,12 @@ extends Node
 ## 所有场景的摄像机配置都通过此管理器统一管理
 
 ## 摄像机标准配置参数
-@export var camera_position: Vector3 = Vector3(0, 60, 0)  ## 摄像机位置（正上方俯视）
+@export var camera_position: Vector3 = Vector3(1.3, 50, 14.1)  ## 摄像机位置（最新配置）
 @export var camera_fov: float = 15.0  ## 摄像机视野（15 度，接近平视效果）
-@export var camera_rotation: Vector3 = Vector3(-PI/2, 0, 0)  ## 摄像机旋转（-90 度俯视）
+@export var camera_rotation: Vector3 = Vector3(-75 * PI/180, 5.1 * PI/180, -4.9 * PI/180)  ## 摄像机旋转（测试：x=-75°, y=5.1°, z=-4.9°）
+## 说明：x=-75° 为俯视，y=5.1° 为轻微向右偏航，z=-4.9° 为轻微向左翻滚
+## z 轴正方向为屏幕下方（南墙），z=0 表示在中心高度
+## Godot 旋转顺序：rotation.x, rotation.y, rotation.z（对应 Vector3 的 x, y, z）
 
 ## 单例实例
 static var _instance: CameraManager = null
@@ -18,8 +21,19 @@ var registered_cameras: Array = []
 func _ready():
 	# 注册为单例
 	_instance = self
+	print("========================================")
 	print("CameraManager 初始化完成")
-	print("【摄像机配置】位置：%s, FOV: %.1f" % [camera_position, camera_fov])
+	print("========================================")
+	print("【摄像机配置】")
+	print("  位置 (position): %s" % camera_position)
+	print("  视野 (fov): %.1f 度" % camera_fov)
+	print("  旋转 (rotation): %s" % camera_rotation)
+	print("  旋转角度 (度数): x=%.2f°, y=%.2f°, z=%.2f°" % [
+		rad_to_deg(camera_rotation.x),
+		rad_to_deg(camera_rotation.y),
+		rad_to_deg(camera_rotation.z)
+	])
+	print("========================================")
 
 
 ## 获取单例实例
@@ -94,29 +108,37 @@ func update_rotation(new_rotation: Vector3):
 func set_preset(preset: String):
 	match preset:
 		"default":
-			camera_position = Vector3(0, 60, 0)
+			camera_position = Vector3(1.3, 50, 14.1)
 			camera_fov = 15.0
-			camera_rotation = Vector3(-PI/2, 0, 0)
+			camera_rotation = Vector3(-75 * PI/180, 5.1 * PI/180, -4.9 * PI/180)  # 测试：x=-75°, y=5.1°, z=-4.9°
 		"high":
 			# 更高的摄像机位置
-			camera_position = Vector3(0, 80, 0)
-			camera_fov = 12.0
-			camera_rotation = Vector3(-PI/2, 0, 0)
+			camera_position = Vector3(1.3, 80, 14.1)
+			camera_fov = 15.0
+			camera_rotation = Vector3(-75 * PI/180, 5.1 * PI/180, -4.9 * PI/180)  # 测试
 		"low":
-			# 更低的摄像机位置
-			camera_position = Vector3(0, 40, 0)
-			camera_fov = 20.0
-			camera_rotation = Vector3(-PI/2, 0, 0)
+			# 更低摄像机位置
+			camera_position = Vector3(1.3, 40, 14.1)
+			camera_fov = 15.0
+			camera_rotation = Vector3(-75 * PI/180, 5.1 * PI/180, -4.9 * PI/180)  # 测试
 		"wide":
 			# 更宽的视野
-			camera_position = Vector3(0, 60, 0)
-			camera_fov = 25.0
-			camera_rotation = Vector3(-PI/2, 0, 0)
+			camera_position = Vector3(1.3, 50, 14.1)
+			camera_fov = 15.0
+			camera_rotation = Vector3(-75 * PI/180, 5.1 * PI/180, -4.9 * PI/180)  # 测试
 		_:
 			print("【摄像机管理器】未知预设：%s" % preset)
 			return
 	
 	print("【摄像机管理器】应用预设：%s" % preset)
+	print("  位置：%s" % camera_position)
+	print("  FOV: %.1f" % camera_fov)
+	print("  旋转：%s (x=%.2f°, y=%.2f°, z=%.2f°)" % [
+		camera_rotation,
+		rad_to_deg(camera_rotation.x),
+		rad_to_deg(camera_rotation.y),
+		rad_to_deg(camera_rotation.z)
+	])
 	apply_to_all_cameras()
 
 
@@ -148,8 +170,42 @@ func list_cameras():
 
 ## 重置为默认配置
 func reset_to_default():
-	camera_position = Vector3(0, 60, 0)
+	camera_position = Vector3(1.3, 50, 14.1)
 	camera_fov = 15.0
-	camera_rotation = Vector3(-PI/2, 0, 0)
+	camera_rotation = Vector3(-75 * PI/180, 5.1 * PI/180, -4.9 * PI/180)  # 测试：x=-75°, y=5.1°, z=-4.9°
 	print("【摄像机管理器】重置为默认配置")
+	print("  位置：%s" % camera_position)
+	print("  FOV: %.1f" % camera_fov)
+	print("  旋转：%s (x=%.2f°, y=%.2f°, z=%.2f°)" % [
+		camera_rotation,
+		rad_to_deg(camera_rotation.x),
+		rad_to_deg(camera_rotation.y),
+		rad_to_deg(camera_rotation.z)
+	])
 	apply_to_all_cameras()
+
+
+## 输出详细摄像机参数（用于调试和计算）
+func print_camera_parameters():
+	print("========================================")
+	print("【摄像机详细参数】")
+	print("========================================")
+	print("1. 位置 (Position):")
+	print("   Vector3: %s" % camera_position)
+	print("   X: %.2f (左右方向)" % camera_position.x)
+	print("   Y: %.2f (高度)" % camera_position.y)
+	print("   Z: %.2f (前后方向)" % camera_position.z)
+	print("")
+	print("2. 视野 (Field of View): %.1f 度" % camera_fov)
+	print("")
+	print("3. 旋转 (Rotation):")
+	print("   Vector3: %s" % camera_rotation)
+	print("   X: %.6f rad (%.2f°) - 绕 x 轴旋转（俯视/仰视）" % [camera_rotation.x, rad_to_deg(camera_rotation.x)])
+	print("   Y: %.6f rad (%.2f°) - 绕 y 轴旋转（偏航）" % [camera_rotation.y, rad_to_deg(camera_rotation.y)])
+	print("   Z: %.6f rad (%.2f°) - 绕 z 轴旋转（翻滚）" % [camera_rotation.z, rad_to_deg(camera_rotation.z)])
+	print("")
+	print("4. 旋转说明:")
+	print("   -90° (x 轴): 完全俯视，从正上方垂直向下看")
+	print("   0° (y 轴): 无偏航旋转")
+	print("   0° (z 轴): 无翻滚倾斜")
+	print("========================================")

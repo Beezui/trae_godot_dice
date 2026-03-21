@@ -237,6 +237,11 @@ func _on_roll_timer_timeout():
 	if linear_velocity.length() < 0.1 and angular_velocity.length() < 0.1:
 		is_rolling = false
 		check_dice_value()
+		
+		# 如果是角色骰子，停止后锁定位置
+		if dice_type == "character":
+			lock_character_dice()
+		
 		# 通知骰子管理器
 		var parent = get_parent()
 		if parent and parent.has_method("on_dice_stopped"):
@@ -244,6 +249,25 @@ func _on_roll_timer_timeout():
 	else:
 		# 骰子还在运动，重新启动计时器
 		roll_timer.start()
+
+
+func lock_character_dice():
+	"""锁定角色骰子，使其不受外力影响"""
+	# 禁用重力
+	gravity_scale = 0.0
+	
+	# 清除所有速度
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	
+	# 设置睡眠状态，防止物理引擎继续计算
+	sleeping = true
+	
+	# 设置碰撞层，避免与其他骰子碰撞
+	collision_layer = 0
+	collision_mask = 0
+	
+	print("【角色骰子】已锁定位置，不受外力影响")
 
 func _on_result_control_timeout():
 	# 控制骰子结果

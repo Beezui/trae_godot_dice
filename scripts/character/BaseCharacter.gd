@@ -181,7 +181,15 @@ func set_character_dice_scale(scale: Vector3):
 		var mesh = character_dice.get_node("MeshInstance3D")
 		if mesh:
 			mesh.scale = scale
-			print("【BaseCharacter】", name, " 角色骰子缩放已设置为：", scale)
+			print("【BaseCharacter】", name, " 角色骰子网格缩放已设置为：", scale)
+		
+		# 同步放大碰撞体
+		var collision_shape = character_dice.get_node("CollisionShape3D")
+		if collision_shape and collision_shape.shape:
+			# 根据缩放比例调整碰撞体大小
+			var base_size = Vector3(1, 1, 1)  # 基础碰撞体大小
+			collision_shape.shape.size = base_size * scale
+			print("【BaseCharacter】", name, " 角色骰子碰撞体已同步放大：", collision_shape.shape.size)
 
 
 func get_attribute_value(attr_type: String, face_index: int = 0) -> int:
