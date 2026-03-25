@@ -8,6 +8,9 @@
 - `SkillDices.csv` → `SkillDices.json`（技能骰子配置）
 - `AttrDices.csv` → `AttrDices.json`（属性骰子配置）
 - `hero.csv` → `hero.json`（英雄角色配置）
+- `scenes.csv` → `scenes.json`（场景配置）
+- `core_nodes.csv` → `core_nodes.json`（核心节点配置）
+- `random_nodes.csv` → `random_nodes.json`（随机节点配置）
 
 ## 工具位置
 
@@ -16,12 +19,27 @@ res://tools/
 ├── convert_skill_csv_to_json.py     # Python 版本（推荐）
 ├── convert_skill_csv_to_json.ps1    # PowerShell 版本（备选）
 ├── convert_skill_csv_to_json.bat    # Windows 批处理启动器
+├── convert_all.bat                  # 批量转换所有配置文件
 └── README.md                        # 本说明文档
 ```
 
 ## 使用方法
 
-### 方法一：Python 版本（强烈推荐）
+### 方法 0：批量转换所有配置（推荐）
+
+**最快速的方式，一次性转换所有配置文件！**
+
+1. **双击运行批处理文件**：
+   ```
+   res://tools/convert_all.bat
+   ```
+
+2. **等待转换完成**：
+   - 自动依次转换 8 个配置文件
+   - 显示每个文件的转换进度
+   - 转换完成后按任意键关闭
+
+### 方法一：Python 版本（推荐单个文件转换）
 
 **这是最可靠的方法，推荐使用！**
 
@@ -45,6 +63,12 @@ res://tools/
    
    # 导出英雄角色表
    python convert_skill_csv_to_json.py --hero
+   
+   # 导出核心节点表
+   python convert_skill_csv_to_json.py --core-nodes
+   
+   # 导出随机节点表
+   python convert_skill_csv_to_json.py --random-nodes
    ```
 3. **自动转换**：
    - 导出技能配置：读取 `res://table/skill.csv` → 转换为 `res://table/skill.json`
@@ -52,6 +76,9 @@ res://tools/
    - 导出技能骰子：读取 `res://table/SkillDices.csv` → 转换为 `res://table/SkillDices.json`
    - 导出属性骰子：读取 `res://table/AttrDices.csv` → 转换为 `res://table/AttrDices.json`
    - 导出英雄角色：读取 `res://table/hero.csv` → 转换为 `res://table/hero.json`
+   - 导出场景配置：读取 `res://table/scenes.csv` → 转换为 `res://table/scenes.json`
+   - 导出核心节点：读取 `res://table/core_nodes.csv` → 转换为 `res://table/core_nodes.json`
+   - 导出随机节点：读取 `res://table/random_nodes.csv` → 转换为 `res://table/random_nodes.json`
    - 显示转换结果和数据列表
 
 4. **查看结果**：
@@ -61,6 +88,9 @@ res://tools/
      - 技能骰子：`res://table/SkillDices.json`
      - 属性骰子：`res://table/AttrDices.json`
      - 英雄角色：`res://table/hero.json`
+     - 场景配置：`res://table/scenes.json`
+     - 核心节点：`res://table/core_nodes.json`
+     - 随机节点：`res://table/random_nodes.json`
    - 中文正常显示，无乱码
 
 ### 方法二：PowerShell 版本（备选）
@@ -160,6 +190,15 @@ A: 英雄角色配置中的数组（如属性值、技能骰子 ID、纹理等�
 ### Q: 技能骰子 ID 现在是数组格式，如何配置？
 A: 技能骰子 ID 现在支持多个值，使用分号（;）分隔，例如：`4001;4002;4003`。
 
+### Q: 核心节点配置中的 next、enemy、npc 字段如何配置？
+A: 这些字段都是数组格式，使用分号（;）分隔，例如：
+- `next`: `2;4;6` 表示下一个节点可以是 2、4 或 6
+- `enemy`: `1;2;3` 表示包含敌人 ID 为 1、2、3 的敌人
+- `npc`: `1;3` 表示包含 NPC ID 为 1 和 3 的 NPC
+
+### Q: 随机节点配置中的 npc 字段如何配置？
+A: npc 字段使用分号（;）分隔多个 NPC ID，例如：`1;2;3` 表示包含 NPC ID 为 1、2、3 的 NPC。
+
 ## 添加新技能
 
 1. **编辑 skill.csv**，添加新行：
@@ -200,6 +239,14 @@ A: 技能骰子 ID 现在支持多个值，使用分号（;）分隔，例如：
 4. **编码统一**：建议统一使用 UTF-8 编码编辑 CSV 文件
 
 ## 更新日志
+
+- **v1.3** (2026-03-24)
+  - 新增核心节点配置转换功能（core_nodes.csv → core_nodes.json）
+  - 新增随机节点配置转换功能（random_nodes.csv → random_nodes.json）
+  - 支持关卡系统配置表的完整转换
+
+- **v1.2** (2026-03-21)
+  - 新增场景配置转换功能
 
 - **v1.1** (2026-03-17)
   - 新增属性骰子配置转换功能

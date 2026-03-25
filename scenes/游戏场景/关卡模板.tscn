@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://cjf4fv3e65lc7"]
+
+[ext_resource type="Script" path="res://scenes/游戏场景/关卡模板.gd" id="1_6iwxt"]
+
+[node name="关卡模板" type="Node3D" unique_id=1754755647]
+script = ExtResource("1_6iwxt")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=133602929]
+current = true
+fov = 15.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2003967517]
+
+[node name="BoundarySystem" type="StaticBody3D" parent="." unique_id=737373555]
+
+[node name="Ground" type="CollisionShape3D" parent="BoundarySystem" unique_id=1134607369]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="BoundarySystem" unique_id=1701708556]
+
+[node name="WallNorth" type="CollisionShape3D" parent="BoundarySystem" unique_id=599160178]
+
+[node name="WallSouth" type="CollisionShape3D" parent="BoundarySystem" unique_id=404697861]
+
+[node name="WallEast" type="CollisionShape3D" parent="BoundarySystem" unique_id=495981471]
+
+[node name="WallWest" type="CollisionShape3D" parent="BoundarySystem" unique_id=1369991326]
+
+[node name="VisualSystem" type="Node3D" parent="." unique_id=2117568493]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="VisualSystem" unique_id=1718694441]
+
+[node name="GameManager" type="Node3D" parent="." unique_id=1364676091]

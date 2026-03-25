@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://clfpsoei35b7j"
+
+[deps]
+
+files=["res://table/random_nodes.name.translation", "res://table/random_nodes.type.translation", "res://table/random_nodes.weight.translation", "res://table/random_nodes.des.translation", "res://table/random_nodes.npc.translation", "res://table/random_nodes.scene.translation"]
+
+source_file="res://table/random_nodes.csv"
+dest_files=["res://table/random_nodes.name.translation", "res://table/random_nodes.type.translation", "res://table/random_nodes.weight.translation", "res://table/random_nodes.des.translation", "res://table/random_nodes.npc.translation", "res://table/random_nodes.scene.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://bmfk8r3e65lc8"]
+
+[ext_resource type="Script" path="res://scenes/游戏场景/熔火之窟.gd" id="1_lavacave"]
+
+[node name="熔火之窟" type="Node3D" unique_id=1754755648]
+script = ExtResource("1_lavacave")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=133602930]
+current = true
+fov = 15.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2003967518]
+
+[node name="BoundarySystem" type="StaticBody3D" parent="." unique_id=737373556]
+
+[node name="Ground" type="CollisionShape3D" parent="BoundarySystem" unique_id=1134607370]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="BoundarySystem" unique_id=1701708557]
+
+[node name="WallNorth" type="CollisionShape3D" parent="BoundarySystem" unique_id=599160179]
+
+[node name="WallSouth" type="CollisionShape3D" parent="BoundarySystem" unique_id=404697862]
+
+[node name="WallEast" type="CollisionShape3D" parent="BoundarySystem" unique_id=495981472]
+
+[node name="WallWest" type="CollisionShape3D" parent="BoundarySystem" unique_id=1369991327]
+
+[node name="VisualSystem" type="Node3D" parent="." unique_id=2117568494]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="VisualSystem" unique_id=1718694442]
+
+[node name="GameManager" type="Node3D" parent="." unique_id=1364676092]

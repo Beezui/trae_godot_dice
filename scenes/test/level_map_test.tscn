@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://cbf51k5nl5jeq"]
+
+[ext_resource type="PackedScene" uid="uid://cpmpnjpqn68sq" path="res://scenes/ui/level_map_display.tscn" id="1_levelmap"]
+[ext_resource type="Script" uid="uid://cmtccgmd25ea2" path="res://scripts/test/level_map_test.gd" id="2_test"]
+
+[node name="LevelMapTest" type="Node2D" unique_id=1581598552]
+script = ExtResource("2_test")
+
+[node name="LevelMapDisplay" parent="." unique_id=401675337 instance=ExtResource("1_levelmap")]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 1.0
+offset_bottom = 1.0

@@ -1,0 +1,91 @@
+[gd_scene format=3 uid="uid://cpmpnjpqn68sq"]
+
+[ext_resource type="Script" uid="uid://ds6nqt3wwqhv6" path="res://scripts/ui/level_map_display.gd" id="1_wlghb"]
+
+[node name="LevelMapDisplay" type="Control" unique_id=881633438]
+layout_mode = 3
+anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wlghb")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=2128113506]
+layout_mode = 0
+anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1717794564]
+layout_mode = 2
+
+[node name="InfoPanel" type="Panel" parent="VBoxContainer" unique_id=1412135681]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+
+[node name="InfoLabels" type="HBoxContainer" parent="VBoxContainer/InfoPanel" unique_id=1519446035]
+layout_mode = 0
+anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DifficultyLabel" type="Label" parent="VBoxContainer/InfoPanel/InfoLabels" unique_id=1530284383]
+layout_mode = 0
+text = "难度：1"
+
+[node name="Spacer1" type="Control" parent="VBoxContainer/InfoPanel/InfoLabels" unique_id=1680294286]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 0
+
+[node name="TotalLabel" type="Label" parent="VBoxContainer/InfoPanel/InfoLabels" unique_id=486945602]
+layout_mode = 0
+text = "总关卡：0"
+
+[node name="Spacer2" type="Control" parent="VBoxContainer/InfoPanel/InfoLabels" unique_id=1163200750]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 0
+
+[node name="SeedLabel" type="Label" parent="VBoxContainer/InfoPanel/InfoLabels" unique_id=385160165]
+layout_mode = 0
+text = "种子：0"
+
+[node name="MapContainer" type="HSplitContainer" parent="VBoxContainer" unique_id=928217407]
+layout_mode = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/MapContainer" unique_id=451268783]
+layout_mode = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Canvas" type="Control" parent="VBoxContainer/MapContainer/ScrollContainer" unique_id=2098765432]
+custom_minimum_size = Vector2(1200, 800)
+layout_mode = 0
+
+[node name="ButtonPanel" type="Panel" parent="VBoxContainer" unique_id=3098765432]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 1
+
+[node name="Buttons" type="HBoxContainer" parent="VBoxContainer/ButtonPanel" unique_id=4098765432]
+layout_mode = 0
+anchors_preset = 15
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="RegenerateButton" type="Button" parent="VBoxContainer/ButtonPanel/Buttons" unique_id=5098765432]
+layout_mode = 0
+text = "重新生成"
+
+[node name="Spacer3" type="Control" parent="VBoxContainer/ButtonPanel/Buttons" unique_id=6098765432]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 0
+
+[node name="PrintLogButton" type="Button" parent="VBoxContainer/ButtonPanel/Buttons" unique_id=7098765432]
+layout_mode = 0
+text = "打印日志"
+
+[connection signal="pressed" from="VBoxContainer/ButtonPanel/Buttons/RegenerateButton" to="." method="_on_regenerate_pressed"]
+[connection signal="pressed" from="VBoxContainer/ButtonPanel/Buttons/PrintLogButton" to="." method="_on_print_log_pressed"]
+[connection signal="gui_input" from="VBoxContainer/MapContainer/ScrollContainer/Canvas" to="." method="_on_canvas_gui_input"]
+[connection signal="draw" from="VBoxContainer/MapContainer/ScrollContainer/Canvas" to="." method="_on_canvas_draw"]

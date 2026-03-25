@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://cnvqat3e65lda"]
+
+[ext_resource type="Script" path="res://scenes/游戏场景/村庄.gd" id="1_village"]
+
+[node name="村庄" type="Node3D" unique_id=1754755649]
+script = ExtResource("1_village")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=133602931]
+current = true
+fov = 15.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2003967519]
+
+[node name="BoundarySystem" type="StaticBody3D" parent="." unique_id=737373557]
+
+[node name="Ground" type="CollisionShape3D" parent="BoundarySystem" unique_id=1134607371]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="BoundarySystem" unique_id=1701708558]
+
+[node name="WallNorth" type="CollisionShape3D" parent="BoundarySystem" unique_id=599160180]
+
+[node name="WallSouth" type="CollisionShape3D" parent="BoundarySystem" unique_id=404697863]
+
+[node name="WallEast" type="CollisionShape3D" parent="BoundarySystem" unique_id=495981473]
+
+[node name="WallWest" type="CollisionShape3D" parent="BoundarySystem" unique_id=1369991328]
+
+[node name="VisualSystem" type="Node3D" parent="." unique_id=2117568495]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="VisualSystem" unique_id=1718694443]
+
+[node name="GameManager" type="Node3D" parent="." unique_id=1364676093]

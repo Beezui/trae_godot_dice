@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c5154heba0d87" path="res://scenes/skill_dice_test.gd" id="1_skill_test"]
 [ext_resource type="PackedScene" uid="uid://c2x0x5e4k0rag" path="res://scenes/dice_6.tscn" id="2_dice"]
-[ext_resource type="Script" path="res://scenes/attr_dice_manager.gd" id="1_attr_dice_manager"]
+[ext_resource type="Script" uid="uid://ci2g62rgjetfq" path="res://scenes/attr_dice_manager.gd" id="1_attr_dice_manager"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fireball"]
 direction = Vector3(0, 0, 1)

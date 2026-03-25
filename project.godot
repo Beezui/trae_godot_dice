@@ -8,6 +8,8 @@
 
 config_version=5
 
+main_scene="res://scenes/test/level_map_test.tscn"
+
 [application]
 
 config/name="晋升吧骰子"
@@ -23,6 +25,7 @@ DiceThrowController="*res://scripts/dice/dice_throw_controller.gd"
 DiceResultDetector="*res://scripts/dice/dice_result_detector.gd"
 CharacterManager="*res://scripts/character/CharacterManager.gd"
 CameraManager="*res://scripts/camera_manager.gd"
+level_generator="*res://scripts/autoreload/level_generator.gd"
 
 [editor_plugins]
 

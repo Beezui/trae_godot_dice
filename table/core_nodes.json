@@ -1,0 +1,76 @@
+{
+  "core_nodes": [
+    {
+      "id": "1",
+      "name": "初始关卡",
+      "next": ["2"],
+      "is_start": true,
+      "is_end": false,
+      "des": "起源之地",
+      "type": 1,
+      "enemy": ["1"],
+      "Npc": [],
+      "scene": "1"
+    },
+    {
+      "id": "2",
+      "name": "第一道考验",
+      "next": ["3"],
+      "is_start": false,
+      "is_end": false,
+      "des": "初试锋芒",
+      "type": 2,
+      "enemy": [],
+      "Npc": ["1"],
+      "scene": "1"
+    },
+    {
+      "id": "3",
+      "name": "中转站",
+      "next": ["4"],
+      "is_start": false,
+      "is_end": false,
+      "des": "休整与抉择",
+      "type": 1,
+      "enemy": ["2"],
+      "Npc": [],
+      "scene": "1"
+    },
+    {
+      "id": "4",
+      "name": "奇遇之地",
+      "next": ["5"],
+      "is_start": false,
+      "is_end": false,
+      "des": "意外邂逅",
+      "type": 2,
+      "enemy": [],
+      "Npc": ["2"],
+      "scene": "1"
+    },
+    {
+      "id": "5",
+      "name": "最终试炼",
+      "next": ["6"],
+      "is_start": false,
+      "is_end": false,
+      "des": "巅峰对决",
+      "type": 1,
+      "enemy": ["3"],
+      "Npc": [],
+      "scene": "1"
+    },
+    {
+      "id": "6",
+      "name": "终点",
+      "next": [],
+      "is_start": false,
+      "is_end": true,
+      "des": "新的起点",
+      "type": 2,
+      "enemy": [],
+      "Npc": ["3"],
+      "scene": "1"
+    }
+  ]
+}

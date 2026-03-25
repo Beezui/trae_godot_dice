@@ -1,0 +1,25 @@
+{
+  "base_nodes": 30,
+  "nodes_per_difficulty": 5,
+  "fluctuation_range": 0.1,
+  "core_node_ratio": 0.35,
+  "min_random_between_core": 1,
+  "max_random_between_core": 3,
+  "avoid_consecutive_reward_trade": true,
+  "max_consecutive_same_type": 2,
+  "enable_seed_support": true,
+  "layout": {
+    "node_spacing_x": 150,
+    "node_spacing_y": 120,
+    "layer_padding": 80,
+    "canvas_width": 1200,
+    "canvas_height": 800
+  },
+  "visual": {
+    "node_radius": 25,
+    "core_node_border_width": 3,
+    "random_node_border_width": 1,
+    "connection_line_width": 2,
+    "show_path_arrows": true
+  }
+}
