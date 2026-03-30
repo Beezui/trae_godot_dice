@@ -26,10 +26,11 @@ DiceResultDetector="*res://scripts/dice/dice_result_detector.gd"
 CharacterManager="*res://scripts/character/CharacterManager.gd"
 CameraManager="*res://scripts/camera_manager.gd"
 level_generator="*res://scripts/autoreload/level_generator.gd"
+Dialog="*uid://e2wci6elc03a"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialog/plugin.cfg", "res://addons/godot_mcp/plugin.cfg")
 
 [physics]
 

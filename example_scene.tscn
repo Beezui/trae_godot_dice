@@ -1,0 +1,70 @@
+[gd_scene format=3 uid="uid://iaek0j5h28qe"]
+
+[ext_resource type="Script" uid="uid://do2tq1jiwxg3d" path="res://example_scene.gd" id="1_08apm"]
+[ext_resource type="PackedScene" uid="uid://y3umnsmcuugo" path="res://addons/dialog/nodes/dialog_box/dialog_box.tscn" id="2_uabj3"]
+[ext_resource type="PackedScene" uid="uid://dsu253vgbslop" path="res://addons/dialog/nodes/background/background.tscn" id="2_vqley"]
+[ext_resource type="PackedScene" uid="uid://cuj1p6llvbkha" path="res://addons/dialog/nodes/choose_box/choose_box.tscn" id="3_5xswu"]
+[ext_resource type="PackedScene" uid="uid://cc1ee2oxapgp3" path="res://addons/dialog/nodes/characters/characters.tscn" id="3_71y1r"]
+[ext_resource type="Script" uid="uid://cg4e3toqd0glv" path="res://addons/dialog/nodes/dialog_sound_player/dialog_sound_player.gd" id="6_cxdiq"]
+[ext_resource type="Script" uid="uid://5afdelyasgub" path="res://addons/dialog/nodes/dialog_music_player/dialog_music_player.gd" id="7_jnonn"]
+
+[node name="ExampleScene" type="Node2D" unique_id=1119318949]
+script = ExtResource("1_08apm")
+
+[node name="MySceneLayer" type="CanvasLayer" parent="." unique_id=159783994]
+
+[node name="CenterContainer" type="CenterContainer" parent="MySceneLayer" unique_id=1863191478]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MySceneLayer/CenterContainer" unique_id=877406531]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+
+[node name="PlayExampleDialogButton" type="Button" parent="MySceneLayer/CenterContainer/VBoxContainer" unique_id=566346933]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PLAY FIRST DIALOG"
+
+[node name="PlaySecondExample" type="Button" parent="MySceneLayer/CenterContainer/VBoxContainer" unique_id=1467668193]
+layout_mode = 2
+text = "PLAY SECOND EXAMPLE"
+
+[node name="ChangeLangButton" type="Button" parent="MySceneLayer/CenterContainer/VBoxContainer" unique_id=1098820967]
+layout_mode = 2
+text = "CHANGE LANGUAGE"
+
+[node name="QuitButton" type="Button" parent="MySceneLayer/CenterContainer/VBoxContainer" unique_id=2103552084]
+layout_mode = 2
+text = "QUIT"
+
+[node name="DialogLayer" type="CanvasLayer" parent="." unique_id=1645609845]
+layer = 2
+
+[node name="Background" parent="DialogLayer" unique_id=1455499201 instance=ExtResource("2_vqley")]
+visible = false
+
+[node name="Characters" parent="DialogLayer" unique_id=1001177261 instance=ExtResource("3_71y1r")]
+visible = false
+
+[node name="DialogBox" parent="DialogLayer" unique_id=1919131135 instance=ExtResource("2_uabj3")]
+visible = false
+
+[node name="ChooseBox" parent="DialogLayer" unique_id=1024714116 instance=ExtResource("3_5xswu")]
+visible = false
+
+[node name="DialogSoundPlayer" type="Node" parent="DialogLayer" unique_id=811778018]
+script = ExtResource("6_cxdiq")
+metadata/_custom_type_script = "uid://cg4e3toqd0glv"
+
+[node name="DialogMusicPlayer" type="AudioStreamPlayer" parent="DialogLayer" unique_id=174589219]
+script = ExtResource("7_jnonn")
+metadata/_custom_type_script = "uid://5afdelyasgub"
+
+[connection signal="pressed" from="MySceneLayer/CenterContainer/VBoxContainer/PlayExampleDialogButton" to="." method="_on_play_example_dialog_button_pressed"]
+[connection signal="pressed" from="MySceneLayer/CenterContainer/VBoxContainer/PlaySecondExample" to="." method="_on_play_second_example_pressed"]
+[connection signal="pressed" from="MySceneLayer/CenterContainer/VBoxContainer/ChangeLangButton" to="." method="_on_change_lang_button_pressed"]
+[connection signal="pressed" from="MySceneLayer/CenterContainer/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]

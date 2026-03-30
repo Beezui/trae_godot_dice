@@ -1,0 +1,124 @@
+[gd_scene format=3 uid="uid://y3umnsmcuugo"]
+
+[ext_resource type="Script" uid="uid://cr8kdmjqe8qhu" path="res://addons/dialog/nodes/dialog_box/dialog_box.gd" id="1_ve372"]
+[ext_resource type="AudioStream" uid="uid://j1u52ohs8aby" path="res://addons/dialog/assets/typing1.wav" id="2_537kq"]
+
+[node name="DialogBox" type="Control" unique_id=1919131135]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ve372")
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1882955706]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -165.0
+offset_right = 250.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer" unique_id=1891498132]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/margin_bottom = 45
+
+[node name="Panel" type="Panel" parent="CenterContainer/MarginContainer" unique_id=493355127]
+custom_minimum_size = Vector2(500, 150)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/MarginContainer/Panel" unique_id=1715964666]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="DialogTextLabel" type="RichTextLabel" parent="CenterContainer/MarginContainer/Panel/MarginContainer" unique_id=1559192658]
+unique_name_in_owner = true
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+
+[node name="CharacterNameContainer" type="Control" parent="CenterContainer/MarginContainer/Panel" unique_id=2080157687]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/MarginContainer/Panel/CharacterNameContainer" unique_id=1647302064]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -30.0
+offset_right = 30.0
+grow_vertical = 0
+theme_override_constants/margin_bottom = 5
+
+[node name="Panel" type="Panel" parent="CenterContainer/MarginContainer/Panel/CharacterNameContainer/MarginContainer" unique_id=1905160284]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/MarginContainer/Panel/CharacterNameContainer/MarginContainer" unique_id=2097290012]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_right = 15
+
+[node name="CharacterNameLabel" type="RichTextLabel" parent="CenterContainer/MarginContainer/Panel/CharacterNameContainer/MarginContainer/MarginContainer" unique_id=240767355]
+unique_name_in_owner = true
+layout_mode = 2
+bbcode_enabled = true
+text = "Character"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="Control" type="MarginContainer" parent="CenterContainer/MarginContainer/Panel" unique_id=1197089051]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="NextIndicator" type="ColorRect" parent="CenterContainer/MarginContainer/Panel/Control" unique_id=1407838327]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="StepButton" type="Button" parent="." unique_id=329389927]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+action_mode = 0
+flat = true
+
+[node name="TypingSound" type="AudioStreamPlayer" parent="." unique_id=323387754]
+unique_name_in_owner = true
+stream = ExtResource("2_537kq")

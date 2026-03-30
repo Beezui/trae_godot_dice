@@ -1,0 +1,9 @@
+label start
+
+speaker _
+
+	Hello! This is the third example dialog.
+	You just jumped to this dialog from the second example dialog.
+	And now, after this dialog ends, you will return to the second example dialog.
+
+return
