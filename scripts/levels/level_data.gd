@@ -22,6 +22,10 @@ var all_paths: Array = []  # 所有可能的路径列表
 var longest_path: Array = []  # 最长路径
 var shortest_path: Array = []  # 最短路径
 
+# 路径查找保护
+const MAX_PATH_COUNT = 1000  # 最大路径数量限制
+const MAX_RECURSION_DEPTH = 500  # 最大递归深度
+
 # 验证状态
 var is_valid: bool = false  # 是否通过验证
 var validation_errors: Array[String] = []  # 验证错误信息
@@ -97,7 +101,17 @@ func find_all_paths() -> void:
 
 
 ## DFS 查找所有路径
-func _dfs_find_paths(current_id: String, current_path: Array[String]) -> void:
+func _dfs_find_paths(current_id: String, current_path: Array[String], depth: int = 0) -> void:
+	# 递归深度保护
+	if depth > MAX_RECURSION_DEPTH:
+		push_warning("[LevelData] 达到最大递归深度，停止搜索")
+		return
+	
+	# 路径数量保护
+	if all_paths.size() >= MAX_PATH_COUNT:
+		push_warning("[LevelData] 达到最大路径数量限制 (", MAX_PATH_COUNT, ")，停止搜索")
+		return
+	
 	current_path.append(current_id)
 	var node = get_node(current_id)
 	
@@ -113,7 +127,7 @@ func _dfs_find_paths(current_id: String, current_path: Array[String]) -> void:
 		for next_id in node.connections:
 			# 避免循环路径
 			if next_id not in current_path:
-				_dfs_find_paths(next_id, current_path)
+				_dfs_find_paths(next_id, current_path, depth + 1)
 	
 	current_path.pop_back()
 

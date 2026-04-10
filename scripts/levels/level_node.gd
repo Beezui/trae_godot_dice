@@ -52,13 +52,25 @@ func load_from_dict(config: Dictionary) -> void:
 	if config.has("name"):
 		name = config["name"]
 	if config.has("type"):
-		type = config["type"]
+		var val = config["type"]
+		if typeof(val) == TYPE_STRING:
+			type = int(val)
+		else:
+			type = int(val)
 	if config.has("des"):
 		description = config["des"]
 	if config.has("is_start"):
-		is_start = config["is_start"]
+		var val = config["is_start"]
+		if typeof(val) == TYPE_STRING:
+			is_start = (val == "1" or val == "true")
+		else:
+			is_start = bool(val)
 	if config.has("is_end"):
-		is_end = config["is_end"]
+		var val = config["is_end"]
+		if typeof(val) == TYPE_STRING:
+			is_end = (val == "1" or val == "true")
+		else:
+			is_end = bool(val)
 	if config.has("next"):
 		connections.clear()
 		for item in config["next"]:

@@ -94,7 +94,7 @@ func insert_random_nodes(
 		
 		# 在两个核心节点之间插入随机节点
 		if i < core_chain.size() - 1:
-			# 计算这个间隙应该插入的数量
+			# 计算当前间隙应该插入的数量
 			var remaining_core = core_chain.size() - i - 1  # 剩余核心节点数
 			
 			# 计算当前间隙应该插入的节点数
@@ -107,8 +107,6 @@ func insert_random_nodes(
 			# 当前间隙至少插入 1 个，最多插入剩余数量
 			var count = maxi(1, avg_per_slot)
 			count = mini(count, random_count_needed)
-			
-			print("  在核心节点 ", core_node.id, " 后插入 ", count, " 个随机节点")
 			
 			for j in range(count):
 				var random_node = _pick_random_node(last_type, consecutive_type_count)
@@ -131,7 +129,6 @@ func insert_random_nodes(
 	
 	# 如果还有剩余的随机节点，全部插入到最后一个节点之后
 	if random_count_needed > 0:
-		print("  在最后一个节点后额外插入 ", random_count_needed, " 个随机节点")
 		for j in range(random_count_needed):
 			var random_node = _pick_random_node(last_type, consecutive_type_count)
 			if random_node:
@@ -147,8 +144,6 @@ func insert_random_nodes(
 				else:
 					consecutive_type_count = 1
 					last_type = random_node.type
-	
-	print("[LevelGeneratorRandom] 随机节点插入完成，总节点数：", full_chain.size())
 	
 	return full_chain
 

@@ -1,0 +1,84 @@
+{
+  "bosses": [
+    {
+      "id": "B1",
+      "name": "废墟守护者",
+      "difficulty": 1,
+      "level": 1,
+      "weight": 1.0,
+      "hero_id": "1",
+      "scene_id": "10",
+      "des": "废墟中的巨型机械守卫"
+    },
+    {
+      "id": "B2",
+      "name": "教派刺客",
+      "difficulty": 1,
+      "level": 1,
+      "weight": 0.8,
+      "hero_id": "2",
+      "scene_id": "10",
+      "des": "隐藏在暗处的致命刺客"
+    },
+    {
+      "id": "B3",
+      "name": "山脉巨人",
+      "difficulty": 1,
+      "level": 2,
+      "weight": 1.0,
+      "hero_id": "3",
+      "scene_id": "11",
+      "des": "守护山脉的远古巨人"
+    },
+    {
+      "id": "B4",
+      "name": "沙漠蝎王",
+      "difficulty": 2,
+      "level": 2,
+      "weight": 0.8,
+      "hero_id": "4",
+      "scene_id": "11",
+      "des": "沙漠中的毒蝎王者"
+    },
+    {
+      "id": "B5",
+      "name": "深渊炎魔",
+      "difficulty": 2,
+      "level": 3,
+      "weight": 1.0,
+      "hero_id": "5",
+      "scene_id": "12",
+      "des": "来自深渊的火焰恶魔"
+    },
+    {
+      "id": "B6",
+      "name": "海妖塞壬",
+      "difficulty": 3,
+      "level": 3,
+      "weight": 0.8,
+      "hero_id": "6",
+      "scene_id": "12",
+      "des": "迷惑心智的海中歌者"
+    },
+    {
+      "id": "B7",
+      "name": "亡灵巫师",
+      "difficulty": 3,
+      "level": 4,
+      "weight": 1.0,
+      "hero_id": "7",
+      "scene_id": "13",
+      "des": "操控亡灵的禁忌法师"
+    },
+    {
+      "id": "B8",
+      "name": "暗影君主",
+      "difficulty": 4,
+      "level": 4,
+      "weight": 0.8,
+      "hero_id": "8",
+      "scene_id": "13",
+      "des": "暗影世界的王者"
+    }
+  ]
+}

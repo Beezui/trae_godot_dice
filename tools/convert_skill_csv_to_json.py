@@ -664,6 +664,9 @@ def convert_scenes_csv_to_json(csv_path, json_path):
     return True
 
 
+
+
+
 def convert_core_nodes_csv_to_json(csv_path, json_path):
     """将 core_nodes.csv 转换为 JSON 格式"""
     
@@ -715,16 +718,16 @@ def convert_core_nodes_csv_to_json(csv_path, json_path):
             print(f"  ✗ Error parsing line: {e}")
             continue
         
-        if len(values) < 9:
+        if len(values) < 12:
             print(f"  ✗ Warning: Insufficient columns, skipping")
             continue
         
         # 提取数据
         node_id = values[0].strip()
-        node_name = values[1].strip()
+        name = values[1].strip()
         
         # 跳过空数据行
-        if not node_id or not node_name:
+        if not node_id or not name:
             print(f"  ✗ Warning: Empty node ID or name, skipping")
             continue
         
@@ -734,53 +737,47 @@ def convert_core_nodes_csv_to_json(csv_path, json_path):
         if next_str:
             next_nodes = [n.strip() for n in next_str.split(';')]
         
-        # 解析 is_start 和 is_end（0 或 1 转布尔值）
-        is_start_str = values[3].strip()
-        is_start = is_start_str == '1'
+        # 解析 is_start 和 is_end
+        is_start = values[3].strip()
+        is_end = values[4].strip()
         
-        is_end_str = values[4].strip()
-        is_end = is_end_str == '1'
+        # 解析描述字段
+        des1 = values[5].strip()
+        des2 = values[6].strip()
         
-        des = values[5].strip()
-        node_type = int(values[6].strip()) if values[6].strip().isdigit() else 0
-        
-        # 解析 enemy 字段（分号分隔的数组）
-        enemy_str = values[7].strip()
-        enemies = []
-        if enemy_str:
-            enemies = [e.strip() for e in enemy_str.split(';') if e.strip()]
-        
-        # 解析 Npc 字段（分号分隔的数组）
-        npc_str = values[8].strip()
-        npcs = []
-        if npc_str:
-            npcs = [n.strip() for n in npc_str.split(';') if n.strip()]
-        
-        # 解析 scene 字段
-        scene = values[9].strip() if len(values) > 9 else ''
+        # 解析其他字段
+        type_ = values[7].strip()
+        enemy = values[8].strip()
+        npc = values[9].strip()
+        scene = values[10].strip()
+        textures = values[11].strip()
         
         print(f"  Node ID: {node_id}")
-        print(f"  Node Name: {node_name}")
+        print(f"  Name: {name}")
         print(f"  Next Nodes: {next_nodes}")
         print(f"  Is Start: {is_start}")
         print(f"  Is End: {is_end}")
-        print(f"  Description: {des}")
-        print(f"  Type: {node_type}")
-        print(f"  Enemies: {enemies}")
-        print(f"  NPCs: {npcs}")
+        print(f"  Description 1: {des1}")
+        print(f"  Description 2: {des2}")
+        print(f"  Type: {type_}")
+        print(f"  Enemy: {enemy}")
+        print(f"  NPC: {npc}")
         print(f"  Scene: {scene}")
+        print(f"  Textures: {textures}")
         
         core_node = {
             'id': node_id,
-            'name': node_name,
+            'name': name,
             'next': next_nodes,
             'is_start': is_start,
             'is_end': is_end,
-            'des': des,
-            'type': node_type,
-            'enemy': enemies,
-            'Npc': npcs,
-            'scene': scene
+            'des1': des1,
+            'des2': des2,
+            'type': type_,
+            'enemy': enemy,
+            'npc': npc,
+            'scene': scene,
+            'textures': textures
         }
         
         core_nodes.append(core_node)
@@ -923,6 +920,113 @@ def convert_random_nodes_csv_to_json(csv_path, json_path):
     return True
 
 
+def convert_boss_csv_to_json(csv_path, json_path):
+    """将 boss.csv 转换为 JSON 格式"""
+    
+    print("=" * 50)
+    print("Boss CSV to JSON Converter")
+    print("=" * 50)
+    print()
+    
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+    
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+    
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+    
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+    
+    bosses = []
+    
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+        
+        print(f"Processing line {i+1}...")
+        
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+        
+        if len(values) < 7:
+            print(f"  ✗ Warning: Insufficient columns, skipping")
+            continue
+        
+        # 提取数据
+        boss_id = values[0].strip()
+        name = values[1].strip()
+        difficulty = values[2].strip()
+        level = values[3].strip()
+        weight = values[4].strip()
+        hero_id = values[5].strip()
+        scene_id = values[6].strip()
+        
+        # 跳过空数据行
+        if not boss_id or not name:
+            print(f"  ✗ Warning: Empty boss ID or name, skipping")
+            continue
+        
+        print(f"  Boss ID: {boss_id}")
+        print(f"  Name: {name}")
+        print(f"  Difficulty: {difficulty}")
+        print(f"  Level: {level}")
+        print(f"  Weight: {weight}")
+        print(f"  Hero ID: {hero_id}")
+        print(f"  Scene ID: {scene_id}")
+        
+        boss = {
+            'id': boss_id,
+            'name': name,
+            'difficulty': difficulty,
+            'level': level,
+            'weight': weight,
+            'hero_id': hero_id,
+            'scene_id': scene_id
+        }
+        
+        bosses.append(boss)
+        print(f"  ✓ Added boss: {boss_id}")
+    
+    output = {
+        'bosses': bosses
+    }
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    
+    print()
+    print("=" * 50)
+    print("✓ Boss conversion completed successfully!")
+    print(f"  Total bosses: {len(bosses)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+    
+    return True
+
+
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -1004,16 +1108,16 @@ if __name__ == '__main__':
         
         if not success:
             sys.exit(1)
-    elif len(sys.argv) > 1 and sys.argv[1] == '--random-nodes':
-        csv_file = os.path.join(script_dir, '..', 'table', 'random_nodes.csv')
-        json_file = os.path.join(script_dir, '..', 'table', 'random_nodes.json')
+    elif len(sys.argv) > 1 and sys.argv[1] == '--boss':
+        csv_file = os.path.join(script_dir, '..', 'table', 'boss.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'boss.json')
         
         if len(sys.argv) > 2:
             csv_file = sys.argv[2]
         if len(sys.argv) > 3:
             json_file = sys.argv[3]
         
-        success = convert_random_nodes_csv_to_json(csv_file, json_file)
+        success = convert_boss_csv_to_json(csv_file, json_file)
         
         if not success:
             sys.exit(1)

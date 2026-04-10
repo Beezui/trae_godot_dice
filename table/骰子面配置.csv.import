@@ -3,11 +3,13 @@
 importer="csv_translation"
 type="Translation"
 uid="uid://dk6p468bfg6sq"
-valid=false
 
 [deps]
 
+files=["res://table/骰子面配置.ͼƬ·��.translation", "res://table/骰子面配置.��������.translation"]
+
 source_file="res://table/骰子面配置.csv"
+dest_files=["res://table/骰子面配置.ͼƬ·��.translation", "res://table/骰子面配置.��������.translation"]
 
 [params]
 

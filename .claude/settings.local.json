@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx:*)",
+      "Bash(cp:*)",
+      "Bash(findstr \"6505\")",
+      "Bash(claude mcp:*)",
+      "Bash(where godot:*)",
+      "Bash(node:*)",
+      "Bash(powershell:*)",
+      "Bash(npm view:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(dir:*)",
+      "Bash(robocopy:*)",
+      "Bash(findstr \"6550\")",
+      "Bash(netstat -ano)",
+      "Bash(findstr \"3000\")",
+      "Bash(tasklist)",
+      "Bash(findstr \"Godot\")",
+      "Bash(findstr \"6551\")",
+      "Bash(npm list:*)",
+      "Bash(npm install:*)",
+      "Bash(where godot-mcp-server:*)",
+      "Bash(curl:*)",
+      "Bash(findstr \"6506\")",
+      "Bash(git restore:*)",
+      "Bash(claude-mcp list:*)",
+      "Bash(claude -p \"List MCP tools available\")"
+    ]
+  }
+}

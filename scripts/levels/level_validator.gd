@@ -45,9 +45,12 @@ func validate(level_data: LevelData) -> bool:
 			level_data.is_valid = false
 	
 	# 5. 检查路径长度
-	# 只要求至少有一条路径在允许范围内（±10%），允许分支/捷径存在
-	var min_allowed = int(level_data.target_total * 0.9)
-	var max_allowed = int(level_data.target_total * 1.1)
+	# 新架构：每个阶段 15-20 层，3-4 个阶段
+	# 但由于跨层连接和网状结构，实际路径会短于总层数
+	# 使用层数来验证更合理
+	var max_layer = level_data.get_max_layer()
+	var min_allowed = int(max_layer * 0.3)  # 最短路径至少为最大层数的 30%
+	var max_allowed = int(max_layer * 1.2)  # 最长路径不超过最大层数的 120%
 	var valid_path_found = false
 	
 	for path in level_data.all_paths:
@@ -58,7 +61,7 @@ func validate(level_data: LevelData) -> bool:
 	if not valid_path_found:
 		level_data.validation_errors.append(
 			"没有路径在允许范围内：需要至少一条路径长度在 " + 
-			str(min_allowed) + "-" + str(max_allowed) + " 之间"
+			str(min_allowed) + "-" + str(max_allowed) + " 之间 (最大层数：" + str(max_layer) + ", 总节点数：" + str(level_data.total_nodes) + ")"
 		)
 		level_data.is_valid = false
 	
@@ -74,7 +77,11 @@ func validate(level_data: LevelData) -> bool:
 	# 8. 检查核心节点仅包含战斗和奇遇
 	if not _validate_core_node_types(level_data):
 		level_data.is_valid = false
-	
+
+	# 9. 检查每个阶段路径必须收敛到每个阶段的终局节点
+	if not _validate_stage_convergence(level_data):
+		level_data.is_valid = false
+
 	return level_data.is_valid
 
 
@@ -185,7 +192,7 @@ func _validate_node_types(level_data: LevelData) -> bool:
 ## 验证核心节点类型
 func _validate_core_node_types(level_data: LevelData) -> bool:
 	var valid = true
-	
+
 	for node in level_data.nodes:
 		if node.is_core:
 			# 核心节点只能是战斗（1）或奇遇（2）
@@ -194,6 +201,45 @@ func _validate_core_node_types(level_data: LevelData) -> bool:
 					"核心节点类型错误：" + node.id + " 类型为 " + str(node.type)
 				)
 				valid = false
+
+	return valid
+
+
+## 验证每个阶段路径收敛到终局节点
+func _validate_stage_convergence(level_data: LevelData) -> bool:
+	var valid = true
+	
+	# 找出所有阶段节点（Boss节点和终局节点）
+	var stage_end_nodes: Array[String] = []
+	
+	for node in level_data.nodes:
+		# Boss节点（layer >= 50）或终局节点（is_end = true）
+		if node.layer >= 50 or node.is_end:
+			stage_end_nodes.append(node.id)
+	
+	if stage_end_nodes.size() == 0:
+		level_data.validation_errors.append("没有找到阶段终局节点")
+		return false
+	
+	# 验证每条路径是否都到达某个阶段终局节点
+	for path in level_data.all_paths:
+		if path.size() == 0:
+			continue
+		
+		var end_node_id = path[-1]
+		
+		# 检查路径终点是否是阶段终局节点
+		var is_valid_end = false
+		for end_id in stage_end_nodes:
+			if end_node_id == end_id:
+				is_valid_end = true
+				break
+		
+		if not is_valid_end:
+			level_data.validation_errors.append(
+				"路径未到达阶段终局节点：路径 " + str(path) + " 终点 " + str(end_node_id)
+			)
+			valid = false
 	
 	return valid
 

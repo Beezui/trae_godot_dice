@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://81jphkwyt7wq"
+
+[deps]
+
+files=["res://table/core_nodes_new.name.translation", "res://table/core_nodes_new.next.translation", "res://table/core_nodes_new.is.translation", "res://table/core_nodes_new.is.translation", "res://table/core_nodes_new.des1.translation", "res://table/core_nodes_new.des2.translation", "res://table/core_nodes_new.type.translation", "res://table/core_nodes_new.enemy.translation", "res://table/core_nodes_new.npc.translation", "res://table/core_nodes_new.scene.translation", "res://table/core_nodes_new.textures.translation"]
+
+source_file="res://table/core_nodes_new.csv"
+dest_files=["res://table/core_nodes_new.name.translation", "res://table/core_nodes_new.next.translation", "res://table/core_nodes_new.is.translation", "res://table/core_nodes_new.is.translation", "res://table/core_nodes_new.des1.translation", "res://table/core_nodes_new.des2.translation", "res://table/core_nodes_new.type.translation", "res://table/core_nodes_new.enemy.translation", "res://table/core_nodes_new.npc.translation", "res://table/core_nodes_new.scene.translation", "res://table/core_nodes_new.textures.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

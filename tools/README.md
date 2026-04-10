@@ -10,16 +10,16 @@
 - `hero.csv` → `hero.json`（英雄角色配置）
 - `scenes.csv` → `scenes.json`（场景配置）
 - `core_nodes.csv` → `core_nodes.json`（核心节点配置）
-- `random_nodes.csv` → `random_nodes.json`（随机节点配置）
+- `boss.csv` → `boss.json`（BOSS 配置）
 
 ## 工具位置
 
 ```
 res://tools/
-├── convert_skill_csv_to_json.py     # Python 版本（推荐）
+├── convert_skill_csv_to_json.py     # Python 版本（CSV 转 JSON）
+├── convert_json_to_csv.py           # Python 版本（JSON 转 CSV）
 ├── convert_skill_csv_to_json.ps1    # PowerShell 版本（备选）
 ├── convert_skill_csv_to_json.bat    # Windows 批处理启动器
-├── convert_all.bat                  # 批量转换所有配置文件
 └── README.md                        # 本说明文档
 ```
 
@@ -69,6 +69,9 @@ res://tools/
    
    # 导出随机节点表
    python convert_skill_csv_to_json.py --random-nodes
+   
+   # 导出 BOSS 配置表
+   python convert_skill_csv_to_json.py --boss
    ```
 3. **自动转换**：
    - 导出技能配置：读取 `res://table/skill.csv` → 转换为 `res://table/skill.json`
@@ -79,6 +82,7 @@ res://tools/
    - 导出场景配置：读取 `res://table/scenes.csv` → 转换为 `res://table/scenes.json`
    - 导出核心节点：读取 `res://table/core_nodes.csv` → 转换为 `res://table/core_nodes.json`
    - 导出随机节点：读取 `res://table/random_nodes.csv` → 转换为 `res://table/random_nodes.json`
+   - 导出 BOSS 配置：读取 `res://table/boss.csv` → 转换为 `res://table/boss.json`
    - 显示转换结果和数据列表
 
 4. **查看结果**：
@@ -91,6 +95,7 @@ res://tools/
      - 场景配置：`res://table/scenes.json`
      - 核心节点：`res://table/core_nodes.json`
      - 随机节点：`res://table/random_nodes.json`
+     - BOSS 配置：`res://table/boss.json`
    - 中文正常显示，无乱码
 
 ### 方法二：PowerShell 版本（备选）
@@ -105,6 +110,26 @@ res://tools/
 2. **或直接运行 PowerShell 脚本**：
    ```powershell
    powershell -ExecutionPolicy Bypass -File "res://tools/convert_skill_csv_to_json.ps1" "res://table/skill.csv" "res://table/skill.json"
+   ```
+
+### 方法三：JSON 转 CSV 转换
+
+如果需要将 JSON 文件转换回 CSV 文件，可使用以下命令：
+
+1. **转换核心节点配置**：
+   ```bash
+   cd res://tools/
+   python convert_json_to_csv.py --core-nodes
+   ```
+
+2. **指定输入输出文件**：
+   ```bash
+   python convert_json_to_csv.py --core-nodes [input.json] [output.csv]
+   ```
+
+3. **示例**：
+   ```bash
+   python convert_json_to_csv.py --core-nodes ../table/core_nodes.json ../table/core_nodes.csv
    ```
 
 ## 功能特性
@@ -244,6 +269,14 @@ A: npc 字段使用分号（;）分隔多个 NPC ID，例如：`1;2;3` 表示包
   - 新增核心节点配置转换功能（core_nodes.csv → core_nodes.json）
   - 新增随机节点配置转换功能（random_nodes.csv → random_nodes.json）
   - 支持关卡系统配置表的完整转换
+
+## 更新日志
+
+- **v1.4** (2026-04-08)
+  - 新增 BOSS 配置转换功能
+
+- **v1.3** (2026-04-04)
+  - 新增核心节点配置转换功能
 
 - **v1.2** (2026-03-21)
   - 新增场景配置转换功能

@@ -96,9 +96,10 @@ func generate_level(difficulty: int = 1, seed_value: int = 0) -> LevelData:
 	# 创建关卡数据
 	current_level_data = LevelData.new(difficulty, seed_value)
 	
-	# 1. 生成核心节点骨架
+	# 1. 生成核心节点骨架（现在包含所有节点，不再有随机插入）
 	var core_chain = core_generator.generate_core_chain(
 		current_level_data.target_total,
+		difficulty,
 		seed_value
 	)
 	
@@ -106,24 +107,14 @@ func generate_level(difficulty: int = 1, seed_value: int = 0) -> LevelData:
 		emit_signal("generation_failed", "核心节点生成失败")
 		return null
 	
-	# 2. 插入随机节点
-	var full_chain = random_generator.insert_random_nodes(
-		core_chain,
-		current_level_data.target_total,
-		seed_value
-	)
-	
-	# 3. 添加到关卡数据
-	for node in full_chain:
+	# 2. 添加到关卡数据
+	for node in core_chain:
 		current_level_data.add_node(node)
 	
-	# 4. 建立连接关系
-	_build_connections(full_chain)
+	# 注意：不再调用 _build_connections()，因为 generate_core_chain() 已经建立了正确的连接
+	# _build_connections(core_chain)
 	
-	# 5. 计算层级
-	current_level_data.calculate_layers()
-	
-	# 6. 验证
+	# 3. 验证
 	var is_valid = validator.validate(current_level_data)
 	
 	# 7. 打印调试信息

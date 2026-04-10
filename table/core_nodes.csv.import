@@ -3,13 +3,11 @@
 importer="csv_translation"
 type="Translation"
 uid="uid://bkkuem3wmbyth"
+valid=false
 
 [deps]
 
-files=["res://table/core_nodes.name.translation", "res://table/core_nodes.next.translation", "res://table/core_nodes.is.translation", "res://table/core_nodes.is.translation", "res://table/core_nodes.des.translation", "res://table/core_nodes.type.translation", "res://table/core_nodes.enemy.translation", "res://table/core_nodes.npc.translation", "res://table/core_nodes.scene.translation"]
-
 source_file="res://table/core_nodes.csv"
-dest_files=["res://table/core_nodes.name.translation", "res://table/core_nodes.next.translation", "res://table/core_nodes.is.translation", "res://table/core_nodes.is.translation", "res://table/core_nodes.des.translation", "res://table/core_nodes.type.translation", "res://table/core_nodes.enemy.translation", "res://table/core_nodes.npc.translation", "res://table/core_nodes.scene.translation"]
 
 [params]
 
