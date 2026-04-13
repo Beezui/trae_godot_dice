@@ -1,0 +1,44 @@
+label start
+
+# backgrounds
+set black_screen "res://example_assets/black_screen.png"
+
+background black_screen
+
+speaker _
+
+	Hello! This is the second example dialog.
+	It shows how you can jump to another dialog and then return to the previous one.
+
+choose
+	Jump to another dialog! -> jump_to_other_dialog
+	Continue with this dialog! -> continue_dialog
+
+label jump_to_other_dialog
+
+	You will now jump to another dialog. After that dialog ends, you will return to this one.
+
+dialog example_dialog_3
+
+	The other dialog just finished, and now we're back here!
+
+jump end
+
+label continue_dialog
+
+	You chose to continue with this dialog!
+	Sadly there's nothing else to show here, so let's just end the dialog.
+
+jump end
+
+label end
+
+speaker _
+
+	That's the end of the second example dialog. Thanks for watching!
+
+hide_dialog
+
+background none
+
+wait 1.0

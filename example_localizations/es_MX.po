@@ -1,0 +1,174 @@
+# LANGUAGE translation for Dialog for the following files:
+# res://example_scene.gd
+# res://example_scene.tscn
+# res://example_dialogs/example_dialog.dialog
+#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dialog\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+#: example_scene.tscn
+msgid "PLAY FIRST DIALOG"
+msgstr "REPRODUCIR PRIMER DIALOGO"
+
+#: example_scene.tscn
+msgid "PLAY SECOND EXAMPLE"
+msgstr "REPRODUCIR SEGUNDO DIALOGO"
+
+#: example_scene.tscn
+msgid "CHANGE LANGUAGE"
+msgstr "CAMBIAR DE IDIOMA"
+
+#: example_scene.tscn
+msgid "QUIT"
+msgstr "SALIR"
+
+#: example_dialogs/example_dialog.dialog
+msgid "Welcome to the example dialog!"
+msgstr "¡Bienvenido al diálogo de ejemplo!"
+
+#: example_dialogs/example_dialog.dialog
+msgid ""
+"This dialog is meant to show the different features of the dialog system."
+msgstr ""
+"Este diálogo está pensado para mostrar las diferentes características del "
+"sistema de diálogo."
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "alice"
+msgid "Hi there! I'm {alice}, and I'm happy to see you!"
+msgstr "¡Hola! Soy {alice} y me alegra verte!"
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "alice"
+msgid "I can also be sad, angry, or surprised!"
+msgstr "¡También puedo estar triste, enojada o sorprendida!"
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "alice"
+msgid "See? Now I'm sad!"
+msgstr "¿Ves? ¡Ahora estoy triste!"
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "mary"
+msgid "Hi {alice}! I'm {mary}."
+msgstr "¡Hola {alice}! Soy {mary}."
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "mary"
+msgid "I can also be happy, sad, angry, or surprised!"
+msgstr "¡También puedo estar feliz, triste, enojada o sorprendida!"
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "mary"
+msgid "See? Now I'm happy!"
+msgstr "¿Ves? ¡Ahora estoy feliz!"
+
+#: example_dialogs/example_dialog.dialog
+msgid "You can also make choices in the dialog!"
+msgstr "¡También puedes tomar decisiones en el diálogo!"
+
+#: example_dialogs/example_dialog.dialog
+msgid ""
+"For example, you can choose to ask {alice} how she's doing or to say goodbye."
+msgstr "Por ejemplo, puedes elegir preguntar a {alice} cómo está o despedirte."
+
+#: example_dialogs/example_dialog.dialog
+msgid "How are you?"
+msgstr "¿Cómo estás?"
+
+#: example_dialogs/example_dialog.dialog
+msgid "Goodbye!"
+msgstr "¡Adiós!"
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "alice"
+msgid "I'm doing great! Thanks for asking!"
+msgstr "¡Estoy genial! ¡Gracias por preguntar!"
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "alice"
+msgid "Goodbye! It was nice talking to you!"
+msgstr "¡Adiós! ¡Ha sido un placer hablar contigo!"
+
+#: example_dialogs/example_dialog.dialog
+msgctxt "mary"
+msgid "Goodbye! See you later!"
+msgstr "¡Adiós! ¡Nos vemos luego!"
+
+#: example_dialogs/example_dialog.dialog
+msgid "This is the end of the example dialog. Thanks for watching!"
+msgstr "Este es el final del diálogo de ejemplo. ¡Gracias por acompañarnos!"
+
+#: example_dialogs/example_dialog_2.dialog
+msgid "Hello! This is the second example dialog."
+msgstr "¡Hola! Este es el segundo dialogo de ejemplo."
+
+#: example_dialogs/example_dialog_2.dialog
+msgid ""
+"It shows how you can jump to another dialog and then return to the previous "
+"one."
+msgstr ""
+"Este muestra cómo puedes saltar a otro diálogo y luego volver al anterior."
+
+#: example_dialogs/example_dialog_2.dialog
+msgid "Jump to another dialog!"
+msgstr "¡Ir a otro diálogo!"
+
+#: example_dialogs/example_dialog_2.dialog
+msgid "Continue with this dialog!"
+msgstr "¡Continúa en este diálogo!"
+
+#: example_dialogs/example_dialog_2.dialog
+msgid ""
+"You will now jump to another dialog. After that dialog ends, you will return "
+"to this one."
+msgstr ""
+"Ahora saltarás a otro diálogo. Cuando termine ese diálogo, volverás a este."
+
+#: example_dialogs/example_dialog_2.dialog
+msgid "The other dialog just finished, and now we're back here!"
+msgstr "El otro diálogo acaba de terminar, ¡y ahora estamos de vuelta aquí!"
+
+#: example_dialogs/example_dialog_2.dialog
+msgid "You chose to continue with this dialog!"
+msgstr "¡Has decidido continuar con este diálogo!"
+
+#: example_dialogs/example_dialog_2.dialog
+msgid "Sadly there's nothing else to show here, so let's just end the dialog."
+msgstr ""
+"Lamentablemente no hay nada más que mostrar aquí, así que terminemos el "
+"diálogo."
+
+#: example_dialogs/example_dialog_2.dialog
+msgid "That's the end of the second example dialog. Thanks for watching!"
+msgstr "Ese es el final del segundo diálogo de ejemplo. ¡Gracias por jugar!"
+
+#: example_dialogs/example_dialog_3.dialog
+msgid "Hello! This is the third example dialog."
+msgstr "¡Hola! Este es el tercer ejemplo de diálogo."
+
+#: example_dialogs/example_dialog_3.dialog
+msgid "You just jumped to this dialog from the second example dialog."
+msgstr "Acabas de llegar a este diálogo desde el segundo dialogo de ejemplo."
+
+#: example_dialogs/example_dialog_3.dialog
+msgid ""
+"And now, after this dialog ends, you will return to the second example "
+"dialog."
+msgstr "Y ahora, después de que termine este diálogo, volverás al anterior."
+
+msgid "Dialog"
+msgstr "Diálogo"
