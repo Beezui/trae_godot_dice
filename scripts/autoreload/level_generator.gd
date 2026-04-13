@@ -88,40 +88,39 @@ func _load_config() -> void:
 ## 生成关卡（主要接口）
 func generate_level(difficulty: int = 1, seed_value: int = 0) -> LevelData:
 	emit_signal("generation_started")
-	
+
 	print("[LevelGenerator] 开始生成关卡")
 	print("  - 难度：", difficulty)
 	print("  - 种子：", seed_value)
-	
+
 	# 创建关卡数据
 	current_level_data = LevelData.new(difficulty, seed_value)
-	
-	# 1. 生成核心节点骨架（现在包含所有节点，不再有随机插入）
+
+	# 1. 生成核心节点骨架（包含所有节点，已分配不同类型）
 	var core_chain = core_generator.generate_core_chain(
 		current_level_data.target_total,
 		difficulty,
 		seed_value
 	)
-	
+
 	if core_chain.size() == 0:
 		emit_signal("generation_failed", "核心节点生成失败")
 		return null
-	
+
+	print("[LevelGenerator] 核心节点生成完成：", core_chain.size(), " 个节点")
+
 	# 2. 添加到关卡数据
 	for node in core_chain:
 		current_level_data.add_node(node)
-	
-	# 注意：不再调用 _build_connections()，因为 generate_core_chain() 已经建立了正确的连接
-	# _build_connections(core_chain)
-	
+
 	# 3. 验证
 	var is_valid = validator.validate(current_level_data)
-	
-	# 7. 打印调试信息
+
+	# 4. 打印调试信息
 	current_level_data.print_debug_info()
 	validator.print_validation_report(current_level_data)
-	
-	# 8. 发射信号
+
+	# 5. 发射信号
 	if is_valid:
 		emit_signal("level_generated", current_level_data)
 		emit_signal("generation_completed", current_level_data)
@@ -129,7 +128,7 @@ func generate_level(difficulty: int = 1, seed_value: int = 0) -> LevelData:
 	else:
 		emit_signal("generation_failed", "关卡验证失败")
 		print("[LevelGenerator] 关卡生成失败 ✗")
-	
+
 	return current_level_data
 
 

@@ -187,7 +187,7 @@ func _create_layer_node(node_id: int, stage: int, layer: int) -> LevelNode:
 	var node = LevelNode.new()
 	node.id = str(node_id)
 	node.name = "阶段" + str(stage) + "-" + str(layer)
-	node.type = randi_range(1, 2)  # 战斗或奇遇
+	node.type = _get_node_type_for_layer(stage, layer)  # 根据阶段和层级计算节点类型
 	node.is_core = true
 	node.is_start = false
 	node.is_end = false
@@ -195,6 +195,29 @@ func _create_layer_node(node_id: int, stage: int, layer: int) -> LevelNode:
 	node.connections = [] as Array[String]
 	node.previous_nodes = [] as Array[String]
 	return node
+
+
+## 根据阶段和层级计算节点类型（带随机种子）
+## 返回：1=战斗，2=奇遇，3=交易，4=奖励
+func _get_node_type_for_layer(stage: int, layer: int) -> int:
+	# 使用阶段和层级作为随机种子，保证同一位置始终生成相同类型
+	seed(stage * 1000 + layer)
+
+	# 基础概率分布（可根据设计调整）：
+	# 战斗：45%  (主要玩法)
+	# 奇遇：30%  (剧情/事件)
+	# 交易：15%  (商店/补给)
+	# 奖励：10%  (奖励/宝藏)
+	var rand = randf()
+
+	if rand < 0.45:
+		return 1  # 战斗
+	elif rand < 0.75:
+		return 2  # 奇遇
+	elif rand < 0.90:
+		return 3  # 交易
+	else:
+		return 4  # 奖励
 
 
 ## 创建终点节点

@@ -335,14 +335,31 @@ func _draw_nodes(level_data: LevelData):
 			# 随机节点：细边框
 			canvas.draw_rect(rect, Color.BLACK, false, 2)
 			canvas.draw_rect(rect, color, true)
-		
-		# 绘制节点名称（使用唯一 ID）
-		var text = "节点#" + str(node.id)
+
+		# 绘制节点名称（使用唯一 ID）和类型名称
+		var id_text = "节点#" + str(node.id)
+		var type_name = node.get_type_name()
+		var display_text = type_name + "\n" + id_text
+
 		var font = ThemeDB.fallback_font
 		if font:
-			var text_size = font.get_string_size(text)
-			var text_pos = pos - text_size / 2 + Vector2(0, font.get_height() / 2 - 2)
-			canvas.draw_string(font, text_pos, text, HORIZONTAL_ALIGNMENT_CENTER, -1, 14, Color.BLACK)
+			# 计算文本大小（两行）
+			var type_text_size = font.get_string_size(type_name)
+			var id_text_size = font.get_string_size(id_text)
+			var total_height = font.get_height() * 2 + 2  # 两行文本 + 间距
+			var max_width = maxf(type_text_size.x, id_text_size.x)
+
+			# 计算居中位置
+			var text_start_x = pos.x - max_width / 2
+			var text_start_y = pos.y - total_height / 2 + font.get_ascent()
+
+			# 绘制类型名称（第一行，加粗效果）
+			var type_pos = Vector2(text_start_x, text_start_y)
+			canvas.draw_string(font, type_pos, type_name, HORIZONTAL_ALIGNMENT_CENTER, -1, 16, Color.BLACK)
+
+			# 绘制节点 ID（第二行）
+			var id_pos = Vector2(text_start_x, text_start_y + font.get_height() + 2)
+			canvas.draw_string(font, id_pos, id_text, HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color.BLACK)
 
 
 ## Canvas 拖动处理
