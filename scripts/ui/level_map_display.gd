@@ -127,13 +127,18 @@ func display_level(level_data: LevelData):
 		seed_label.text = "种子：" + str(level_data.seed_value)
 	
 	# 计算节点位置
+	print("[LevelMapDisplay] === 开始计算节点位置 ===")
 	_calculate_node_positions(level_data)
+	print("[LevelMapDisplay] === 节点位置计算完成 ===\n")
 	
 	# 更新 canvas 大小以适应所有节点
 	_update_canvas_size(level_data)
 	
 	# 强制重绘
 	canvas.queue_redraw()
+
+	# 交叉检测（调试用）
+	_check_cross_connections(level_data)
 
 
 ## 计算节点位置（优化版：减少连线交叉）
@@ -156,7 +161,7 @@ func _calculate_node_positions(level_data: LevelData):
 		var layer_nodes = layers_dict[layer]
 		
 		# 优化：根据前驱节点排序，减少连线交叉
-		_sort_layer_nodes_by_connections(layer_nodes, layers_dict, layer)
+		_sort_layer_nodes_by_id(layer_nodes)
 		
 		# 计算该层节点的 X 位置（垂直排列）
 		var x_pos = layer_idx * node_spacing_x + layer_padding
@@ -170,20 +175,74 @@ func _calculate_node_positions(level_data: LevelData):
 			node.position = Vector2(x_pos, y_pos)
 
 
-## 根据连接关系排序节点，减少连线交叉（简化版：按 ID 排序）
-func _sort_layer_nodes_by_connections(layer_nodes: Array, layers_dict: Dictionary, current_layer):
+## 按节点 ID 排序（确保与连接逻辑一致）
+func _sort_layer_nodes_by_id(layer_nodes: Array):
 	if layer_nodes.size() <= 1:
-		return  # 只有一个节点或空，不需要排序
-	
-	# 简单按节点 ID 排序，确保顺序一致
-	layer_nodes.sort_custom(func(a, b):
-		return int(a.id) < int(b.id)
-	)
-	
+		return
+	layer_nodes.sort_custom(func(a, b): return int(a.id) < int(b.id))
+
 	# 调试输出：打印排序后的节点顺序
-	print("    层", current_layer, " 排序后节点顺序：")
-	for i in range(layer_nodes.size()):
-		print("      [", i, "] 节点#", layer_nodes[i].id)
+	var ids = []
+	for n in layer_nodes: ids.append("#" + n.id + "(y=" + str(n.position.y) + ")")
+	print("  [UI] 层排序后：[", ", ".join(ids), "]")
+
+
+## 检查连接线是否有交叉（调试用）
+func _check_cross_connections(level_data: LevelData) -> int:
+	var cross_count = 0
+	var lines = []
+
+	# 收集所有连接线，按层级分组
+	for node in level_data.nodes:
+		for next_id in node.connections:
+			var next_node = level_data.get_node(next_id)
+			if next_node:
+				lines.append({
+					"from": node,
+					"to": next_node,
+					"from_layer": node.layer,
+					"to_layer": next_node.layer,
+					"layer_diff": abs(next_node.layer - node.layer)
+				})
+
+	# 只检查相邻层之间的连接（layer_diff = 1）
+	var adjacent_lines = []
+	for line in lines:
+		if line.layer_diff == 1:
+			adjacent_lines.append(line)
+
+	print("  [交叉检测] 总连接线：", lines.size(), "，相邻层连接：", adjacent_lines.size())
+
+	# 检查每对相邻层连接线是否交叉
+	for i in range(adjacent_lines.size()):
+		for j in range(i + 1, adjacent_lines.size()):
+			var line1 = adjacent_lines[i]
+			var line2 = adjacent_lines[j]
+
+			# 跳过有共享端点的线
+			if line1.from.id == line2.from.id or line1.from.id == line2.to.id or \
+			   line1.to.id == line2.from.id or line1.to.id == line2.to.id:
+				continue
+
+			# 检查是否交叉（简单的一维交叉检测）
+			var from1_y = line1.from.position.y
+			var to1_y = line1.to.position.y
+			var from2_y = line2.from.position.y
+			var to2_y = line2.to.position.y
+
+			# 如果两条线起点和终点的相对位置相反，则交叉
+			var cross = (from1_y < from2_y and to1_y > to2_y) or (from1_y > from2_y and to1_y < to2_y)
+			if cross:
+				cross_count += 1
+				if cross_count <= 10:  # 只打印前 10 个
+					print("  [交叉] 线#", i, ": 节点#", line1.from.id, "(y=", from1_y, ")->节点#", line1.to.id, "(y=", to1_y, ")",
+						  " 与 线#", j, ": 节点#", line2.from.id, "(y=", from2_y, ")->节点#", line2.to.id, "(y=", to2_y, ") 交叉")
+
+	if cross_count > 10:
+		print("  ... 还有 ", cross_count - 10, " 个交叉")
+
+	print("\n[交叉检测] 共发现 ", cross_count, " 个交叉（仅限相邻层连接）\n")
+	return cross_count
 
 
 ## 更新 canvas 大小

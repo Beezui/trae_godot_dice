@@ -2,87 +2,103 @@ class_name LevelValidator
 extends RefCounted
 ## 关卡验证器
 ## 负责验证生成的关卡地图是否合法
+##
+## 验证职责划分：
+## - LevelData.validate(): 基础数据完整性检查（起点、终点、连通性）
+## - LevelValidator.validate(): 完整的游戏规则验证（路径长度、节点分布、阶段收敛等）
 
 var config: Dictionary = {}
+
+# 验证配置常量
+const MIN_PATH_LENGTH_RATIO = 0.8  # 最短路径长度比例（相对于目标）
+const MAX_PATH_LENGTH_RATIO = 1.2  # 最长路径长度比例
+const MAX_CONSECUTIVE_SAME_TYPE = 5  # 最大连续同类型节点数
+const MAX_REWARD_TRADE_RATIO = 0.5  # 奖励/交易节点最大比例
 
 
 ## 构造函数
 func _init(p_config: Dictionary = {}):
 	config = p_config
+	if config.is_empty():
+		config = {
+			"min_path_length_ratio": MIN_PATH_LENGTH_RATIO,
+			"max_path_length_ratio": MAX_PATH_LENGTH_RATIO,
+			"max_consecutive_same_type": MAX_CONSECUTIVE_SAME_TYPE,
+			"max_reward_trade_ratio": MAX_REWARD_TRADE_RATIO
+		}
 
 
-## 验证关卡数据
+## 验证关卡数据（完整验证）
 func validate(level_data: LevelData) -> bool:
 	level_data.validation_errors.clear()
 	level_data.is_valid = true
-	
-	# 1. 检查是否有起始节点
-	if level_data.start_node_id == "":
-		level_data.validation_errors.append("缺少起始节点")
+
+	# 1. 先执行基础验证（调用 LevelData.validate）
+	if not level_data.validate():
+		for error in level_data.validation_errors:
+			if error not in level_data.validation_errors:
+				level_data.validation_errors.append(error)
+		if not level_data.is_valid:
+			return false
+
+	# 2. 查找所有路径（如果还没找）
+	if level_data.all_paths.size() == 0:
+		level_data.find_all_paths()
+
+	# 3. 检查路径长度（相对于目标和最大层级）
+	if not _validate_path_lengths(level_data):
 		level_data.is_valid = false
-	
-	# 2. 检查是否有终点节点
-	if level_data.end_node_ids.size() == 0:
-		level_data.validation_errors.append("缺少终点节点")
-		level_data.is_valid = false
-	
-	# 3. 查找所有路径
-	level_data.find_all_paths()
-	
-	# 4. 检查路径合法性
-	for path in level_data.all_paths:
-		if path.size() == 0:
-			continue
-		
-		# 检查是否包含起始节点
-		if path[0] != level_data.start_node_id:
-			level_data.validation_errors.append("路径不包含起始节点：" + str(path))
-			level_data.is_valid = false
-		
-		# 检查是否包含终点节点
-		if path[-1] not in level_data.end_node_ids:
-			level_data.validation_errors.append("路径不包含终点节点：" + str(path))
-			level_data.is_valid = false
-	
-	# 5. 检查路径长度
-	# 新架构：每个阶段 15-20 层，3-4 个阶段
-	# 但由于跨层连接和网状结构，实际路径会短于总层数
-	# 使用层数来验证更合理
-	var max_layer = level_data.get_max_layer()
-	var min_allowed = int(max_layer * 0.3)  # 最短路径至少为最大层数的 30%
-	var max_allowed = int(max_layer * 1.2)  # 最长路径不超过最大层数的 120%
-	var valid_path_found = false
-	
-	for path in level_data.all_paths:
-		if path.size() >= min_allowed and path.size() <= max_allowed:
-			valid_path_found = true
-			break
-	
-	if not valid_path_found:
-		level_data.validation_errors.append(
-			"没有路径在允许范围内：需要至少一条路径长度在 " + 
-			str(min_allowed) + "-" + str(max_allowed) + " 之间 (最大层数：" + str(max_layer) + ", 总节点数：" + str(level_data.total_nodes) + ")"
-		)
-		level_data.is_valid = false
-	
-	# 6. 检查是否有循环路径
+
+	# 4. 检查循环路径
 	if _has_cycle(level_data):
 		level_data.validation_errors.append("检测到循环路径")
 		level_data.is_valid = false
-	
-	# 7. 检查节点类型分布
+
+	# 5. 验证节点类型分布
 	if not _validate_node_types(level_data):
 		level_data.is_valid = false
-	
-	# 8. 检查核心节点仅包含战斗和奇遇
+
+	# 6. 验证核心节点类型（只能是战斗或奇遇）
 	if not _validate_core_node_types(level_data):
 		level_data.is_valid = false
 
-	# 9. 检查每个阶段路径必须收敛到每个阶段的终局节点
+	# 7. 验证阶段收敛性
 	if not _validate_stage_convergence(level_data):
 		level_data.is_valid = false
 
 	return level_data.is_valid
+
+
+## 验证路径长度
+func _validate_path_lengths(level_data: LevelData) -> bool:
+	var min_allowed = int(level_data.target_total * config.get("min_path_length_ratio", MIN_PATH_LENGTH_RATIO))
+	var max_allowed = int(level_data.target_total * config.get("max_path_length_ratio", MAX_PATH_LENGTH_RATIO))
+
+	# 同时使用最大层级作为参考
+	var max_layer = level_data.get_max_layer()
+	var layer_based_min = int(max_layer * 0.3)
+	var layer_based_max = int(max_layer * 1.2)
+
+	# 取更宽松的范围
+	min_allowed = mini(min_allowed, layer_based_min)
+	max_allowed = maxi(max_allowed, layer_based_max)
+
+	var valid_path_found = false
+	for path in level_data.all_paths:
+		if path.size() >= min_allowed and path.size() <= max_allowed:
+			valid_path_found = true
+			break
+
+	if not valid_path_found:
+		level_data.validation_errors.append(
+			"没有路径在允许范围内：需要至少一条路径长度在 " +
+			str(min_allowed) + "-" + str(max_allowed) +
+			" (目标：" + str(level_data.target_total) +
+			", 最大层数：" + str(max_layer) + ", 总节点数：" + str(level_data.total_nodes) + ")"
+		)
+		return false
+
+	return true
 
 
 ## 检查是否有循环路径

@@ -132,25 +132,26 @@ func _dfs_find_paths(current_id: String, current_path: Array[String], depth: int
 	current_path.pop_back()
 
 
-## 验证所有路径
+## 验证所有路径（简化版：只检查基础数据完整性）
+## 详细验证由 LevelValidator 负责
 func validate() -> bool:
 	validation_errors.clear()
 	is_valid = true
-	
+
 	# 1. 检查是否有起始节点
 	if start_node_id == "":
 		validation_errors.append("缺少起始节点")
 		is_valid = false
-	
+
 	# 2. 检查是否有终点节点
 	if end_node_ids.size() == 0:
 		validation_errors.append("缺少终点节点")
 		is_valid = false
-	
+
 	# 3. 查找所有路径
 	find_all_paths()
-	
-	# 4. 检查是否所有路径都包含起点和终点
+
+	# 4. 检查路径是否连通（起点→终点）
 	for path in all_paths:
 		if path.size() == 0:
 			continue
@@ -160,21 +161,7 @@ func validate() -> bool:
 		if path[-1] not in end_node_ids:
 			validation_errors.append("路径不包含终点节点：" + str(path))
 			is_valid = false
-	
-	# 5. 检查路径长度是否在允许范围内（±10%）
-	var min_allowed = int(target_total * 0.9)
-	var max_allowed = int(target_total * 1.1)
-	for path in all_paths:
-		if path.size() < min_allowed or path.size() > max_allowed:
-			validation_errors.append(
-				"路径长度超出范围：" + str(path.size()) + 
-				" (目标：" + str(target_total) + 
-				", 允许：" + str(min_allowed) + "-" + str(max_allowed) + ")"
-			)
-			is_valid = false
-	
-	# 6. 检查是否有循环路径（已在 DFS 中避免）
-	
+
 	return is_valid
 
 
