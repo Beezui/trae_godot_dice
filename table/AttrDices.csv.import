@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c3tjnf0r3l6tu"
+valid=false
+
+[deps]
+
+source_file="res://table/AttrDices.csv"
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

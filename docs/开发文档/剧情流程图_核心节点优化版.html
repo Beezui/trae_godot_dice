@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>晋升吧骰子 - 核心节点优化版（多入口/出口）</title>
+  <script src="https://gw.alipayobjects.com/os/lib/antv/g6/4.8.24/dist/g6.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 2em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    #container {
+      width: 100%;
+      height: 1400px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      margin: 0 auto;
+    }
+    .info {
+      text-align: center;
+      color: white;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .legend {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px auto;
+      max-width: 1400px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .legend h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid #333;
+    }
+    .rule-info {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px auto;
+      max-width: 1400px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .rule-info h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .rule-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .rule-card {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      border-left: 4px solid #667eea;
+    }
+    .rule-card h4 {
+      margin: 0 0 5px 0;
+      color: #333;
+      font-size: 14px;
+    }
+    .rule-card p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+    .highlight {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 晋升吧骰子 - 核心节点优化版</h1>
+  
+  <div class="legend">
+    <h3>📊 图例说明</h3>
+    <div class="legend-items">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #e1f5fe; border-color: #0d47a1;"></div>
+        <span>🎮 初始节点 (10 个)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #4cc9f0; border-color: #2196f3;"></div>
+        <span>🎭 身份节点 (10 个)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #ffd700; border-color: #ff9800;"></div>
+        <span>⚔️ 成长节点 (独有)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #95e1d3; border-color: #2d9b84;"></div>
+        <span>🔗 共享节点 (分组)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #f0ad4e; border-color: #dc2626;"></div>
+        <span>💪 转折节点</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #dc143c; border-color: #b91c1c;"></div>
+        <span>👹 BOSS 节点 (10 个)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule-info">
+    <h3>📋 核心节点规则说明</h3>
+    <div class="rule-grid">
+      <div class="rule-card" style="border-color: #e74c3c;">
+        <h4>✅ 核心规则</h4>
+        <p>每个核心节点必须满足：<span class="highlight">入口数 > 1 或 出口数 > 1</span></p>
+        <p style="margin-top:5px;">不允许：1 入口 + 1 出口的线性节点</p>
+      </div>
+      <div class="rule-card" style="border-color: #3498db;">
+        <h4>✅ 平衡原则</h4>
+        <p>每个节点出入口总数控制在 <span class="highlight">2-4 个</span></p>
+        <p style="margin-top:5px;">避免某个节点连接过多（不超过 5 个）</p>
+      </div>
+      <div class="rule-card" style="border-color: #2ecc71;">
+        <h4>✅ 分组收敛</h4>
+        <p>路线 1-3 共享 4 个节点（多入口）</p>
+        <p style="margin-top:5px;">路线 4-6 共享 4 个节点（多入口）</p>
+        <p style="margin-top:5px;">路线 7-10 共享 4 个节点（多入口）</p>
+      </div>
+      <div class="rule-card" style="border-color: #f39c12;">
+        <h4>✅ 路线长度</h4>
+        <p>最短路线：10 节点</p>
+        <p style="margin-top:5px;">最长路线：14 节点</p>
+        <p style="margin-top:5px;">每条路线至少 10 个成长节点</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="container"></div>
+  <div class="info">
+    💡 提示：可以拖动画布、缩放、拖动节点 | 鼠标滚轮缩放，左键拖拽，右键平移
+  </div>
+  
+  <script>
+    // 核心节点优化版数据 - 确保每个核心节点有多个入口或多个出口
+    const data = {
+      nodes: [
+        // ========== 初始节点组 (10 个) - 每个有 2-3 个出口 ==========
+        { id: "start1", label: "1 异世界重生\n蒸汽迷雾", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start2", label: "2 灾变幸存\n废墟爬出", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start3", label: "3 家族后裔\n古老诅咒", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start4", label: "4 实验室\n培养舱", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start5", label: "5 流浪艺人\n马戏团", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start6", label: "6 黑市商人\n神秘货", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start7", label: "7 教会孤儿\n信仰疑", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start8", label: "8 机械学徒\n师失踪", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start9", label: "9 贵族子\n觉醒力", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "start10", label: "10 时间环\n困同日", type: "rect", size: [160, 45], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+
+        // ========== 身份节点组 (10 个) - 每个有 2-3 个出口 ==========
+        { id: "id1", label: "调查员\n超自然", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id2", label: "学者\n古文献", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id3", label: "战士\n佣兵团", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id4", label: "探险家\n遗迹", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id5", label: "商人\n黑市", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id6", label: "间谍\n卧底", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id7", label: "反抗军\n地下", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id8", label: "佣兵\n自由", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id9", label: "信徒\n教派", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "id10", label: "觉醒者\n异能", type: "rect", size: [140, 40], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+
+        // ========== 第一组共享节点 (路线 1-3) - 每个有 2-3 个入口 +2 个出口 ==========
+        { id: "share1_1", label: "S1 村庄异变\n失踪案\n(3 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share1_2", label: "S2 古老遗迹\n符号\n(3 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share1_3", label: "S3 教派接触\n邀请\n(3 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share1_4", label: "S4 真相碎片\n恐惧\n(3 入 3 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+
+        // 路线 1 独有节点
+        { id: "r1_1", label: "调查\n线索", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r1_2", label: "暗访\n黑幕", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r1_3", label: "证据\n收集", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 路线 2 独有节点
+        { id: "r2_1", label: "翻译\n古籍", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r2_2", label: "仪式\n发现", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r2_3", label: "预言\n解读", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 路线 3 独有节点
+        { id: "r3_1", label: "战斗\n训练", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r3_2", label: "追杀\n令", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r3_3", label: "决斗\n荣耀", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r3_4", label: "战场\n洗礼", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // ========== 第二组共享节点 (路线 4-6) - 每个有 2-3 个入口 +2 个出口 ==========
+        { id: "share2_1", label: "S5 地下拍卖\n神秘\n(2 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share2_2", label: "S6 时空裂隙\n维度\n(2 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share2_3", label: "S7 商人联盟\n交易\n(3 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share2_4", label: "S8 情报网\n秘密\n(3 入 3 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+
+        // 路线 4 独有节点
+        { id: "r4_1", label: "遗迹\n探索", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r4_2", label: "机关\n破解", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r4_3", label: "宝藏\n发现", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 路线 5 独有节点
+        { id: "r5_1", label: "谈判\n博弈", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r5_2", label: "垄断\n市场", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 路线 6 独有节点
+        { id: "r6_1", label: "渗透\n敌营", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r6_2", label: "伪装\n身份", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r6_3", label: "窃取\n机密", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r6_4", label: "暴露\n危机", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // ========== 第三组共享节点 (路线 7-10) - 每个有 3-4 个入口 +2 个出口 ==========
+        { id: "share3_1", label: "S9 反抗基地\n集结\n(4 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share3_2", label: "S10 教派冲突\n战火\n(4 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share3_3", label: "S11 觉醒时刻\n力量\n(4 入 2 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+        { id: "share3_4", label: "S12 最终准备\n决战\n(4 入 4 出)", type: "rect", size: [160, 50], style: { fill: "#95e1d3", stroke: "#2d9b84", lineWidth: 3, radius: 5 } },
+
+        // 路线 7 独有节点
+        { id: "r7_1", label: "游击\n战术", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r7_2", label: "策反\n敌军", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r7_3", label: "起义\n号角", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 路线 8 独有节点
+        { id: "r8_1", label: "契约\n任务", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r8_2", label: "赏金\n狩猎", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r8_3", label: "荣耀\n之路", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 路线 9 独有节点
+        { id: "r9_1", label: "信仰\n试炼", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r9_2", label: "圣物\n觉醒", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r9_3", label: "神谕\n启示", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r9_4", label: "赎罪\n之路", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 路线 10 独有节点
+        { id: "r10_1", label: "循环\n记忆", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r10_2", label: "时间\n操控", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r10_3", label: "因果\n律", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "r10_4", label: "命运\n突破", type: "rect", size: [130, 40], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // ========== 转折节点组 (10 个) - 每个有 2-3 个入口 +2 个出口 ==========
+        { id: "turn1", label: "💪 发现邪恶\n信仰崩塌\n(2 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn2", label: "💪 背叛逃亡\n众叛亲离\n(2 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn3", label: "💪 集结力量\n反抗军\n(2 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn4", label: "💪 盟友背叛\n阴谋\n(2 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn5", label: "💪 邪神降临\n预兆\n(3 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn6", label: "💪 命运抉择\n十字路口\n(3 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn7", label: "💪 真相大白\n震惊\n(2 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn8", label: "💪 牺牲救赎\n大义\n(2 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn9", label: "💪 最终觉悟\n超越\n(3 入 2 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+        { id: "turn10", label: "💪 时空汇聚\n终点\n(2 入 1 出)", type: "rect", size: [170, 55], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 3, radius: 5 } },
+
+        // ========== BOSS 节点组 (10 个) - 每个有 1-2 个入口 ==========
+        { id: "boss1", label: "👹 81 爱与生命之母\n血肉机械", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss2", label: "👹 82 唯一胜者\n鲜血王座", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss3", label: "👹 83 无垢真菌\n孢子", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss4", label: "👹 84 原点\n终结", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss5", label: "👹 85 欲念黑洞\n吞噬", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss6", label: "👹 86 璀璨金币\n贪婪", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss7", label: "👹 87 一维规尺\n混乱", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss8", label: "👹 88 邪神联合体\n七位", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss9", label: "👹 89 幕后黑手\n阴影", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "boss10", label: "👹 90 自我救赎\n镜像", type: "rect", size: [180, 55], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } }
+      ],
+      edges: [
+        // ========== 初始节点 -> 身份节点 (每个初始节点 2-3 个出口) ==========
+        { source: "start1", target: "id1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start1", target: "id2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start2", target: "id1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start2", target: "id2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start3", target: "id3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start3", target: "id4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start4", target: "id4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start4", target: "id5", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start5", target: "id5", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start5", target: "id6", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start6", target: "id6", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start6", target: "id5", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start7", target: "id7", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start7", target: "id8", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start8", target: "id8", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start8", target: "id7", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start9", target: "id9", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start9", target: "id10", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start10", target: "id10", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "start10", target: "id9", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 身份节点 -> 第一层成长 (每个身份节点 2 个出口) ==========
+        { source: "id1", target: "r1_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id1", target: "share1_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id2", target: "r2_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id2", target: "share1_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id3", target: "r3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id3", target: "share1_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id4", target: "r4_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id4", target: "share2_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id5", target: "r5_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id5", target: "share2_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id6", target: "r6_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id6", target: "share2_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id7", target: "r7_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id7", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id8", target: "r8_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id8", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id9", target: "r9_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id9", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id10", target: "r10_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "id10", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 第一组内部连接 (路线 1-3) - 所有节点多入口/出口（无死循环） ==========
+        // 路线 1 - r1_1 和 r1_2 都连接到 share1_1，避免循环
+        { source: "r1_1", target: "share1_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r1_1", target: "r1_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r1_2", target: "share1_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r1_2", target: "share1_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share1_2", target: "r1_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r1_3", target: "share1_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r1_3", target: "share1_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 路线 2 - r2_1 和 r2_2 都连接到 share1_1 和 share1_2
+        { source: "r2_1", target: "share1_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r2_1", target: "r2_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r2_2", target: "share1_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r2_2", target: "share1_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share1_3", target: "r2_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r2_3", target: "share1_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r2_3", target: "share1_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 路线 3 - 移除 r3_2 和 r3_3 的双向循环，改为都连接到共享节点
+        { source: "r3_1", target: "share1_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share1_1", target: "r3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r3_2", target: "r3_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r3_2", target: "share1_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 移除 r3_3 → r3_2 的循环连接
+        { source: "r3_3", target: "share1_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r3_3", target: "share1_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share1_2", target: "r3_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r3_4", target: "share1_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 共享节点 1-3 汇聚到 share1_4 ==========
+        { source: "share1_3", target: "share1_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r2_3", target: "share1_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r3_4", target: "share1_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 第二组内部连接 (路线 4-6) - 所有节点多入口/出口（无死循环） ==========
+        // 路线 4 - r4_1 和 r4_2 都连接到 share2_1，避免循环
+        { source: "r4_1", target: "share2_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r4_1", target: "r4_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r4_2", target: "share2_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r4_2", target: "share2_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share2_2", target: "r4_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r4_3", target: "share2_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r4_3", target: "share2_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 路线 5 - r5_1 和 r5_2 都连接到 share2_3 和 share2_4
+        { source: "r5_1", target: "share2_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r5_1", target: "r5_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r5_2", target: "share2_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r5_2", target: "share2_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 路线 6 - r6_2 和 r6_3 都连接到 share2_1 和 share2_4
+        { source: "r6_1", target: "share2_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share2_1", target: "r6_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r6_2", target: "share2_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share2_4", target: "r6_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r6_3", target: "r6_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r6_4", target: "share2_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share2_2", target: "share2_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 共享节点汇聚到 share2_4 ==========
+        { source: "share2_3", target: "share2_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 第三组内部连接 (路线 7-10) - 所有节点多入口/出口（无死循环） ==========
+        // 路线 7 - r7_1 和 r7_2 都连接到 share3_1，避免循环
+        { source: "r7_1", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r7_1", target: "r7_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r7_2", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r7_2", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_2", target: "r7_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r7_3", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r7_3", target: "share3_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 路线 8 - r8_1 和 r8_2 都连接到 share3_1，避免循环
+        { source: "r8_1", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r8_1", target: "r8_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r8_2", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r8_2", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_2", target: "r8_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r8_3", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r8_3", target: "share3_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 路线 9 - r9_2 和 r9_3 都连接到 share3_3，避免循环
+        { source: "r9_1", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_1", target: "r9_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r9_2", target: "share3_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_3", target: "r9_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r9_3", target: "share3_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r9_3", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_2", target: "r9_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r9_4", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r9_4", target: "share3_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        // 路线 10 - r10_2 和 r10_3 都连接到 share3_3，避免循环
+        { source: "r10_1", target: "share3_1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_1", target: "r10_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r10_2", target: "share3_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_3", target: "r10_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r10_3", target: "share3_3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r10_3", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_2", target: "r10_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r10_4", target: "share3_2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "r10_4", target: "share3_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 共享节点汇聚到 share3_4 ==========
+        { source: "share3_3", target: "share3_4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 第一组 -> 转折节点 ==========
+        { source: "share1_4", target: "turn1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share1_4", target: "turn2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn1", target: "turn7", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn1", target: "turn9", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn2", target: "turn3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 第二组 -> 转折节点 ==========
+        { source: "share2_4", target: "turn4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share2_4", target: "turn5", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn4", target: "turn5", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn4", target: "turn8", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn5", target: "turn6", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 第三组 -> 转折节点 ==========
+        { source: "share3_4", target: "turn3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_4", target: "turn6", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_4", target: "turn7", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "share3_4", target: "turn8", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn3", target: "turn6", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn6", target: "turn9", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn7", target: "turn9", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn8", target: "turn10", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn10", target: "turn9", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // ========== 转折节点 -> BOSS 节点 ==========
+        { source: "turn7", target: "boss1", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn9", target: "boss2", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn3", target: "boss3", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn5", target: "boss4", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn6", target: "boss5", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn8", target: "boss6", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn10", target: "boss7", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn6", target: "boss8", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn9", target: "boss9", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "turn10", target: "boss10", style: { stroke: "#666", lineWidth: 2, endArrow: true } }
+      ]
+    };
+
+    // 创建图表
+    const graph = new G6.Graph({
+      container: 'container',
+      width: document.getElementById('container').offsetWidth,
+      height: 1400,
+      modes: {
+        default: [
+          'drag-canvas',
+          'zoom-canvas',
+          'drag-node',
+          {
+            type: 'collapse-expand',
+            onChange: function(item, collapsed) {
+              const data = item.get('model');
+              data.collapsed = collapsed;
+              return true;
+            }
+          }
+        ]
+      },
+      layout: {
+        type: 'dagre',
+        direction: 'LR',
+        nodesep: 50,
+        ranksep: 80,
+        controlPoints: true
+      },
+      defaultNode: {
+        type: 'rect',
+        size: [160, 45],
+        style: {
+          radius: 5,
+          cursor: 'pointer',
+          shadowColor: 'rgba(0, 0, 0, 0.3)',
+          shadowBlur: 10
+        },
+        labelCfg: {
+          style: {
+            fontSize: 11,
+            fontWeight: 'bold',
+            fill: '#333'
+          }
+        }
+      },
+      defaultEdge: {
+        type: 'cubic-horizontal',
+        style: {
+          endArrow: {
+            path: G6.Arrow.triangle(8, 12, 0),
+            fill: '#666'
+          },
+          lineWidth: 2,
+          stroke: '#666'
+        }
+      }
+    });
+
+    // 加载数据并渲染
+    graph.data(data);
+    graph.render();
+
+    // 添加点击事件
+    graph.on('node:click', (evt) => {
+      const node = evt.item;
+      const model = node.getModel();
+      console.log('点击了节点:', model.label);
+      
+      // 高亮效果
+      graph.updateItem(node, {
+        style: {
+          shadowColor: '#667eea',
+          shadowBlur: 20
+        }
+      });
+      
+      setTimeout(() => {
+        graph.updateItem(node, {
+          style: {
+            shadowColor: 'rgba(0, 0, 0, 0.3)',
+            shadowBlur: 10
+          }
+        });
+      }, 500);
+    });
+
+    // 鼠标悬停效果
+    graph.on('node:mouseenter', (evt) => {
+      const node = evt.item;
+      graph.updateItem(node, {
+        style: {
+          lineWidth: 4,
+          stroke: '#667eea'
+        }
+      });
+    });
+
+    graph.on('node:mouseleave', (evt) => {
+      const node = evt.item;
+      const model = node.getModel();
+      graph.updateItem(node, {
+        style: {
+          lineWidth: model.style.lineWidth || 2,
+          stroke: model.style.stroke
+        }
+      });
+    });
+
+    // 窗口大小改变时调整
+    window.addEventListener('resize', () => {
+      graph.changeSize(document.getElementById('container').offsetWidth, 1400);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+id,name,attr_str,attr_agi,attr_int,attr_hp,skill_slot,skill_dice_id,texture,portrait,hero_texture
+1,²âÊÔ½ÇÉ«,1;1;2;2;3;3,1;3;3;3;5;5,1;1;2;2;3;3,100,1,4001,1001;1001;1001;1001;1001;1001,1,idle;idle;idle;idle;idle;idle
+2,²âÊÔ¹ÖÎï,2;2;4;4;5;5,1;3;3;3;5;5,1;1;2;2;3;3,100,1,4002,1001;1001;1001;1001;1001;1001,1,idle;idle;idle;idle;idle;idle

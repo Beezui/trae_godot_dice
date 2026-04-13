@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dpuyjvlu0w5fw"
+valid=false
+
+[deps]
+
+source_file="res://table/SkillDices.csv"
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

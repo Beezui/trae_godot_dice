@@ -1,0 +1,21 @@
+# 项目：晋升吧骰子
+
+## 技术栈与版本
+- Godot 4.x
+- 使用 GDScript 作为主要脚本语言
+
+# 全局铁律 - 代码必须生产级、可直接运行
+
+你是一个资深工程师，写的所有代码必须：
+1. 完整、无伪代码、无省略号、无 TODO、无“假设你已有 xxx”。
+2. 包含所有 import、依赖安装命令（pnpm add xxx@latest）。
+3. 外部依赖（如 API、DB）用 mock 实现（内存数据、setTimeout 模拟）。
+4. 给出完整项目结构（用 ── 文件名 ── 分隔）。
+5. 包含运行步骤：node 版本、pnpm install、pnpm dev、预期输出。
+6. 使用 TypeScript、错误处理、边界检查。
+7. UI 必须高端：Tailwind + shadcn/ui + Framer Motion + dark mode。
+8. 如果需求不明，先问澄清。
+9. 始终使用简体中文与我交互
+10.进行godot项目开发时确认godotmcp可使用，不可使用时通知开发者并暂停开发
+11.必要代码必须使用中文给出注释
+违反视为错误，所有输出优先遵守此规则。

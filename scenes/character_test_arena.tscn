@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://0rdtr8qyygcj"]
+
+[ext_resource type="Script" uid="uid://crwajuwsuo2ou" path="res://scenes/character_test_arena.gd" id="1_script"]
+
+[node name="CharacterTestArena" type="Node3D" unique_id=1765032963]
+transform = Transform3D(0.99999994, 0.00032261218, -0.000200802, -0.00032258814, 0.99999994, 0.00017625927, 0.00020084062, -0.00017621527, 1, 0, 0, 0)
+script = ExtResource("1_script")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1096375479]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 60, 0)
+current = true
+fov = 15.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1807034485]
+transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
+
+[node name="Sandbox" type="StaticBody3D" parent="." unique_id=1209470029]
+
+[node name="Ground" type="CollisionShape3D" parent="Sandbox" unique_id=799909176]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Sandbox" unique_id=679077478]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+
+[node name="WallNorth" type="CollisionShape3D" parent="Sandbox" unique_id=1256396496]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, -6.75)
+
+[node name="WallSouth" type="CollisionShape3D" parent="Sandbox" unique_id=101862532]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 6.75)
+
+[node name="WallEast" type="CollisionShape3D" parent="Sandbox" unique_id=1876457748]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -4, 0)
+
+[node name="WallWest" type="CollisionShape3D" parent="Sandbox" unique_id=901959498]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, -4, 0)
+
+[node name="ChargeLabel" type="Label" parent="." unique_id=653860962]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 50.0
+text = "按空格键投掷骰子"
+
+[node name="HPLabel" type="Label" parent="." unique_id=945974516]
+offset_left = 20.0
+offset_top = 50.0
+offset_right = 300.0
+offset_bottom = 80.0
+text = "HP: 100/100"

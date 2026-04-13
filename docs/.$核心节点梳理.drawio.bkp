@@ -1,0 +1,145 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram name="第 1 页" id="LUdk5zr59DWLa9QjPBHj">
+    <mxGraphModel dx="690" dy="645" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-16" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-14" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-15" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="异界" vertex="1">
+          <mxGeometry height="30" width="80" x="250" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-19" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-15" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-18" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-15" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="村庄、暴食" vertex="1">
+          <mxGeometry height="30" width="90" x="210" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-21" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-18" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-20" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-46" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-18" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;entryX=0.431;entryY=-0.033;entryDx=0;entryDy=0;entryPerimeter=0;" target="h5A_M7JSgtWIKq7hjTLU-47">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-18" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="祭品" vertex="1">
+          <mxGeometry height="25" width="85" x="155" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-25" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-20" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-24" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-26" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-20" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-24" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-27" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-20" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-24" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-28" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-20" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-24" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-30" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-20" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="h5A_M7JSgtWIKq7hjTLU-31" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="146.1717856469038" y="412.4662753273101" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-20" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="前往主城、更多异常" vertex="1">
+          <mxGeometry height="30" width="130" x="132.5" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-33" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-24" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-32" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-50" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-24" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;entryX=0.583;entryY=0.1;entryDx=0;entryDy=0;entryPerimeter=0;" target="h5A_M7JSgtWIKq7hjTLU-51">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="250" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-24" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="城市暴乱" vertex="1">
+          <mxGeometry height="30" width="100" x="145" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-31" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="疾病蔓延" vertex="1">
+          <mxGeometry height="30" width="100" x="280" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-35" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-32" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-34" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-58" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-32" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-32" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="加入反抗组织" vertex="1">
+          <mxGeometry height="30" width="120" x="35" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-37" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-34" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-36" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-34" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="反攻城市" vertex="1">
+          <mxGeometry height="40" width="120" x="25" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-39" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-36" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-38" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-36" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="面对教派反扑" vertex="1">
+          <mxGeometry height="30" width="120" x="25" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-42" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-38" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-40">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-38" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="总攻教派" vertex="1">
+          <mxGeometry height="40" width="130" x="20" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-43" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-40" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-41">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-44" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-40" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;entryX=0.354;entryY=0.025;entryDx=0;entryDy=0;entryPerimeter=0;" target="h5A_M7JSgtWIKq7hjTLU-45">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="230" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-40" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="直面教皇" vertex="1">
+          <mxGeometry height="40" width="130" x="20" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-41" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="黑洞" vertex="1">
+          <mxGeometry height="40" width="130" x="25" y="980" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-45" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="继任" vertex="1">
+          <mxGeometry height="40" width="130" x="190" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-49" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-47" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-48" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-47" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="重伤流亡、重生" vertex="1">
+          <mxGeometry height="30" width="130" x="330" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-48" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="加入大墓地" vertex="1">
+          <mxGeometry height="40" width="150" x="440" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-52" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-51" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;entryX=0.442;entryY=0.05;entryDx=0;entryDy=0;entryPerimeter=0;" target="h5A_M7JSgtWIKq7hjTLU-53">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="340" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-51" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="混乱中进入隐藏据点" vertex="1">
+          <mxGeometry height="30" width="120" x="290" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-54" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-53" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;entryX=0.6;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="h5A_M7JSgtWIKq7hjTLU-57">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="330" y="670" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-56" edge="1" parent="1" source="h5A_M7JSgtWIKq7hjTLU-53" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="h5A_M7JSgtWIKq7hjTLU-55" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-53" parent="1" style="whiteSpace=wrap;html=1;rounded=1;" value="撞破阴谋" vertex="1">
+          <mxGeometry height="40" width="120" x="300" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-55" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="颠人组入局" vertex="1">
+          <mxGeometry height="35" width="120" x="370" y="707.5" as="geometry" />
+        </mxCell>
+        <mxCell id="h5A_M7JSgtWIKq7hjTLU-57" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="战争神殿入局" vertex="1">
+          <mxGeometry height="35" width="110" x="220" y="707.5" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

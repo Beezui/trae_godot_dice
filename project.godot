@@ -1,0 +1,54 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+main_scene="res://scenes/test/level_map_test.tscn"
+
+[application]
+
+config/name="晋升吧骰子"
+run/main_scene="res://scenes/dice_demo_simple_final.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+SkillManager="*res://skills/skill_manager.gd"
+DiceTextureManager="*res://scripts/dice/dice_texture_manager.gd"
+DiceThrowController="*res://scripts/dice/dice_throw_controller.gd"
+DiceResultDetector="*res://scripts/dice/dice_result_detector.gd"
+CharacterManager="*res://scripts/character/CharacterManager.gd"
+CameraManager="*res://scripts/camera_manager.gd"
+level_generator="*res://scripts/autoreload/level_generator.gd"
+DestinyDiceManager="*res://scripts/levels/destiny_dice_manager.gd"
+LevelTransitionController="*res://scripts/levels/level_transition_controller.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
+[godot_mcp]
+
+bind_mode=0
+custom_bind_ip=""
+port_override_enabled=true
+port_override=6505
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+lights_and_shadows/environment/default_environment_light_energy=1.0
+lights_and_shadows/environment/default_environment_light_color=Color(1, 1, 1, 1)
+ambient_light/enable_ambient_light=true
+ambient_light/ambient_light_color=Color(0.8, 0.8, 0.8, 1)
+ambient_light/ambient_light_energy=1.0

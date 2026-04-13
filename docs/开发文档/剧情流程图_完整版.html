@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>晋升吧骰子 - 完整剧情流程图（90 节点）</title>
+  <script src="https://gw.alipayobjects.com/os/lib/antv/g6/4.8.24/dist/g6.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 2em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    #container {
+      width: 100%;
+      height: 1200px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      margin: 0 auto;
+    }
+    .info {
+      text-align: center;
+      color: white;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .legend {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px auto;
+      max-width: 1200px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .legend h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 晋升吧骰子 - 完整剧情流程图</h1>
+  
+  <div class="legend">
+    <h3>📊 图例说明</h3>
+    <div class="legend-items">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #e1f5fe; border-color: #0d47a1;"></div>
+        <span>🎮 初始节点 (10 个)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #4cc9f0; border-color: #2196f3;"></div>
+        <span>🎭 身份节点 (8 个)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #ffd700; border-color: #ff9800;"></div>
+        <span>⚔️ 成长第一层 (10 个)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #ff6b6b; border-color: #e85d04;"></div>
+        <span>🔮 成长第二层 (10 个)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #f0ad4e; border-color: #dc2626;"></div>
+        <span>💪 成长第三层 (10 个)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #dc143c; border-color: #b91c1c;"></div>
+        <span>👹 BOSS 节点 (10 个)</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="container"></div>
+  <div class="info">
+    💡 提示：可以拖动画布、缩放、拖动节点 | 鼠标滚轮缩放，左键拖拽，右键平移
+  </div>
+  
+  <script>
+    // 完整的 90 节点剧情网数据
+    const data = {
+      nodes: [
+        // 初始节点组 (1-10)
+        { id: "n1", label: "1 异世界重生\n蒸汽迷雾中睁开双眼", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n2", label: "2 灾变幸存者\n从废墟中爬出", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n3", label: "3 古老家族后裔\n继承了诅咒", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n4", label: "4 实验室产物\n培养舱中苏醒", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n5", label: "5 流浪艺人\n马戏团消失", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n6", label: "6 地下黑市商人\n神秘货物", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n7", label: "7 教会孤儿\n信仰动摇", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n8", label: "8 机械师学徒\n师傅失踪", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n9", label: "9 贵族私生子\n觉醒能力", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+        { id: "n10", label: "10 时间循环者\n困在同一天", type: "rect", size: [180, 50], style: { fill: "#e1f5fe", stroke: "#0d47a1", lineWidth: 3, radius: 5 } },
+
+        // 身份节点组 (21-28)
+        { id: "n21", label: "21 调查员\n处理超自然事件", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "n22", label: "22 富二代\n金钱买不到真相", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "n23", label: "23 自由佣兵\n为金钱荣誉而战", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "n24", label: "24 神秘学者\n研究古老文献", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "n25", label: "25 反抗军成员\n推翻教派统治", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "n26", label: "26 独立探险家\n探索世界角落", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "n27", label: "27 情报贩子\n信息就是力量", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+        { id: "n28", label: "28 教派卧底\n危险的游戏", type: "rect", size: [180, 50], style: { fill: "#4cc9f0", stroke: "#2196f3", lineWidth: 2, radius: 5 } },
+
+        // 成长第一层 (41-50)
+        { id: "n41", label: "41 村庄异变\n村民接连失踪", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n42", label: "42 黑市遭遇\n奇怪物品", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n43", label: "43 意外撞破\n引来杀身之祸", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n44", label: "44 古老遗迹\n奇怪符号", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n45", label: "45 追杀令\n杀手接踵而至", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n46", label: "46 神秘来客\n深夜交易", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n47", label: "47 梦境预兆\n世界毁灭", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n48", label: "48 失忆者\n只记得名字", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n49", label: "49 地下拍卖会\n神秘邀请", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+        { id: "n50", label: "50 时空裂隙\n不同可能性", type: "rect", size: [180, 50], style: { fill: "#ffd700", stroke: "#ff9800", lineWidth: 2, radius: 5 } },
+
+        // 成长第二层 (51-60)
+        { id: "n51", label: "51 生命教派邀请\n爱与生命之母", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n52", label: "52 战争神殿试炼\n鲜血与杀戮", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n53", label: "53 荒芜祭团预言\n无垢真菌", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n54", label: "54 大墓地秘密\n原点", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n55", label: "55 丰饶牧场诱惑\n欲念黑洞", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n56", label: "56 商人协会交易\n璀璨金币", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n57", label: "57 颠人组混乱\n一维规尺", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n58", label: "58 多教派接触\n并不简单", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n59", label: "59 教派冲突\n残酷血腥", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+        { id: "n60", label: "60 真相碎片\n令人恐惧", type: "rect", size: [180, 50], style: { fill: "#ff6b6b", stroke: "#e85d04", lineWidth: 2, radius: 5 } },
+
+        // 成长第三层 (61-70)
+        { id: "n61", label: "61 加入教派\n表面顺从", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n62", label: "62 发现邪恶\n那些神？", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n63", label: "63 暗中调查\n更加恐惧", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n64", label: "64 反抗萌芽\n星星之火", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n65", label: "65 背叛逃亡\n被迫逃亡", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n66", label: "66 集结力量\n汇聚成军", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n67", label: "67 最终准备\n史诗之战", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n68", label: "68 盟友背叛\n代价？", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n69", label: "69 邪神降临预兆\n世界屏息", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+        { id: "n70", label: "70 命运抉择\n前进或毁灭", type: "rect", size: [180, 50], style: { fill: "#f0ad4e", stroke: "#dc2626", lineWidth: 2, radius: 5 } },
+
+        // BOSS 节点组 (81-90)
+        { id: "n81", label: "👹 81 爱与生命之母\n血肉机械融合体", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n82", label: "👹 82 唯一胜者\n鲜血王座", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n83", label: "👹 83 无垢真菌\n孢子弥漫", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n84", label: "👹 84 原点\n终结钟声", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n85", label: "👹 85 欲念黑洞\n无尽口器", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n86", label: "👹 86 璀璨金币\n贪婪巨人", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n87", label: "👹 87 一维规尺\n维度扭曲", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n88", label: "👹 88 邪神联合体\n七位一体", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n89", label: "👹 89 幕后黑手\n阴影存在", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } },
+        { id: "n90", label: "👹 90 自我救赎\n镜像自己", type: "rect", size: [200, 60], style: { fill: "#dc143c", stroke: "#b91c1c", lineWidth: 4, radius: 8 } }
+      ],
+      edges: [
+        // 初始节点 -> 身份节点
+        { source: "n1", target: "n21", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n1", target: "n22", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n1", target: "n23", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n2", target: "n21", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n2", target: "n22", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n2", target: "n24", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n3", target: "n23", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n3", target: "n24", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n3", target: "n25", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n4", target: "n21", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n4", target: "n25", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n4", target: "n26", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n5", target: "n22", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n5", target: "n23", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n5", target: "n27", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n6", target: "n24", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n6", target: "n26", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n6", target: "n27", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n7", target: "n21", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n7", target: "n25", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n7", target: "n28", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n8", target: "n22", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n8", target: "n26", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n8", target: "n28", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n9", target: "n23", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n9", target: "n24", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n9", target: "n27", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n10", target: "n25", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n10", target: "n26", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n10", target: "n28", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // 身份节点 -> 成长第一层
+        { source: "n21", target: "n41", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n21", target: "n42", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n21", target: "n43", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n22", target: "n42", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n22", target: "n44", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n22", target: "n45", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n23", target: "n41", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n23", target: "n43", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n23", target: "n46", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n24", target: "n44", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n24", target: "n47", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n24", target: "n48", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n25", target: "n45", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n25", target: "n46", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n25", target: "n49", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n26", target: "n43", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n26", target: "n47", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n26", target: "n50", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n27", target: "n44", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n27", target: "n48", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n27", target: "n50", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n28", target: "n46", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n28", target: "n49", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n28", target: "n50", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // 成长第一层 -> 成长第二层
+        { source: "n41", target: "n51", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n41", target: "n52", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n41", target: "n53", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n42", target: "n51", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n42", target: "n54", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n42", target: "n55", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n43", target: "n52", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n43", target: "n53", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n43", target: "n56", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n44", target: "n54", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n44", target: "n57", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n44", target: "n58", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n45", target: "n55", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n45", target: "n56", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n45", target: "n59", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n46", target: "n53", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n46", target: "n59", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n46", target: "n60", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n47", target: "n57", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n47", target: "n58", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n47", target: "n60", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n48", target: "n58", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n48", target: "n60", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n48", target: "n61", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n49", target: "n56", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n49", target: "n59", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n49", target: "n61", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n50", target: "n57", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n50", target: "n60", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n50", target: "n61", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // 成长第二层 -> 成长第三层
+        { source: "n51", target: "n61", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n51", target: "n62", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n51", target: "n63", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n52", target: "n62", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n52", target: "n64", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n52", target: "n65", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n53", target: "n63", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n53", target: "n65", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n53", target: "n66", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n54", target: "n64", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n54", target: "n66", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n54", target: "n67", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n55", target: "n65", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n55", target: "n67", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n55", target: "n68", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n56", target: "n66", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n56", target: "n68", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n56", target: "n69", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n57", target: "n67", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n57", target: "n69", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n57", target: "n70", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n58", target: "n68", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n58", target: "n69", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n58", target: "n70", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n59", target: "n69", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n59", target: "n70", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n59", target: "n61", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n60", target: "n70", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n60", target: "n61", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n60", target: "n62", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+
+        // 成长第三层 -> BOSS 节点
+        { source: "n61", target: "n81", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n61", target: "n82", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n61", target: "n83", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n62", target: "n82", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n62", target: "n83", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n62", target: "n84", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n63", target: "n83", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n63", target: "n84", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n63", target: "n85", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n64", target: "n84", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n64", target: "n85", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n64", target: "n86", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n65", target: "n85", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n65", target: "n86", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n65", target: "n87", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n66", target: "n86", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n66", target: "n87", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n66", target: "n88", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n67", target: "n87", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n67", target: "n88", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n67", target: "n89", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n68", target: "n88", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n68", target: "n89", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n68", target: "n90", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n69", target: "n89", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n69", target: "n90", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n69", target: "n81", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n70", target: "n90", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n70", target: "n81", style: { stroke: "#666", lineWidth: 2, endArrow: true } },
+        { source: "n70", target: "n82", style: { stroke: "#666", lineWidth: 2, endArrow: true } }
+      ]
+    };
+
+    // 创建图表
+    const graph = new G6.Graph({
+      container: 'container',
+      width: document.getElementById('container').offsetWidth,
+      height: 1200,
+      modes: {
+        default: [
+          'drag-canvas',
+          'zoom-canvas',
+          'drag-node',
+          {
+            type: 'collapse-expand',
+            onChange: function(item, collapsed) {
+              const data = item.get('model');
+              data.collapsed = collapsed;
+              return true;
+            }
+          }
+        ]
+      },
+      layout: {
+        type: 'dagre',
+        direction: 'LR',
+        nodesep: 60,
+        ranksep: 100,
+        controlPoints: true
+      },
+      defaultNode: {
+        type: 'rect',
+        size: [180, 50],
+        style: {
+          radius: 5,
+          cursor: 'pointer',
+          shadowColor: 'rgba(0, 0, 0, 0.3)',
+          shadowBlur: 10
+        },
+        labelCfg: {
+          style: {
+            fontSize: 12,
+            fontWeight: 'bold',
+            fill: '#333'
+          }
+        }
+      },
+      defaultEdge: {
+        type: 'cubic-horizontal',
+        style: {
+          endArrow: {
+            path: G6.Arrow.triangle(8, 12, 0),
+            fill: '#666'
+          },
+          lineWidth: 2,
+          stroke: '#666'
+        }
+      }
+    });
+
+    // 加载数据并渲染
+    graph.data(data);
+    graph.render();
+
+    // 添加点击事件
+    graph.on('node:click', (evt) => {
+      const node = evt.item;
+      const model = node.getModel();
+      console.log('点击了节点:', model.label);
+      
+      // 高亮效果
+      graph.updateItem(node, {
+        style: {
+          shadowColor: '#667eea',
+          shadowBlur: 20
+        }
+      });
+      
+      setTimeout(() => {
+        graph.updateItem(node, {
+          style: {
+            shadowColor: 'rgba(0, 0, 0, 0.3)',
+            shadowBlur: 10
+          }
+        });
+      }, 500);
+    });
+
+    // 鼠标悬停效果
+    graph.on('node:mouseenter', (evt) => {
+      const node = evt.item;
+      graph.updateItem(node, {
+        style: {
+          lineWidth: 4,
+          stroke: '#667eea'
+        }
+      });
+    });
+
+    graph.on('node:mouseleave', (evt) => {
+      const node = evt.item;
+      const model = node.getModel();
+      graph.updateItem(node, {
+        style: {
+          lineWidth: model.style.lineWidth || 2,
+          stroke: model.style.stroke
+        }
+      });
+    });
+
+    // 窗口大小改变时调整
+    window.addEventListener('resize', () => {
+      graph.changeSize(document.getElementById('container').offsetWidth, 1200);
+    });
+  </script>
+</body>
+</html>
