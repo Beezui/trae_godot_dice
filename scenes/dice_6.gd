@@ -17,6 +17,11 @@ var controlled_result: int = -1  # -1表示没有控制结果
 var result_control_timer: Timer
 var has_valid_result: bool = false  # 标记骰子是否有有效结果
 var result_check_timer: Timer  # 用于定期检查骰子状态
+var stable_check_count: int = 0  # 稳定检查计数
+const REQUIRED_STABLE_CHECKS: int = 10  # 需要连续稳定检查次数（每 0.1 秒一次，共 1 秒）
+var final_wait_timer: Timer  # 最终等待计时器（余韵时间）
+const FINAL_WAIT_TIME: float = 1.5  # 完全稳定后的等待时间（秒）- 余韵
+var is_in_final_wait: bool = false  # 是否在余韵等待中
 
 func _ready():
 	# 初始化系统
@@ -65,7 +70,7 @@ func _ready():
 	
 	# 创建计时器
 	roll_timer = Timer.new()
-	roll_timer.wait_time = 3.0
+	roll_timer.wait_time = 0.1  # 每 0.1 秒检查一次（100ms）
 	roll_timer.one_shot = true
 	roll_timer.timeout.connect(_on_roll_timer_timeout)
 	add_child(roll_timer)
@@ -81,7 +86,14 @@ func _ready():
 	result_check_timer.wait_time = 0.5  # 每 0.5 秒检查一次
 	result_check_timer.timeout.connect(_on_result_check_timeout)
 	add_child(result_check_timer)
-	
+
+	# 创建最终等待计时器（余韵时间）
+	final_wait_timer = Timer.new()
+	final_wait_timer.wait_time = FINAL_WAIT_TIME
+	final_wait_timer.one_shot = true
+	final_wait_timer.timeout.connect(_on_final_wait_timeout)
+	add_child(final_wait_timer)
+
 	# 初始化骰子模型
 	init_dice_model()
 	
@@ -215,40 +227,63 @@ func stop_rolling():
 func roll(force: Vector3, angular_force: Vector3 = Vector3.ZERO):
 	# 恢复重力影响
 	gravity_scale = 1.0
-	
+
 	is_rolling = true
+	is_in_final_wait = false  # 重置余韵状态
 	collision_count = 0
+	stable_check_count = 0  # 重置稳定计数
 	linear_velocity = force
-	
+
 	# 如果提供了旋转力，则使用它；否则使用随机旋转力
 	if angular_force != Vector3.ZERO:
 		angular_velocity = angular_force
 	else:
 		angular_velocity = Vector3(randf_range(-10, 10), randf_range(-10, 10), randf_range(-10, 10))
-	
+
 	roll_timer.start()
-	
+
 	# 如果有控制结果，启动结果控制计时器
 	if controlled_result != -1:
 		result_control_timer.start()
 
 func _on_roll_timer_timeout():
-	# 检查骰子是否真的停止运动
-	if linear_velocity.length() < 0.1 and angular_velocity.length() < 0.1:
-		is_rolling = false
-		check_dice_value()
-		
-		# 如果是角色骰子，停止后锁定位置
-		if dice_type == "character":
-			lock_character_dice()
-		
-		# 通知骰子管理器
-		var parent = get_parent()
-		if parent and parent.has_method("on_dice_stopped"):
-			parent.on_dice_stopped()
+	# 在余韵等待中，不再检查
+	if is_in_final_wait:
+		return
+
+	# 检查骰子是否真的停止运动（非常严格的阈值）
+	if linear_velocity.length() < 0.03 and angular_velocity.length() < 0.03:
+		# 骰子已停止，增加稳定计数
+		stable_check_count += 1
+
+		# 需要连续 10 次检查都稳定（共 1 秒）才认为是真的停止
+		if stable_check_count >= REQUIRED_STABLE_CHECKS:
+			# 完全稳定，启动余韵计时器
+			is_in_final_wait = true
+			final_wait_timer.start()
+		else:
+			# 还没达到足够的稳定检查次数，继续等待
+			roll_timer.start()
 	else:
-		# 骰子还在运动，重新启动计时器
+		# 骰子还在运动，重置稳定计数
+		stable_check_count = 0
 		roll_timer.start()
+
+
+## 最终等待超时（余韵时间结束）
+func _on_final_wait_timeout():
+	is_rolling = false
+	is_in_final_wait = false
+	check_dice_value()
+
+	# 如果是角色骰子，停止后锁定位置
+	if dice_type == "character":
+		lock_character_dice()
+
+	# 通知骰子管理器
+	var parent = get_parent()
+	if parent and parent.has_method("on_dice_stopped"):
+		parent.on_dice_stopped()
 
 
 func lock_character_dice():
@@ -460,6 +495,10 @@ func get_dice_value() -> int:
 func get_has_valid_result() -> bool:
 	# 获取是否有有效结果
 	return has_valid_result
+
+func get_is_rolling() -> bool:
+	# 获取骰子是否正在滚动（包括余韵等待中）
+	return is_rolling or is_in_final_wait
 
 func set_controlled_result(value: int):
 	# 设置控制结果
