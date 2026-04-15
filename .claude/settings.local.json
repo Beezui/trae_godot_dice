@@ -3,7 +3,17 @@
     "allow": [
       "Bash(\"E:\\\\godot\\\\Godot_v4.6.1-stable_win64.exe\\\\Godot_v4.6.1-stable_win64.exe\" --path . --script res://scripts/test/test_level_generator.gd)",
       "Bash(\"E:\\\\godot\\\\Godot_v4.6.1-stable_win64.exe\\\\Godot_v4.6.1-stable_win64.exe\" --path . -s res://scripts/test/test_node_types_cli.gd --quit)",
-      "Bash(\"E:\\\\godot\\\\Godot_v4.6.1-stable_win64.exe\\\\Godot_v4.6.1-stable_win64.exe\" --path . --check-only)"
+      "Bash(\"E:\\\\godot\\\\Godot_v4.6.1-stable_win64.exe\\\\Godot_v4.6.1-stable_win64.exe\" --path . --check-only)",
+      "Bash(git pull:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(grep \"\\\\.tscn$\")",
+      "Bash(git add *)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "godot"
+  ]
 }

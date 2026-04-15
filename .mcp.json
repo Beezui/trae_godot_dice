@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "godot": {
-      "command": "npx",
+      "command": "npm",
       "args": [
-        "-y",
+        "exec",
+        "--",
         "godot-mcp-server"
       ],
       "env": {

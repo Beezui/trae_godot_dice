@@ -1,4 +1,5 @@
 extends RefCounted
+class_name DestinyDiceConfig
 ## 命运骰子配置数据结构
 ## 用于存储命运骰子的生成配置和投掷结果映射
 ## 注意：此类不是 autoload，需要通过 load() 动态加载

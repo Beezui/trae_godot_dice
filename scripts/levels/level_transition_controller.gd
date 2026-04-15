@@ -68,6 +68,12 @@ func initialize(level_data: LevelData):
 	current_level_data = level_data
 	print("[LevelTransitionController] 关卡数据已加载，节点数：", level_data.total_nodes)
 
+	# 初始化 LevelStage
+	var level_stage = LevelStage.get_instance()
+	if level_stage:
+		level_stage.level_data = level_data
+		print("[LevelTransitionController] LevelStage 已初始化")
+
 
 ## 设置当前节点
 func set_current_node(node: LevelNode):
@@ -165,10 +171,19 @@ func execute_transition():
 	if destiny_dice_manager:
 		destiny_dice_manager.current_node = current_node
 
-	# 3. 发出转换完成信号
+	# 3. 使用 LevelStage 加载场景和生成 NPC
+	var level_stage: Node = LevelStage.get_instance()
+	if level_stage:
+		var success = level_stage.transition_to_node(current_node)
+		if success:
+			print("[LevelTransitionController] 场景加载成功：%s" % current_node.name)
+		else:
+			push_error("[LevelTransitionController] 场景加载失败")
+
+	# 4. 发出转换完成信号
 	on_transition_completed.emit(target_node)
 
-	# 4. 清理命运骰子（在转换完成后）
+	# 5. 清理命运骰子（在转换完成后）
 	if destiny_dice_manager:
 		destiny_dice_manager.clear_dice_instances()
 

@@ -28,6 +28,7 @@ CameraManager="*res://scripts/camera_manager.gd"
 level_generator="*res://scripts/autoreload/level_generator.gd"
 DestinyDiceManager="*res://scripts/levels/destiny_dice_manager.gd"
 LevelTransitionController="*res://scripts/levels/level_transition_controller.gd"
+LevelStage="*res://scripts/levels/level_stage.gd"
 
 [editor_plugins]
 

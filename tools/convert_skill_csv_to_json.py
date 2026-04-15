@@ -1108,6 +1108,19 @@ if __name__ == '__main__':
         
         if not success:
             sys.exit(1)
+    elif len(sys.argv) > 1 and sys.argv[1] == '--random-nodes':
+        csv_file = os.path.join(script_dir, '..', 'table', 'random_nodes.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'random_nodes.json')
+        
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+        
+        success = convert_random_nodes_csv_to_json(csv_file, json_file)
+        
+        if not success:
+            sys.exit(1)
     elif len(sys.argv) > 1 and sys.argv[1] == '--boss':
         csv_file = os.path.join(script_dir, '..', 'table', 'boss.csv')
         json_file = os.path.join(script_dir, '..', 'table', 'boss.json')
