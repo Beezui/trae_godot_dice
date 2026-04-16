@@ -91,27 +91,32 @@ func _setup_boundary():
 		var wall_north_shape = BoxShape3D.new()
 		wall_north_shape.size = Vector3(sandbox_width, 50, 0.1)
 		wall_north.shape = wall_north_shape
-	
+		# 设置墙的位置：移动到场景边缘，中心高度 25 米（范围 y=0 到 y=50）
+		wall_north.position = Vector3(0, 25, -sandbox_height / 2)
+
 	# 南墙碰撞（屏幕下方，z 轴正方向）
 	var wall_south = boundary.get_node("WallSouth")
 	if wall_south:
 		var wall_south_shape = BoxShape3D.new()
 		wall_south_shape.size = Vector3(sandbox_width, 50, 0.1)
 		wall_south.shape = wall_south_shape
-	
+		wall_south.position = Vector3(0, 25, sandbox_height / 2)
+
 	# 东墙碰撞（屏幕右侧，x 轴正方向）
 	var wall_east = boundary.get_node("WallEast")
 	if wall_east:
 		var wall_east_shape = BoxShape3D.new()
 		wall_east_shape.size = Vector3(0.1, 50, sandbox_height)
 		wall_east.shape = wall_east_shape
-	
+		wall_east.position = Vector3(sandbox_width / 2, 25, 0)
+
 	# 西墙碰撞（屏幕左侧，x 轴负方向）
 	var wall_west = boundary.get_node("WallWest")
 	if wall_west:
 		var wall_west_shape = BoxShape3D.new()
 		wall_west_shape.size = Vector3(0.1, 50, sandbox_height)
 		wall_west.shape = wall_west_shape
+		wall_west.position = Vector3(-sandbox_width / 2, 25, 0)
 	
 	print("【碰撞边界】已配置，尺寸：%.1f x %.1f" % [sandbox_width, sandbox_height])
 
