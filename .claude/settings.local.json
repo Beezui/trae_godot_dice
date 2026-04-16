@@ -9,7 +9,11 @@
       "Bash(git merge:*)",
       "Bash(git ls-tree:*)",
       "Bash(grep \"\\\\.tscn$\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(godot --headless --script res://scripts/test/level_stage_test.gd)",
+      "mcp__godot__get_godot_status"
     ]
   },
   "enableAllProjectMcpServers": true,

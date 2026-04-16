@@ -9,8 +9,8 @@ var hero_config: Dictionary = {}  # hero.json 数据 (id -> hero 映射)
 ## 路径
 const CONFIG_PATH_HERO = "res://table/hero.json"
 
-## NPC 场景路径
-const NPC_SCENE_PATH = "res://scenes/character_test_arena.tscn"
+## NPC 场景路径（使用简易 NPC 场景，避免重复加载地面和围墙）
+const NPC_SCENE_PATH = "res://scenes/npc_scene.tscn"
 
 ## 生成范围配置
 var spawn_min_x = -10.0
