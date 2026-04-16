@@ -8,12 +8,12 @@
 
 config_version=5
 
-main_scene="res://scenes/test/level_map_test.tscn"
+main_scene="res://scenes/test/level_stage_test.tscn"
 
 [application]
 
 config/name="晋升吧骰子"
-run/main_scene="res://scenes/dice_demo_simple_final.tscn"
+run/main_scene="res://scenes/test/level_stage_test.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
