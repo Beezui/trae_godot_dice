@@ -40,10 +40,10 @@ func get_hero_data() -> Dictionary:
 
 
 ## 获取 NPC 位置
-func get_position() -> Vector3:
+func get_npc_position() -> Vector3:
 	return position
 
 
 ## 设置 NPC 位置
-func set_position(pos: Vector3) -> void:
+func set_npc_position(pos: Vector3) -> void:
 	position = pos
