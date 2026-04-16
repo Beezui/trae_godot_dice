@@ -6,6 +6,13 @@ extends Node3D
 var test_level_data: LevelData = null
 var start_node: LevelNode = null
 
+# 地图显示 UI
+var map_display: Control = null
+var is_map_visible: bool = false
+
+# 命运骰子投掷状态
+var is_rolling_destiny_dice: bool = false
+
 
 func _ready():
 	print("=== LevelStage 功能测试 ===")
@@ -39,6 +46,12 @@ func _ready():
 					print("【警告】场景中未找到 Camera3D")
 			else:
 				print("【测试】场景加载失败")
+
+	# 4. 创建地图显示 UI（默认隐藏）
+	_create_map_display()
+
+	# 5. 连接命运骰子完成信号
+	_connect_destiny_dice_signal()
 
 	print("=== 测试完成 ===")
 
@@ -104,12 +117,92 @@ func _create_backup_test_data() -> LevelData:
 ## 输入处理
 func _input(event):
 	if event is InputEventKey and event.pressed:
+		# 按 M 键开关地图显示
+		if event.keycode == KEY_M:
+			_toggle_map_display()
 		# 按 N 键切换到下一个节点
-		if event.keycode == KEY_N:
+		elif event.keycode == KEY_N:
 			_transition_to_next_node()
 		# 按 R 键重新加载当前节点
 		elif event.keycode == KEY_R:
 			_reload_current_node()
+		# 按 T 键投掷命运骰子
+		elif event.keycode == KEY_T:
+			_throw_destiny_dice()
+
+
+## 创建地图显示 UI
+func _create_map_display():
+	var map_scene = load("res://scenes/ui/level_map_display.tscn")
+	if map_scene:
+		map_display = map_scene.instantiate()
+		add_child(map_display)
+		map_display.visible = false
+		print("【地图 UI】已创建（默认隐藏）")
+	else:
+		push_error("【地图 UI】无法加载场景")
+
+
+## 开关地图显示
+func _toggle_map_display():
+	is_map_visible = not is_map_visible
+	if map_display:
+		map_display.visible = is_map_visible
+		print("【地图 UI】%s" % ("已显示" if is_map_visible else "已隐藏"))
+
+
+## 连接命运骰子完成信号
+func _connect_destiny_dice_signal():
+	var destiny_dice_manager = DestinyDiceManager.get_instance()
+	if destiny_dice_manager:
+		if not destiny_dice_manager.on_destiny_dice_roll_completed.is_connected(_on_destiny_dice_roll_completed):
+			destiny_dice_manager.on_destiny_dice_roll_completed.connect(_on_destiny_dice_roll_completed)
+			print("【命运骰子】已连接投掷完成信号")
+
+
+## 投掷命运骰子
+func _throw_destiny_dice():
+	if is_rolling_destiny_dice:
+		print("【命运骰子】正在投掷中...")
+		return
+
+	var level_stage: Node = LevelStage.get_instance()
+	if not level_stage or not test_level_data:
+		push_error("【命运骰子】LevelStage 或关卡数据未初始化")
+		return
+
+	var current_node = level_stage.get_current_node()
+	if not current_node or current_node.connections.size() == 0:
+		print("【命运骰子】当前节点无连接，可能是终点")
+		return
+
+	is_rolling_destiny_dice = true
+	print("\n【命运骰子】开始投掷...")
+
+	# 使用 LevelTransitionController 投掷
+	var level_transition = LevelTransitionController.get_instance()
+	if level_transition:
+		level_transition.throw_destiny_dice()
+
+
+## 命运骰子投掷完成回调
+func _on_destiny_dice_roll_completed(selected_node: LevelNode):
+	is_rolling_destiny_dice = false
+
+	if not selected_node:
+		push_error("【命运骰子】选择的节点为空")
+		return
+
+	print("\n【命运骰子】投掷完成，选择节点：%s (类型：%d)" % [selected_node.name, selected_node.type])
+
+	# 切换到选中的节点
+	var level_stage: Node = LevelStage.get_instance()
+	if level_stage:
+		var success = level_stage.transition_to_node(selected_node)
+		if success:
+			print("【命运骰子】已切换到节点：%s" % selected_node.name)
+		else:
+			push_error("【命运骰子】场景切换失败")
 
 
 ## 切换到下一个节点
