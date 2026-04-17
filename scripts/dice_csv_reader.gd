@@ -137,37 +137,46 @@ func get_all_skill_dice_ids() -> Array:
 	return skill_dices_data.keys()
 
 func load_attr_dices() -> Dictionary:
-	var json_path = "res://table/attr_dices.json"
+	# 使用 AttrDices.json（全局属性骰子文字颜色配置）
+	# 格式：{"attr_dices": [{"id": "5001", "attr_name": "str", "points_color": "#C00000"}, ...]}
+	# 返回：{"str": "#C00000", "agi": "#A9D08E", "int": "#8EA9DB"}
+	var json_path = "res://table/AttrDices.json"
 	var file = FileAccess.open(json_path, FileAccess.READ)
-	
+
 	if file:
-		print("【JSON】开始加载 attr_dices.json，路径：", json_path)
+		print("【JSON】开始加载 AttrDices.json，路径：", json_path)
 		var json_text = file.get_as_text()
 		file.close()
-		
+
 		var json = JSON.new()
 		var parse_result = json.parse(json_text)
-		
+
 		if parse_result != OK:
-			push_error("Error parsing attr_dices.json: " + json.get_error_message())
+			push_error("Error parsing AttrDices.json: " + json.get_error_message())
 			return {}
-		
+
 		var data = json.get_data()
 		if not data is Dictionary or not data.has("attr_dices"):
-			push_error("attr_dices.json missing 'attr_dices' object")
+			push_error("AttrDices.json missing 'attr_dices' array")
 			return {}
-		
-		var attr_dices = data["attr_dices"]
-		for hero_id in attr_dices.keys():
-			var hero_data = attr_dices[hero_id]
-			_preprocess_attr_dice_config(hero_data)
-			attr_dices_data[hero_id] = hero_data
-			print("【JSON】加载属性骰子配置 hero_id=", hero_id, ", hero_name=", hero_data.get("hero_name", "未知"))
-		
-		print("【JSON】attr_dices.json 加载完成，配置数=", attr_dices_data.size())
-		return attr_dices_data
-	
-	print("【JSON】attr_dices.json 文件不存在或无法读取")
+
+		# 新格式：attr_dices 是数组，遍历建立 attr_name → points_color 映射
+		var attr_dices_array = data["attr_dices"]
+		var result = {}
+
+		for dice_config in attr_dices_array:
+			if dice_config is Dictionary and dice_config.has("attr_name") and dice_config.has("points_color"):
+				var attr_name = str(dice_config["attr_name"])
+				var color_str = dice_config["points_color"]
+				result[attr_name] = color_str
+				print("【JSON】加载属性骰子颜色配置 attr_name=", attr_name, ", color=", color_str)
+
+		# 更新缓存数据
+		attr_dices_data = result
+		print("【JSON】AttrDices.json 加载完成，配置数=", attr_dices_data.size())
+		return result
+
+	print("【JSON】AttrDices.json 文件不存在或无法读取")
 	return {}
 
 func _preprocess_attr_dice_config(hero_data: Dictionary):

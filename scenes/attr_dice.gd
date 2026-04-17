@@ -603,46 +603,24 @@ func update_attributes(hero_attributes: Dictionary, hero_textures: Array):
 
 
 func _update_points_color_from_config():
-	# 从 attr_dices.json 读取文字颜色配置
+	# 从 AttrDices.json 读取文字颜色配置（新格式：全局配置，按 attr_name 索引）
+	# 返回格式：{"str": "#C00000", "agi": "#A9D08E", "int": "#8EA9DB"}
 	var DiceCSVReaderClass = load("res://scripts/dice_csv_reader.gd")
 	var dice_csv_reader = DiceCSVReaderClass.new()
 	var attr_dices_config = dice_csv_reader.load_attr_dices()
-	
-	# 检查配置是否有效（空字典也是有效的，表示没有配置）
-	if attr_dices_config.size() > 0:
-		var hero_key = str(hero_id)
-		if attr_dices_config.has(hero_key):
-			var hero_config = attr_dices_config[hero_key]
-			
-			# 根据 attr_type 获取对应的配置
-			var attr_config = null
-			match attr_type:
-				"str":
-					attr_config = hero_config.get("power", null)
-				"agi":
-					attr_config = hero_config.get("agility", null)
-				"int":
-					attr_config = hero_config.get("intelligence", null)
-			
-			if attr_config and attr_config.has("points_color"):
-				var color_str = attr_config["points_color"]
-				if color_str is String:
-					points_color = Color(color_str)
-				else:
-					points_color = color_str
-				print("【文字颜色】从配置读取：", attr_type, " = ", points_color)
-			else:
-				# 默认颜色
-				points_color = Color.BLACK
-				print("【文字颜色】配置中未找到 points_color，使用默认黑色")
+
+	# 新格式：直接从 attr_type 获取颜色
+	if attr_dices_config.size() > 0 and attr_dices_config.has(attr_type):
+		var color_str = attr_dices_config[attr_type]
+		if color_str is String:
+			points_color = Color(color_str)
 		else:
-			# 默认颜色
-			points_color = Color.BLACK
-			print("【文字颜色】未找到英雄 ", hero_id, " 的配置，使用默认黑色")
+			points_color = color_str
+		print("【文字颜色】从 AttrDices.json 读取：", attr_type, " = ", points_color)
 	else:
-		# 默认颜色
+		# 默认颜色：黑色
 		points_color = Color.BLACK
-		print("【文字颜色】未找到 attr_dices.json 配置，使用默认黑色")
+		print("【文字颜色】未找到 attr_type=", attr_type, " 的配置，使用默认黑色")
 
 func _convert_to_int_array(array: Array) -> Array:
 	# 将数组中的元素转换为整数
