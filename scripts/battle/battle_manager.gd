@@ -202,14 +202,23 @@ func _create_character_dice(character: BaseCharacter, side: String):
 	dice.dice_type = "character"
 	dice.skip_skill_trigger = true
 
-	# 应用角色贴图
+	# 应用角色贴图：使用 hero.json 中的 hero_texture 字段
+	# 格式：res://textures/hero/hero_{hero_id}_{state}.png
 	var texture_config = {}
+	var hero_id = character.hero_id
+	var hero_texture_states = character.hero_textures  # ["idle", "hit", "attack", "anger", "happy", "die"]
+
 	for i in range(6):
-		if i < character.texture_ids.size():
-			var texture_id = character.texture_ids[i]
-			texture_config[i] = "res://textures/dice/dice_face_" + texture_id + ".png"
+		if i < hero_texture_states.size():
+			var texture_state = hero_texture_states[i]
+			var texture_path = "res://textures/hero/hero_" + str(hero_id) + "_" + texture_state + ".png"
+			texture_config[i] = texture_path
+			print("【BattleManager】角色骰子面 ", i, " 贴图：", texture_path)
 		else:
-			texture_config[i] = ""
+			# 默认使用 idle 状态
+			var default_path = "res://textures/hero/hero_" + str(hero_id) + "_idle.png"
+			texture_config[i] = default_path
+			print("【BattleManager】角色骰子面 ", i, " 使用默认贴图：", default_path)
 
 	if dice.has_method("set_dice_face_config"):
 		dice.set_dice_face_config(texture_config, {})
