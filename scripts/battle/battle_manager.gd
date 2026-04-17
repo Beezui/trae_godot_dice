@@ -124,7 +124,7 @@ func start_battle():
 func _enter_phase():
 	print("【BattleManager】进入入场阶段")
 	current_state = BattleState.ENTERING
-	on_battle_phase_changed.emit(BattlePhase.PHASE_ENTER, BattlePhase.PHASE_ENTER)
+	_change_phase(BattlePhase.PHASE_ENTER)
 
 	# 1. 敌方角色入场
 	print("【BattleManager】敌方角色入场...")
@@ -222,7 +222,7 @@ func _create_character_dice(character: BaseCharacter, side: String):
 ## 准备阶段（生成骰子）
 func _setup_phase():
 	print("【BattleManager】准备阶段：生成骰子")
-	on_battle_phase_changed.emit(BattlePhase.PHASE_SETUP, BattlePhase.PHASE_SETUP)
+	_change_phase(BattlePhase.PHASE_SETUP)
 
 	# 为玩家角色生成技能骰子和物品骰子
 	for character in player_characters:
@@ -392,7 +392,7 @@ func _create_item_dice(item_dice_id: String):
 ## 战斗阶段
 func _battle_phase():
 	print("【BattleManager】进入战斗阶段")
-	on_battle_phase_changed.emit(BattlePhase.PHASE_BATTLE, BattlePhase.PHASE_BATTLE)
+	_change_phase(BattlePhase.PHASE_BATTLE)
 
 	current_turn = 1
 
@@ -584,7 +584,7 @@ func _calculate_mp_cost(skill_dice, character: BaseCharacter = null) -> int:
 	var final_cost = int(base_mp_cost * mp_cost_multiplier)
 
 	print("【BattleManager】计算 MP 消耗：技能=", skill_data.get("name", "未知"),
-	      ", 基础消耗=", base_mp_cost, ", 倍率=", mp_cost_multiplier, ", 最终消耗=", final_cost)
+		  ", 基础消耗=", base_mp_cost, ", 倍率=", mp_cost_multiplier, ", 最终消耗=", final_cost)
 
 	return final_cost
 
@@ -707,7 +707,7 @@ func _resolve_rewards():
 ## 转换阶段（投掷命运骰子）
 func _transition_phase():
 	print("【BattleManager】进入转换阶段")
-	on_battle_phase_changed.emit(BattlePhase.PHASE_TRANSITION, BattlePhase.PHASE_TRANSITION)
+	_change_phase(BattlePhase.PHASE_TRANSITION)
 
 	# TODO: 触发命运骰子投掷
 	# 这里应该调用 DestinyDiceManager
@@ -719,7 +719,10 @@ func _transition_phase():
 func _change_phase(new_phase: BattlePhase):
 	var old_phase = current_phase
 	current_phase = new_phase
-	print("【BattleManager】阶段变更：", BattlePhase.keys()[old_phase], " -> ", BattlePhase.keys()[new_phase])
+	var old_phase_name = BattlePhase.keys()[old_phase]
+	var new_phase_name = BattlePhase.keys()[new_phase]
+	print("【BattleManager】阶段变更：", old_phase_name, " -> ", new_phase_name)
+	on_battle_phase_changed.emit(old_phase_name, new_phase_name)
 
 
 ## 清空战斗数据
@@ -763,10 +766,12 @@ func _load_enemy_characters(level_node: LevelNode):
 	print("【BattleManager】加载敌人：", enemy_ids)
 
 	for enemy_id in enemy_ids:
-		var character = CharacterManager.create_character(enemy_id, "enemy")
+		# 将 String 类型的 ID 转换为 int
+		var enemy_id_int = int(enemy_id) if enemy_id is String else enemy_id
+		var character = CharacterManager.create_character(enemy_id_int, "enemy")
 		if character:
 			enemy_characters.append(character)
-			print("【BattleManager】敌人已加载：", character.name, " (ID: ", enemy_id, ")")
+			print("【BattleManager】敌人已加载：", character.name, " (ID: ", enemy_id_int, ")")
 
 
 ## 获取战斗统计

@@ -16,6 +16,12 @@ import json
 import os
 import sys
 
+# 修复 Windows 控制台编码问题
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
 def convert_csv_to_json(csv_path, json_path):
     """将 CSV 文件转换为 JSON 格式"""
     
@@ -497,44 +503,48 @@ def convert_hero_csv_to_json(csv_path, json_path):
             print(f"  ✗ Error parsing line: {e}")
             continue
         
-        if len(values) < 11:
+        if len(values) < 13:
             print(f"  ✗ Warning: Insufficient columns, skipping")
             continue
-        
+
         # 提取数据
         hero_id = values[0].strip()
         name = values[1].strip()
-        
+
         # 跳过空数据行
         if not hero_id or not name:
             print(f"  ✗ Warning: Empty hero ID or name, skipping")
             continue
-        
+
         # 使用分号作为数组分隔符
         attr_str = [s.strip() for s in values[2].strip().strip('"').split(';')] if values[2].strip() else []
         attr_agi = [s.strip() for s in values[3].strip().strip('"').split(';')] if values[3].strip() else []
         attr_int = [s.strip() for s in values[4].strip().strip('"').split(';')] if values[4].strip() else []
         attr_hp = values[5].strip()
-        skill_slot = values[6].strip()
+        attr_mp = values[6].strip() if len(values) > 6 else '50'
+        mp_name = values[7].strip() if len(values) > 7 else 'MP'
+        skill_slot = values[8].strip()
         # skill_dice_id 现在是个数组
-        skill_dice_id = [s.strip() for s in values[7].strip().strip('"').split(';')] if values[7].strip() else []
-        texture = [s.strip() for s in values[8].strip().strip('"').split(';')] if values[8].strip() else []
-        portrait = values[9].strip()
+        skill_dice_id = [s.strip() for s in values[9].strip().strip('"').split(';')] if values[9].strip() else []
+        texture = [s.strip() for s in values[10].strip().strip('"').split(';')] if values[10].strip() else []
+        portrait = values[11].strip()
         # hero_texture 是角色属性骰子的六个状态贴图（idle, hit, attack, anger, happy, die）
-        hero_texture = [s.strip() for s in values[10].strip().strip('"').split(';')] if values[10].strip() else []
-        
+        hero_texture = [s.strip() for s in values[12].strip().strip('"').split(';')] if values[12].strip() else []
+
         print(f"  Hero ID: {hero_id}")
         print(f"  Name: {name}")
         print(f"  Strength: {attr_str}")
         print(f"  Agility: {attr_agi}")
         print(f"  Intelligence: {attr_int}")
         print(f"  HP: {attr_hp}")
+        print(f"  MP: {attr_mp}")
+        print(f"  MP Name: {mp_name}")
         print(f"  Skill Slot: {skill_slot}")
         print(f"  Skill Dice ID: {skill_dice_id}")
         print(f"  Texture: {texture}")
         print(f"  Portrait: {portrait}")
         print(f"  Hero Texture: {hero_texture}")
-        
+
         hero = {
             'id': hero_id,
             'name': name,
@@ -542,6 +552,8 @@ def convert_hero_csv_to_json(csv_path, json_path):
             'attr_agi': attr_agi,
             'attr_int': attr_int,
             'attr_hp': attr_hp,
+            'attr_mp': attr_mp,
+            'mp_name': mp_name,
             'skill_slot': skill_slot,
             'skill_dice_id': skill_dice_id,
             'texture': texture,

@@ -28,6 +28,8 @@
         "3"
       ],
       "attr_hp": "100",
+      "attr_mp": "50",
+      "mp_name": "MP",
       "skill_slot": "1",
       "skill_dice_id": [
         "4001"
@@ -78,6 +80,8 @@
         "3"
       ],
       "attr_hp": "100",
+      "attr_mp": "50",
+      "mp_name": "MP",
       "skill_slot": "1",
       "skill_dice_id": [
         "4002"

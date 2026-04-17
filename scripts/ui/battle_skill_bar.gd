@@ -186,7 +186,17 @@ func _update_mp_label():
 	if mp_label:
 		if player_characters.size() > 0:
 			var character = player_characters[0]
-			mp_label.text = "%s: %d/%d" % [character.mp_name, character.current_mp, character.attr_mp]
+			# 检查属性是否存在
+			var mp_name_val = "MP"
+			var current_mp_val = 0
+			var attr_mp_val = 50
+			if "mp_name" in character:
+				mp_name_val = character.mp_name
+			if "current_mp" in character:
+				current_mp_val = character.current_mp
+			if "attr_mp" in character:
+				attr_mp_val = character.attr_mp
+			mp_label.text = "%s: %d/%d" % [mp_name_val, current_mp_val, attr_mp_val]
 		else:
 			mp_label.text = "MP: --"
 

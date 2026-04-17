@@ -13,6 +13,9 @@ var attr_agi: Array  # 敏捷 (6 个面)
 var attr_int: Array  # 智力 (6 个面)
 var attr_hp: int     # 血量
 var current_hp: int  # 当前血量
+var attr_mp: int = 50     # 魔法值上限
+var current_mp: int = 50  # 当前魔法值
+var mp_name: String = "MP"  # MP 显示名称
 
 ## 技能槽位数量
 var skill_slot: int
@@ -62,35 +65,43 @@ func load_from_data(data: Dictionary):
 	# 解析 hero_id（从字符串转换为整数）
 	var id_value = data.get("id", "0")
 	hero_id = int(id_value) if id_value is String else id_value
-	
+
 	name = data.get("name", "未知角色")
-	
+
 	# 解析属性数组
 	attr_str = _parse_array(data.get("attr_str", []))
 	attr_agi = _parse_array(data.get("attr_agi", []))
 	attr_int = _parse_array(data.get("attr_int", []))
-	
+
 	# 解析血量
 	var hp_value = data.get("attr_hp", "100")
 	attr_hp = int(hp_value) if hp_value is String else hp_value
 	current_hp = attr_hp
-	
+
+	# 解析魔法值（如果 hero.json 中有配置）
+	var mp_value = data.get("attr_mp", "50")
+	attr_mp = int(mp_value) if mp_value is String else mp_value
+	current_mp = attr_mp
+
+	# 解析 MP 名称（如果 hero.json 中有配置）
+	mp_name = data.get("mp_name", "MP")
+
 	# 解析技能槽位
 	var slot_value = data.get("skill_slot", "1")
 	skill_slot = int(slot_value) if slot_value is String else slot_value
-	
+
 	# 解析技能骰子 ID
 	skill_dice_ids = _parse_array(data.get("skill_dice_id", []))
-	
+
 	# 解析贴图 ID
 	texture_ids = _parse_array(data.get("texture", []))
-	
+
 	# 解析立绘 ID
 	portrait_id = str(data.get("portrait", "1"))
-	
+
 	# 解析角色状态贴图
 	hero_textures = _parse_array(data.get("hero_texture", []))
-	
+
 	print("【BaseCharacter】加载角色数据：", name, " (ID: ", hero_id, ")")
 
 
@@ -119,13 +130,13 @@ func take_damage(damage: int) -> int:
 	"""
 	if current_hp <= 0:
 		return 0
-	
+
 	current_hp = max(0, current_hp - damage)
 	print("【BaseCharacter】", name, " 受到 ", damage, " 点伤害，剩余 HP: ", current_hp)
-	
+
 	# 更新状态为受击
 	set_state("hit")
-	
+
 	return damage
 
 
@@ -137,11 +148,11 @@ func heal(amount: int) -> int:
 	"""
 	if current_hp >= attr_hp:
 		return 0
-	
+
 	var old_hp = current_hp
 	current_hp = min(attr_hp, current_hp + amount)
 	var actual_heal = current_hp - old_hp
-	
+
 	print("【BaseCharacter】", name, " 恢复 ", actual_heal, " 点 HP，当前 HP: ", current_hp)
 	return actual_heal
 
@@ -182,7 +193,7 @@ func set_character_dice_scale(scale: Vector3):
 		if mesh:
 			mesh.scale = scale
 			print("【BaseCharacter】", name, " 角色骰子网格缩放已设置为：", scale)
-		
+
 		# 同步放大碰撞体
 		var collision_shape = character_dice.get_node("CollisionShape3D")
 		if collision_shape and collision_shape.shape:
@@ -209,7 +220,7 @@ func get_attribute_value(attr_type: String, face_index: int = 0) -> int:
 		"int":
 			if attr_int.size() > face_index:
 				return int(attr_int[face_index]) if attr_int[face_index] is String else attr_int[face_index]
-	
+
 	return 0
 
 
@@ -236,9 +247,52 @@ func get_config() -> Dictionary:
 		"attr_int": attr_int,
 		"attr_hp": attr_hp,
 		"current_hp": current_hp,
+		"attr_mp": attr_mp,
+		"current_mp": current_mp,
+		"mp_name": mp_name,
 		"skill_slot": skill_slot,
 		"skill_dice_ids": skill_dice_ids,
 		"texture_ids": texture_ids,
 		"portrait_id": portrait_id,
 		"hero_textures": hero_textures
 	}
+
+
+func recover_mp(amount: int) -> int:
+	"""
+	恢复魔法值
+	:param amount: 恢复量
+	:return: 实际恢复量
+	"""
+	if current_mp >= attr_mp:
+		return 0
+
+	var old_mp = current_mp
+	current_mp = min(attr_mp, current_mp + amount)
+	var actual_recover = current_mp - old_mp
+
+	print("【BaseCharacter】", name, " 恢复 ", actual_recover, " 点 MP，当前 MP: ", current_mp)
+	return actual_recover
+
+
+func take_mp_cost(amount: int) -> bool:
+	"""
+	消耗魔法值
+	:param amount: 消耗量
+	:return: true 如果消耗成功
+	"""
+	if not can_afford_mp(amount):
+		return false
+
+	current_mp -= amount
+	print("【BaseCharacter】", name, " 消耗 ", amount, " 点 MP，剩余 MP: ", current_mp)
+	return true
+
+
+func can_afford_mp(amount: int) -> bool:
+	"""
+	检查是否有足够 MP
+	:param amount: 需要的 MP 量
+	:return: true 如果 MP 足够
+	"""
+	return current_mp >= amount
