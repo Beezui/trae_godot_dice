@@ -508,9 +508,12 @@ func _create_attr_face_texture(face_index: int, attr_name: String, value_text: S
 
 ## 应用普通骰子贴图（使用贴图路径）
 func _apply_normal_dice_textures(mesh_instance: MeshInstance3D, config: Dictionary):
+	print("【贴图管理器】应用普通骰子贴图（可能是角色骰子）")
+	print("【贴图管理器】贴图配置：", config)
+
 	# 为每个面创建材质
 	var materials = []
-	
+
 	# 定义备用颜色
 	var id_colors = {
 		0: Color(1, 0, 0, 1),   # 红色
@@ -520,7 +523,7 @@ func _apply_normal_dice_textures(mesh_instance: MeshInstance3D, config: Dictiona
 		4: Color(1, 0, 1, 1),   # 紫色
 		5: Color(0, 1, 1, 1)    # 青色
 	}
-	
+
 	for i in range(6):
 		# 支持字符串键和整数键
 		var texture_path = ""
@@ -528,29 +531,36 @@ func _apply_normal_dice_textures(mesh_instance: MeshInstance3D, config: Dictiona
 			texture_path = config.get(str(i), "")
 		elif config.has(i):
 			texture_path = config.get(i, "")
-		
+
+		print("【贴图管理器】普通骰子面 ", i, " 贴图路径：", texture_path)
+
 		var material = StandardMaterial3D.new()
 		material.roughness = 0.8
 		material.metallic = 0.0  # 与属性骰子保持一致
-		
+
 		if texture_path and not texture_path.is_empty():
-			# 从缓存获取贴图（或加载）
-			var texture = get_texture(texture_path)
-			if texture:
-				material.albedo_texture = texture
-				material.uv1_scale = Vector3(1, 1, 1)  # 确保 UV 缩放正确
-				material.uv1_offset = Vector3(0, 0, 0)
-				material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
-				print("【贴图管理器】面 ", i, " 加载贴图：", texture_path)
-			else:
-				print("【贴图管理器】面 ", i, " 贴图加载失败：", texture_path)
+			# 检查文件是否存在
+			if not ResourceLoader.exists(texture_path):
+				print("【贴图管理器】警告：贴图文件不存在：", texture_path)
 				material.albedo_color = id_colors.get(i, Color(0.5, 0.5, 0.5, 1))
+			else:
+				# 从缓存获取贴图（或加载）
+				var texture = get_texture(texture_path)
+				if texture:
+					material.albedo_texture = texture
+					material.uv1_scale = Vector3(1, 1, 1)  # 确保 UV 缩放正确
+					material.uv1_offset = Vector3(0, 0, 0)
+					material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
+					print("【贴图管理器】面 ", i, " 加载贴图成功：", texture_path)
+				else:
+					print("【贴图管理器】面 ", i, " 贴图加载失败：", texture_path)
+					material.albedo_color = id_colors.get(i, Color(0.5, 0.5, 0.5, 1))
 		else:
 			print("【贴图管理器】面 ", i, " 无贴图配置，使用颜色")
 			material.albedo_color = id_colors.get(i, Color(0.5, 0.5, 0.5, 1))
-		
+
 		materials.append(material)
-	
+
 	# 应用材质到网格
 	_apply_materials_to_mesh(mesh_instance, materials)
 
