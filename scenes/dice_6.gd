@@ -215,8 +215,12 @@ func create_fallback_mesh():
 	
 	# 设置网格
 	mesh_instance.mesh = mesh
-	
-	# 注意：不在这里应用贴图，等 set_dice_face_config 调用时再应用
+
+	# 如果已经有配置，立即应用贴图
+	if dice_face_config.size() > 0:
+		print("【备用网格】检测到已有配置，立即应用贴图")
+		apply_textures_from_manager()
+
 	print("Fallback cube mesh with 6 surfaces created")
 
 func stop_rolling():
