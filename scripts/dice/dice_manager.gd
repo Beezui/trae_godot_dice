@@ -110,16 +110,13 @@ func _build_character_texture_config(character: BaseCharacter) -> Dictionary:
 
 ## 创建技能骰子
 ## @param skill_dice_id 技能骰子 ID (如 "4001")
-## @param parent 父节点（通常是场景的 Sandbox）
+## @param parent 父节点（通常是场景的 Sandbox，传 null 则不添加到场景）
 ## @param position 位置 (可选，默认 Vector3.ZERO)
+## @param add_to_scene 是否添加到场景 (默认 true，parent 为 null 时强制为 false)
 ## @return RigidBody3D 技能骰子实例
-func create_skill_dice(skill_dice_id: String, parent: Node, position: Vector3 = Vector3.ZERO) -> RigidBody3D:
+func create_skill_dice(skill_dice_id: String, parent: Node, position: Vector3 = Vector3.ZERO, add_to_scene: bool = true) -> RigidBody3D:
 	if not skill_dice_id:
 		push_error("【DiceManager】技能骰子 ID 不能为空")
-		return null
-
-	if not parent:
-		push_error("【DiceManager】父节点不能为空")
 		return null
 
 	# 从 SkillDices.json 读取配置
@@ -142,6 +139,9 @@ func create_skill_dice(skill_dice_id: String, parent: Node, position: Vector3 = 
 	# 设置骰子类型
 	dice.dice_type = "skill"
 
+	# 存储技能骰子 ID 到元数据，方便后续获取配置
+	dice.set_meta("skill_dice_id", skill_dice_id)
+
 	# 构建贴图配置和值配置
 	var texture_config = _build_skill_texture_config(dice_config)
 	var value_config = _build_skill_value_config()
@@ -149,9 +149,16 @@ func create_skill_dice(skill_dice_id: String, parent: Node, position: Vector3 = 
 	if dice.has_method("set_dice_face_config"):
 		dice.set_dice_face_config(texture_config, value_config)
 
-	# 设置位置并添加到场景
+	# 设置位置
 	dice.position = position
-	parent.add_child(dice)
+
+	# 根据参数决定是否添加到场景
+	if add_to_scene and parent:
+		parent.add_child(dice)
+		print("【DiceManager】技能骰子已添加到场景：", skill_dice_id)
+	else:
+		# 不添加到场景，仅返回实例
+		print("【DiceManager】技能骰子已创建（未添加到场景）：", skill_dice_id)
 
 	# 初始状态设置为悬浮
 	if dice.has_method("set_freeze"):
@@ -163,7 +170,6 @@ func create_skill_dice(skill_dice_id: String, parent: Node, position: Vector3 = 
 	dice.linear_velocity = Vector3.ZERO
 	dice.angular_velocity = Vector3.ZERO
 
-	print("【DiceManager】技能骰子已创建：", skill_dice_id, " 位置：", position)
 	return dice
 
 

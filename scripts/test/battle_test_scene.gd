@@ -11,12 +11,16 @@ extends BattleSceneBase
 
 func _ready():
 	print("【BattleTestScene】测试战斗场景已就绪")
+	print("【BattleTestScene】self=", self, ", has_node('BattleUI')=", has_node("BattleUI"))
+
 	super._ready()
 
 	# 创建测试用 LevelNode
 	var test_level_node = _create_test_level_node()
+	print("【BattleTestScene】测试关卡节点已创建：", test_level_node.name)
 
 	# 初始化战斗
+	print("【BattleTestScene】准备初始化战斗...")
 	initialize_battle(test_level_node, [test_hero_id])
 
 	# 连接信号
@@ -24,6 +28,7 @@ func _ready():
 
 	# 开始战斗流程
 	await get_tree().create_timer(1.0).timeout
+	print("【BattleTestScene】准备开始战斗流程...")
 	start_battle_flow()
 
 

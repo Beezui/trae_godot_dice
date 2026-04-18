@@ -77,27 +77,39 @@ func _evaluate_multiplication(expr: String) -> float:
 
 func execute(caster: Node = null, targets: Array = [], params: Dictionary = {}) -> void:
 	var dice_results = params.get("dice_results", {})
-	
+
 	var scene_node: Node = params.get("scene", null)
 	if not scene_node and caster:
 		scene_node = caster.get_tree().current_scene
-	
+
 	var caster_position: Vector3 = params.get("caster_position", Vector3(-6, 0.5, 0))
 	if caster and caster.has_method("get_global_position"):
 		caster_position = caster.global_position
-	
+
 	var p1 = calculate_damage("int*2", dice_results)
 	var p2 = calculate_damage("str*2", dice_results)
 	var p3 = calculate_damage("agi*3", dice_results)
-	
+
 	if targets.is_empty():
 		cleanup()
 		return
 
 	var target = targets[randi() % targets.size()]
-	var center_pos = target.global_position if target else Vector3(6, 0.5, 0)
+	# 获取目标位置：如果目标有 character_dice，使用骰子位置；否则使用 global_position（如果是 Node）
+	var target_pos: Vector3
+	if target is BaseCharacter:
+		if target.character_dice:
+			target_pos = target.character_dice.position
+		else:
+			target_pos = Vector3(6, 0.5, 0)  # 默认位置
+	elif target.has_method("get_global_position"):
+		target_pos = target.global_position
+	else:
+		target_pos = Vector3(6, 0.5, 0)
+
+	var center_pos = target_pos
 	center_pos.y += 3
-	
+
 	_create_blizzard_effect(center_pos, p1, p2, p3, scene_node)
 
 func _create_blizzard_effect(center_pos: Vector3, range_bonus: int, duration: int, damage_per_second: int, scene_node: Node = null) -> void:

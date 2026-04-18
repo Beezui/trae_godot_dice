@@ -427,36 +427,29 @@ func _update_hp_display():
 
 func _process(delta):
 	if is_charging and DiceThrowController:
-		var charge_ratio = DiceThrowController.update_charge(delta)
+		var charge_ratio = DiceThrowController.charge_ratio
 		if charge_label:
 			charge_label.text = "蓄力：%d%%" % int(charge_ratio * 100)
-		
-		# 应用震动效果（只对可投掷的骰子）
-		var throwable_dices = get_throwable_dices()
-		if throwable_dices.size() > 0 and DiceThrowController.original_positions.size() > 0:
-			DiceThrowController.apply_shake(throwable_dices, DiceThrowController.original_positions, charge_ratio, delta)
 
 
 func _input(event):
 	if event.is_action_pressed("ui_accept"):  # 空格键
 		is_charging = true
-		if DiceThrowController:
-			DiceThrowController.start_charge()
-			# 注册可投掷骰子的原始位置
-			var throwable_dices = get_throwable_dices()
-			DiceThrowController.register_all_positions(throwable_dices)
-		if charge_label:
-			charge_label.text = "开始蓄力..."
-	
+	if DiceThrowController:
+		# 开始蓄力（传入骰子数组，自动处理震动）
+		var throwable_dices = get_throwable_dices()
+		DiceThrowController.start_charge(throwable_dices)
+	if charge_label:
+		charge_label.text = "开始蓄力..."
+
 	elif event.is_action_released("ui_accept"):
 		is_charging = false
 		if charge_label:
 			charge_label.text = "按空格键投掷骰子"
-		
-		# 投掷所有骰子（排除角色骰子）
-		var throwable_dices = get_throwable_dices()
-		if DiceThrowController and throwable_dices.size() > 0:
-			DiceThrowController.end_charge(throwable_dices)
+
+		# 投掷所有骰子（使用 start_charge 时记录的骰子）
+		if DiceThrowController:
+			DiceThrowController.end_charge()
 	
 	elif event.is_action_pressed("ui_home"):  # Home 键：测试受击
 		if player_character:

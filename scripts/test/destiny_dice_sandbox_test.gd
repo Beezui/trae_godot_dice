@@ -328,14 +328,9 @@ func _connect_signals():
 
 ## 输入处理
 func _process(_delta):
-	# 处理蓄力状态更新和震动效果
+	# 处理蓄力状态更新和震动效果（震动由 DiceThrowController._process 自动处理）
 	if is_charging and DiceThrowController:
-		var charge_ratio = DiceThrowController.update_charge(_delta)
-
-		# 应用震动效果
-		var dices = destiny_dice_manager.destiny_dice_instances if destiny_dice_manager else []
-		if dices.size() > 0:
-			DiceThrowController.apply_shake(dices, original_dice_positions, charge_ratio, _delta)
+		var charge_ratio = DiceThrowController.charge_ratio
 
 		# 更新 UI 显示蓄力
 		if map_overlay and map_overlay.has_method("update_charge"):
@@ -383,14 +378,11 @@ func _toggle_map():
 ## 开始蓄力
 func _start_charge():
 	if DiceThrowController:
-		DiceThrowController.start_charge()
+		# 获取命运骰子实例
+		var dices = destiny_dice_manager.destiny_dice_instances if destiny_dice_manager else []
 
-		# 记录骰子原始位置（用于震动效果）
-		original_dice_positions.clear()
-		if destiny_dice_manager:
-			for dice in destiny_dice_manager.destiny_dice_instances:
-				if dice and is_instance_valid(dice):
-					original_dice_positions[dice] = dice.position
+		# 开始蓄力（传入骰子数组，自动处理震动）
+		DiceThrowController.start_charge(dices)
 
 		print("【蓄力】开始蓄力")
 
@@ -398,15 +390,14 @@ func _start_charge():
 ## 结束蓄力并投掷
 func _end_charge_and_throw():
 	if DiceThrowController and destiny_dice_manager:
-		var dices = destiny_dice_manager.destiny_dice_instances
-		if dices.size() > 0:
-			# 使用统一控制器结束蓄力并投掷
-			DiceThrowController.end_charge(dices)
-			print("【投掷】投掷完成，等待骰子稳定...")
+		# 使用统一控制器结束蓄力并投掷（不传参数，使用 start_charge 时记录的骰子）
+		DiceThrowController.end_charge()
+		print("【投掷】投掷完成，等待骰子稳定...")
 
-			# 等待骰子稳定（使用定时器，简单方案）
-			await _wait_for_dice_stable(dices)
-			_process_roll_result()
+		# 等待骰子稳定（使用定时器，简单方案）
+		var dices = destiny_dice_manager.destiny_dice_instances
+		await _wait_for_dice_stable(dices)
+		_process_roll_result()
 
 
 ## 等待骰子稳定

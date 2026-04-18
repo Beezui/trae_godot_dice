@@ -382,59 +382,28 @@ func _input(event):
 
 func start_charging():
 	is_charging = true
-	# ✅ 使用统一的投掷控制器开始蓄力
-	DiceThrowController.start_charge()
-	
-	# 记录骰子的初始位置
-	original_positions.clear()
-	for dice in [power_dice, agility_dice, intelligence_dice, skill_dice]:
-		if dice and is_instance_valid(dice):
-			original_positions[dice] = dice.position
-	
+	# ✅ 使用统一的投掷控制器开始蓄力（传入骰子数组，自动处理震动）
+	var dice_list = [power_dice, agility_dice, intelligence_dice, skill_dice]
+	DiceThrowController.start_charge(dice_list)
+
 	print("开始蓄力...")
 
 
 func _process(delta):
 	global_time += delta
-	
+
+	# 蓄力阶段的提示更新（震动效果由 DiceThrowController._process 自动处理）
 	if is_charging:
-		# ✅ 使用统一的投掷控制器更新蓄力
-		var charge_ratio = DiceThrowController.update_charge(delta)
-		
-		# ✅ 使用统一的震动效果
-		var dice_list = [power_dice, agility_dice, intelligence_dice, skill_dice]
-		DiceThrowController.apply_shake(dice_list, original_positions, charge_ratio, delta)
+		var charge_ratio = DiceThrowController.charge_ratio
+		print("\r蓄力中... %d%%" % int(charge_ratio * 100))
 
 
 func throw_all_battle_dices():
 	is_charging = false
-	var charge_ratio = DiceThrowController.get_charge_ratio()
-	print("【投掷】蓄力比例：", charge_ratio)
-	
-	# ✅ 使用统一的投掷控制器结束蓄力并投掷
-	var dice_list = [power_dice, agility_dice, intelligence_dice, skill_dice]
-	
-	# 检查骰子是否有效并解除 freeze
-	for dice in dice_list:
-		if not dice or not is_instance_valid(dice):
-			print("警告：骰子无效！")
-		else:
-			# 解除 freeze 状态
-			if dice.has_method("set_freeze"):
-				dice.set_freeze(false)
-			elif "freeze" in dice:
-				dice.freeze = false
-			
-			# 重置物理状态
-			dice.linear_velocity = Vector3.ZERO
-			dice.angular_velocity = Vector3.ZERO
-			dice.sleeping = false
-			
-			print("骰子已解除 freeze: ", dice.name, ", 位置=", dice.position)
-	
-	# 使用 DiceThrowController 投掷
-	DiceThrowController.end_charge(dice_list)
-	
+
+	# ✅ 使用统一的投掷控制器结束蓄力并投掷（不传参数，使用 start_charge 时记录的骰子）
+	DiceThrowController.end_charge()
+
 	# 清空原始位置
 	original_positions.clear()
 	print("投掷战斗骰子！")

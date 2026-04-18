@@ -9,6 +9,13 @@ DiceTextureManager 初始化完成
 【贴图管理器】预加载：res://textures/dice/dice_face_4.png
 【贴图管理器】预加载：res://textures/dice/dice_face_5.png
 【贴图管理器】预加载：res://textures/dice/dice_face_6.png
+【贴图管理器】预加载命运骰子贴图...
+【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_1.png
+【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_2.png
+【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_3.png
+【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_4.png
+【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_5.png
+【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_boss.png
 DiceThrowController 初始化完成
 DiceResultDetector 初始化完成
 【CharacterManager】角色管理器已就绪
@@ -24,282 +31,153 @@ CameraManager 初始化完成
 ========================================
 [LevelGenerator] 配置加载成功
 [LevelGeneratorRandom] 配置加载成功
-  - 随机节点配置：8 个
+  - 随机节点配置：7 个
 [LevelGenerator] 初始化完成
-====================
-[LevelMapTest] 测试场景启动
-[LevelGenerator] 开始生成关卡
-  - 难度：1
-  - 种子：752
-[LevelGeneratorCore] === 阶段 1: 18层 (全局层：1-18) ===
-
-[LevelGeneratorCore] === 开始连接层级（排序无交叉算法）===
-[LevelGeneratorCore] 共有 19 个层级
-  层0: ["节点#1(起始点,层0)"]
-  层1: ["节点#2(阶段1-1,层1)", "节点#3(阶段1-1,层1)", "节点#4(阶段1-1,层1)", "节点#5(阶段1-1,层1)", "节点#6(阶段1-1,层1)"]
-  层2: ["节点#7(阶段1-2,层2)", "节点#8(阶段1-2,层2)"]
-  层3: ["节点#9(阶段1-3,层3)", "节点#10(阶段1-3,层3)"]
-  层4: ["节点#11(阶段1-4,层4)", "节点#12(阶段1-4,层4)", "节点#13(阶段1-4,层4)", "节点#14(阶段1-4,层4)", "节点#15(阶段1-4,层4)"]
-  层5: ["节点#16(阶段1-5,层5)", "节点#17(阶段1-5,层5)", "节点#18(阶段1-5,层5)", "节点#19(阶段1-5,层5)", "节点#20(阶段1-5,层5)"]
-  层6: ["节点#21(阶段1-6,层6)", "节点#22(阶段1-6,层6)", "节点#23(阶段1-6,层6)", "节点#24(阶段1-6,层6)"]
-  层7: ["节点#25(阶段1-7,层7)", "节点#26(阶段1-7,层7)", "节点#27(阶段1-7,层7)"]
-  层8: ["节点#28(阶段1-8,层8)", "节点#29(阶段1-8,层8)", "节点#30(阶段1-8,层8)", "节点#31(阶段1-8,层8)", "节点#32(阶段1-8,层8)", "节点#33(阶段1-8,层8)"]
-  层9: ["节点#34(阶段1-9,层9)", "节点#35(阶段1-9,层9)"]
-  层10: ["节点#36(阶段1-10,层10)", "节点#37(阶段1-10,层10)", "节点#38(阶段1-10,层10)", "节点#39(阶段1-10,层10)"]
-  层11: ["节点#40(阶段1-11,层11)", "节点#41(阶段1-11,层11)"]
-  层12: ["节点#42(阶段1-12,层12)", "节点#43(阶段1-12,层12)", "节点#44(阶段1-12,层12)", "节点#45(阶段1-12,层12)", "节点#46(阶段1-12,层12)"]
-  层13: ["节点#47(阶段1-13,层13)", "节点#48(阶段1-13,层13)", "节点#49(阶段1-13,层13)", "节点#50(阶段1-13,层13)", "节点#51(阶段1-13,层13)"]
-  层14: ["节点#52(阶段1-14,层14)", "节点#53(阶段1-14,层14)", "节点#54(阶段1-14,层14)", "节点#55(阶段1-14,层14)", "节点#56(阶段1-14,层14)", "节点#57(阶段1-14,层14)"]
-  层15: ["节点#58(阶段1-15,层15)", "节点#59(阶段1-15,层15)", "节点#60(阶段1-15,层15)", "节点#61(阶段1-15,层15)", "节点#62(阶段1-15,层15)", "节点#63(阶段1-15,层15)"]
-  层16: ["节点#64(阶段1-16,层16)", "节点#65(阶段1-16,层16)", "节点#66(阶段1-16,层16)", "节点#67(阶段1-16,层16)", "节点#68(阶段1-16,层16)", "节点#69(阶段1-16,层16)"]
-  层17: ["节点#70(阶段1-17,层17)", "节点#71(阶段1-17,层17)"]
-  层18: ["节点#72(阶段1-18,层18)", "节点#73(阶段1-18,层18)", "节点#74(阶段1-18,层18)", "节点#75(阶段1-18,层18)"]
-
-[LevelGeneratorCore] --- 起点连接到所有第 1 层节点 ---
-  起点 -> 节点#2 (阶段1-1)
-  起点 -> 节点#3 (阶段1-1)
-  起点 -> 节点#4 (阶段1-1)
-  起点 -> 节点#5 (阶段1-1)
-  起点 -> 节点#6 (阶段1-1)
-
-[LevelGeneratorCore] --- 连接层1 -> 层2 ---
-    连接层1 (5个节点) -> 层2 (2个节点)
-      节点#2 (层1) 连接 1 个目标节点:
-        -> 连接到节点#7 (层2) ✓
-      节点#3 (层1) 连接 1 个目标节点:
-        -> 连接到节点#7 (层2) ✓
-      节点#4 (层1) 连接 1 个目标节点:
-        -> 连接到节点#7 (层2) ✓
-      节点#5 (层1) 连接 1 个目标节点:
-        -> 连接到节点#8 (层2) ✓
-      节点#6 (层1) 连接 1 个目标节点:
-        -> 连接到节点#8 (层2) ✓
-
-[LevelGeneratorCore] --- 连接层2 -> 层3 ---
-    连接层2 (2个节点) -> 层3 (2个节点)
-      节点#7 (层2) 连接 1 个目标节点:
-        -> 连接到节点#9 (层3) ✓
-      节点#8 (层2) 连接 1 个目标节点:
-        -> 连接到节点#10 (层3) ✓
-
-[LevelGeneratorCore] --- 连接层3 -> 层4 ---
-    连接层3 (2个节点) -> 层4 (5个节点)
-      节点#9 (层3) 连接 3 个目标节点:
-        -> 连接到节点#11 (层4) ✓
-        -> 连接到节点#12 (层4) ✓
-        -> 连接到节点#13 (层4) ✓
-      节点#10 (层3) 连接 2 个目标节点:
-        -> 连接到节点#14 (层4) ✓
-        -> 连接到节点#15 (层4) ✓
-
-[LevelGeneratorCore] --- 连接层4 -> 层5 ---
-    连接层4 (5个节点) -> 层5 (5个节点)
-      节点#11 (层4) 连接 1 个目标节点:
-        -> 连接到节点#16 (层5) ✓
-      节点#12 (层4) 连接 1 个目标节点:
-        -> 连接到节点#17 (层5) ✓
-      节点#13 (层4) 连接 1 个目标节点:
-        -> 连接到节点#18 (层5) ✓
-      节点#14 (层4) 连接 1 个目标节点:
-        -> 连接到节点#19 (层5) ✓
-      节点#15 (层4) 连接 1 个目标节点:
-        -> 连接到节点#20 (层5) ✓
-
-[LevelGeneratorCore] --- 连接层5 -> 层6 ---
-    连接层5 (5个节点) -> 层6 (4个节点)
-      节点#16 (层5) 连接 1 个目标节点:
-        -> 连接到节点#21 (层6) ✓
-      节点#17 (层5) 连接 1 个目标节点:
-        -> 连接到节点#21 (层6) ✓
-      节点#18 (层5) 连接 1 个目标节点:
-        -> 连接到节点#22 (层6) ✓
-      节点#19 (层5) 连接 1 个目标节点:
-        -> 连接到节点#23 (层6) ✓
-      节点#20 (层5) 连接 1 个目标节点:
-        -> 连接到节点#24 (层6) ✓
-
-[LevelGeneratorCore] --- 连接层6 -> 层7 ---
-    连接层6 (4个节点) -> 层7 (3个节点)
-      节点#21 (层6) 连接 1 个目标节点:
-        -> 连接到节点#25 (层7) ✓
-      节点#22 (层6) 连接 1 个目标节点:
-        -> 连接到节点#25 (层7) ✓
-      节点#23 (层6) 连接 1 个目标节点:
-        -> 连接到节点#26 (层7) ✓
-      节点#24 (层6) 连接 1 个目标节点:
-        -> 连接到节点#27 (层7) ✓
-
-[LevelGeneratorCore] --- 连接层7 -> 层8 ---
-    连接层7 (3个节点) -> 层8 (6个节点)
-      节点#25 (层7) 连接 2 个目标节点:
-        -> 连接到节点#28 (层8) ✓
-        -> 连接到节点#29 (层8) ✓
-      节点#26 (层7) 连接 2 个目标节点:
-        -> 连接到节点#30 (层8) ✓
-        -> 连接到节点#31 (层8) ✓
-      节点#27 (层7) 连接 2 个目标节点:
-        -> 连接到节点#32 (层8) ✓
-        -> 连接到节点#33 (层8) ✓
-
-[LevelGeneratorCore] --- 连接层8 -> 层9 ---
-    连接层8 (6个节点) -> 层9 (2个节点)
-      节点#28 (层8) 连接 1 个目标节点:
-        -> 连接到节点#34 (层9) ✓
-      节点#29 (层8) 连接 1 个目标节点:
-        -> 连接到节点#34 (层9) ✓
-      节点#30 (层8) 连接 1 个目标节点:
-        -> 连接到节点#34 (层9) ✓
-      节点#31 (层8) 连接 1 个目标节点:
-        -> 连接到节点#35 (层9) ✓
-      节点#32 (层8) 连接 1 个目标节点:
-        -> 连接到节点#35 (层9) ✓
-      节点#33 (层8) 连接 1 个目标节点:
-        -> 连接到节点#35 (层9) ✓
-
-[LevelGeneratorCore] --- 连接层9 -> 层10 ---
-    连接层9 (2个节点) -> 层10 (4个节点)
-      节点#34 (层9) 连接 2 个目标节点:
-        -> 连接到节点#36 (层10) ✓
-        -> 连接到节点#37 (层10) ✓
-      节点#35 (层9) 连接 2 个目标节点:
-        -> 连接到节点#38 (层10) ✓
-        -> 连接到节点#39 (层10) ✓
-
-[LevelGeneratorCore] --- 连接层10 -> 层11 ---
-    连接层10 (4个节点) -> 层11 (2个节点)
-      节点#36 (层10) 连接 1 个目标节点:
-        -> 连接到节点#40 (层11) ✓
-      节点#37 (层10) 连接 1 个目标节点:
-        -> 连接到节点#40 (层11) ✓
-      节点#38 (层10) 连接 1 个目标节点:
-        -> 连接到节点#41 (层11) ✓
-      节点#39 (层10) 连接 1 个目标节点:
-        -> 连接到节点#41 (层11) ✓
-
-[LevelGeneratorCore] --- 连接层11 -> 层12 ---
-    连接层11 (2个节点) -> 层12 (5个节点)
-      节点#40 (层11) 连接 3 个目标节点:
-        -> 连接到节点#42 (层12) ✓
-        -> 连接到节点#43 (层12) ✓
-        -> 连接到节点#44 (层12) ✓
-      节点#41 (层11) 连接 2 个目标节点:
-        -> 连接到节点#45 (层12) ✓
-        -> 连接到节点#46 (层12) ✓
-
-[LevelGeneratorCore] --- 连接层12 -> 层13 ---
-    连接层12 (5个节点) -> 层13 (5个节点)
-      节点#42 (层12) 连接 1 个目标节点:
-        -> 连接到节点#47 (层13) ✓
-      节点#43 (层12) 连接 1 个目标节点:
-        -> 连接到节点#48 (层13) ✓
-      节点#44 (层12) 连接 1 个目标节点:
-        -> 连接到节点#49 (层13) ✓
-      节点#45 (层12) 连接 1 个目标节点:
-        -> 连接到节点#50 (层13) ✓
-      节点#46 (层12) 连接 1 个目标节点:
-        -> 连接到节点#51 (层13) ✓
-
-[LevelGeneratorCore] --- 连接层13 -> 层14 ---
-    连接层13 (5个节点) -> 层14 (6个节点)
-      节点#47 (层13) 连接 2 个目标节点:
-        -> 连接到节点#52 (层14) ✓
-        -> 连接到节点#53 (层14) ✓
-      节点#48 (层13) 连接 1 个目标节点:
-        -> 连接到节点#54 (层14) ✓
-      节点#49 (层13) 连接 1 个目标节点:
-        -> 连接到节点#55 (层14) ✓
-      节点#50 (层13) 连接 1 个目标节点:
-        -> 连接到节点#56 (层14) ✓
-      节点#51 (层13) 连接 1 个目标节点:
-        -> 连接到节点#57 (层14) ✓
-
-[LevelGeneratorCore] --- 连接层14 -> 层15 ---
-    连接层14 (6个节点) -> 层15 (6个节点)
-      节点#52 (层14) 连接 1 个目标节点:
-        -> 连接到节点#58 (层15) ✓
-      节点#53 (层14) 连接 1 个目标节点:
-        -> 连接到节点#59 (层15) ✓
-      节点#54 (层14) 连接 1 个目标节点:
-        -> 连接到节点#60 (层15) ✓
-      节点#55 (层14) 连接 1 个目标节点:
-        -> 连接到节点#61 (层15) ✓
-      节点#56 (层14) 连接 1 个目标节点:
-        -> 连接到节点#62 (层15) ✓
-      节点#57 (层14) 连接 1 个目标节点:
-        -> 连接到节点#63 (层15) ✓
-
-[LevelGeneratorCore] --- 连接层15 -> 层16 ---
-    连接层15 (6个节点) -> 层16 (6个节点)
-      节点#58 (层15) 连接 1 个目标节点:
-        -> 连接到节点#64 (层16) ✓
-      节点#59 (层15) 连接 1 个目标节点:
-        -> 连接到节点#65 (层16) ✓
-      节点#60 (层15) 连接 1 个目标节点:
-        -> 连接到节点#66 (层16) ✓
-      节点#61 (层15) 连接 1 个目标节点:
-        -> 连接到节点#67 (层16) ✓
-      节点#62 (层15) 连接 1 个目标节点:
-        -> 连接到节点#68 (层16) ✓
-      节点#63 (层15) 连接 1 个目标节点:
-        -> 连接到节点#69 (层16) ✓
-
-[LevelGeneratorCore] --- 连接层16 -> 层17 ---
-    连接层16 (6个节点) -> 层17 (2个节点)
-      节点#64 (层16) 连接 1 个目标节点:
-        -> 连接到节点#70 (层17) ✓
-      节点#65 (层16) 连接 1 个目标节点:
-        -> 连接到节点#70 (层17) ✓
-      节点#66 (层16) 连接 1 个目标节点:
-        -> 连接到节点#70 (层17) ✓
-      节点#67 (层16) 连接 1 个目标节点:
-        -> 连接到节点#71 (层17) ✓
-      节点#68 (层16) 连接 1 个目标节点:
-        -> 连接到节点#71 (层17) ✓
-      节点#69 (层16) 连接 1 个目标节点:
-        -> 连接到节点#71 (层17) ✓
-
-[LevelGeneratorCore] --- 连接层17 -> 层18 ---
-    连接层17 (2个节点) -> 层18 (4个节点)
-      节点#70 (层17) 连接 2 个目标节点:
-        -> 连接到节点#72 (层18) ✓
-        -> 连接到节点#73 (层18) ✓
-      节点#71 (层17) 连接 2 个目标节点:
-        -> 连接到节点#74 (层18) ✓
-        -> 连接到节点#75 (层18) ✓
-[LevelGeneratorCore] === 阶段 2: 19层 (全局层：19-37) ===
-
-[LevelGeneratorCore] === 开始连接层级（排序无交叉算法）===
-====================
-[LevelData] 关卡数据
-====================
-难度：1
-种子：752
-目标总量：35
-实际总量：240
-核心节点：240
-随机节点：0
-起始节点：1
-终点节点：["240"]
-路径数量：368
-最长路径：20 - ["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "42", "47", "52", "58", "64", "70", "72", "76"]
-最短路径：20 - ["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "42", "47", "52", "58", "64", "70", "72", "76"]
-验证状态：失败
-验证错误：
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "42", "47", "52", "58", "64", "70", "72", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "42", "47", "52", "58", "64", "70", "73", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "42", "47", "53", "59", "65", "70", "72", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "42", "47", "53", "59", "65", "70", "73", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "43", "48", "54", "60", "66", "70", "72", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "43", "48", "54", "60", "66", "70", "73", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "44", "49", "55", "61", "67", "71", "74", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "36", "40", "44", "49", "55", "61", "67", "71", "75", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "37", "40", "42", "47", "52", "58", "64", "70", "72", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "37", "40", "42", "47", "52", "58", "64", "70", "73", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "37", "40", "42", "47", "53", "59", "65", "70", "72", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "37", "40", "42", "47", "53", "59", "65", "70", "73", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "37", "40", "43", "48", "54", "60", "66", "70", "72", "76"]
-  - 路径不包含终点节点：["1", "2", "7", "9", "11", "16", "21", "25", "28", "34", "37", "40", "43", "48", "54", "60", "66", [...]
-[LevelMapTest] LevelGenerator 已初始化
-  - 当前关卡数据：有
-====================
-[LevelMapTest] LevelMapDisplay 会在 _ready 后自动生成关卡
+[DestinyDiceManager] 初始化完成
+[LevelTransitionController] 初始化完成
+=== 核心关卡节点初始化 ===
+【场景配置】加载完成，random_nodes: 7 条，scenes: 3 条
+【核心关卡节点】初始化完成
+【BattleManager】战斗管理器已就绪
+【BattleSkillBar】技能栏已就绪
+【BattleTestScene】测试战斗场景已就绪
+【BattleSceneBase】战斗场景已就绪
+【BattleSceneBase】摄像机已设置
+【BattleSceneBase】灯光已设置
+【BattleSceneBase】沙盘已设置
+【BattleSceneBase】战斗 UI 已设置
+【摄像机管理器】注册摄像机：Camera3D
+【摄像机管理器】已更新摄像机：Camera3D
+【BattleSceneBase】初始化战斗...
+【BattleManager】初始化战斗...
+  - 关卡节点：测试战斗
+  - 玩家队伍：[1]
+【BattleManager】已清空战斗数据
+【BaseCharacter】加载角色数据：测试角色 (ID: 1)
+【PlayerCharacter】创建玩家角色：测试角色
+【CharacterManager】创建 player 角色：测试角色 (ID: 1)
+【BattleManager】加载敌人：["2"]
+【BaseCharacter】加载角色数据：测试怪物 (ID: 2)
+【EnemyCharacter】创建敌人角色：测试怪物
+【CharacterManager】创建 enemy 角色：测试怪物 (ID: 2)
+【BattleManager】敌人已加载：测试怪物 (ID: 2)
+【BattleManager】阶段变更：PHASE_ENTER -> PHASE_ENTER
+[LevelTransitionController] 已连接命运骰子信号
+【BattleManager】开始战斗流程
+【BattleManager】阶段变更：PHASE_ENTER -> PHASE_ENTER
+【BattleSceneBase】战斗阶段变更：PHASE_ENTER -> PHASE_ENTER
+【BattleManager】进入入场阶段
+【BattleManager】阶段变更：PHASE_ENTER -> PHASE_ENTER
+【BattleSceneBase】战斗阶段变更：PHASE_ENTER -> PHASE_ENTER
+【BattleManager】敌方角色入场...
+【BattleManager】enemy角色 测试怪物 入场
+【BattleManager】角色骰子面 0 贴图：res://textures/hero/hero_2_idle.png
+【BattleManager】角色骰子面 1 贴图：res://textures/hero/hero_2_idle.png
+【BattleManager】角色骰子面 2 贴图：res://textures/hero/hero_2_idle.png
+【BattleManager】角色骰子面 3 贴图：res://textures/hero/hero_2_idle.png
+【BattleManager】角色骰子面 4 贴图：res://textures/hero/hero_2_idle.png
+【BattleManager】角色骰子面 5 贴图：res://textures/hero/hero_2_idle.png
+【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
+【骰子】dice_face_config 已赋值：{ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
+【骰子】准备调用 apply_textures_from_manager
+【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
+【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
+【贴图管理器】错误：MeshInstance3D 没有 mesh
+Set dice face config: { 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
+Set dice value config: {  }
+【BattleManager】角色骰子已创建：测试怪物
+【BattleManager】检查 dice 实例：Dice6:<RigidBody3D#59173242445>
+【BattleManager】检查 dice 是否有 set_dice_face_config 方法：true
+【骰子】_ready() 开始执行
+MeshInstance3D found: MeshInstance3D
+No mesh found, creating fallback mesh
+Fallback cube mesh with 6 surfaces created
+【初始化】备用网格创建完成，等待配置加载
+【骰子】_ready() 执行完成，等待配置加载
+【BattleManager】角色骰子已添加到场景：(-8.0, 0.5, 0.0)
+DiceThrowController: 普通投掷，力度倍数=1.00
+【BattleManager】玩家角色入场...
+【BattleManager】player角色 测试角色 入场
+【BattleManager】角色骰子面 0 贴图：res://textures/hero/hero_1_idle.png
+【BattleManager】角色骰子面 1 贴图：res://textures/hero/hero_1_idle.png
+【BattleManager】角色骰子面 2 贴图：res://textures/hero/hero_1_idle.png
+【BattleManager】角色骰子面 3 贴图：res://textures/hero/hero_1_idle.png
+【BattleManager】角色骰子面 4 贴图：res://textures/hero/hero_1_idle.png
+【BattleManager】角色骰子面 5 贴图：res://textures/hero/hero_1_idle.png
+【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
+【骰子】dice_face_config 已赋值：{ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
+【骰子】准备调用 apply_textures_from_manager
+【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
+【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
+【贴图管理器】错误：MeshInstance3D 没有 mesh
+Set dice face config: { 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
+Set dice value config: {  }
+【BattleManager】角色骰子已创建：测试角色
+【BattleManager】检查 dice 实例：Dice6:<RigidBody3D#66823652935>
+【BattleManager】检查 dice 是否有 set_dice_face_config 方法：true
+【骰子】_ready() 开始执行
+MeshInstance3D found: MeshInstance3D
+No mesh found, creating fallback mesh
+Fallback cube mesh with 6 surfaces created
+【初始化】备用网格创建完成，等待配置加载
+【骰子】_ready() 执行完成，等待配置加载
+【BattleManager】角色骰子已添加到场景：(8.0, 0.5, 0.0)
+DiceThrowController: 普通投掷，力度倍数=1.00
+Dice rolled: 4
+=== trigger_skill() 被调用 ===
+skip_skill_trigger = true
+【角色骰子】已锁定位置，不受外力影响
+【BattleManager】入场阶段完成
+【BattleManager】阶段变更：PHASE_ENTER -> PHASE_SETUP
+【BattleSceneBase】战斗阶段变更：PHASE_ENTER -> PHASE_SETUP
+【BattleManager】准备阶段：生成骰子
+【BattleManager】阶段变更：PHASE_SETUP -> PHASE_SETUP
+【BattleSceneBase】战斗阶段变更：PHASE_SETUP -> PHASE_SETUP
+【BattleManager】为 测试角色 生成骰子
+【BattleManager】创建技能骰子：4001
+【JSON】开始加载 NumDices.json，路径：res://table/NumDices.json
+【JSON】加载数字骰子配置 ID=1001
+【JSON】加载数字骰子配置 ID=1002
+【JSON】NumDices.json 加载完成，配置数=2
+【JSON】开始加载 AttrDices.json，路径：res://table/AttrDices.json
+【JSON】加载属性骰子颜色配置 attr_name=str, color=#C00000
+【JSON】加载属性骰子颜色配置 attr_name=agi, color=#A9D08E
+【JSON】加载属性骰子颜色配置 attr_name=int, color=#8EA9DB
+【JSON】AttrDices.json 加载完成，配置数=3
+【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+【骰子】dice_face_config 已赋值：{ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+【骰子】准备调用 apply_textures_from_manager
+【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+【贴图管理器】错误：MeshInstance3D 没有 mesh
+Set dice face config: { 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+Set dice value config: { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6 }
+【BattleManager】技能骰子创建完成：4001
+  - 生成技能骰子：4001
+【BattleManager】测试角色 的骰子生成完成
+【骰子】_ready() 开始执行
+MeshInstance3D found: MeshInstance3D
+No mesh found, creating fallback mesh
+Fallback cube mesh with 6 surfaces created
+【初始化】备用网格创建完成，等待配置加载
+【骰子】_ready() 执行完成，等待配置加载
+【BattleManager】技能骰子已添加到场景：位置=(-2.0, 4.0, 6.0)
+【BattleSkillBar】初始化...
+  - 玩家角色：1
+  - 技能骰子：1
+  - 物品骰子：0
+【BattleManager】技能栏 UI 已初始化
+【BattleManager】准备阶段完成
+【BattleManager】阶段变更：PHASE_SETUP -> PHASE_BATTLE
+【BattleSceneBase】战斗阶段变更：PHASE_SETUP -> PHASE_BATTLE
+【BattleManager】进入战斗阶段
+【BattleManager】阶段变更：PHASE_BATTLE -> PHASE_BATTLE
+【BattleSceneBase】战斗阶段变更：PHASE_BATTLE -> PHASE_BATTLE
+【BattleManager】第 1 回合 - 玩家回合
+【BattleSceneBase】回合开始：player
+【BattleSkillBar】回合开始：玩家回合
+【BattleManager】测试角色 恢复 10 MP
+Dice rolled: 1
+=== trigger_skill() 被调用 ===
+skip_skill_trigger = true
+【角色骰子】已锁定位置，不受外力影响

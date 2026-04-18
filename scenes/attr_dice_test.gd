@@ -265,35 +265,26 @@ func update_hero_attributes():
 func _process(delta):
 	# 更新全局时间 (如果需要)
 	global_time += delta
-	
-	# 蓄力阶段
+
+	# 蓄力阶段的提示更新（震动效果由 DiceThrowController._process 自动处理）
 	if is_charging and is_in_initial_state:
-		# ✅ 使用统一的投掷控制器更新蓄力
-		var charge_ratio = DiceThrowController.update_charge(delta)
-		
-		# ✅ 使用统一的震动效果
-		DiceThrowController.apply_shake(attr_dices, original_positions, charge_ratio, delta)
+		var charge_ratio = DiceThrowController.charge_ratio
+		print("\r蓄力中... %d%%" % int(charge_ratio * 100))
 
 func _input(event):
 	# 空格键开始蓄力
 	if event.is_action_pressed("ui_accept") and is_in_initial_state:
 		is_charging = true
-		# ✅ 使用统一的投掷控制器开始蓄力
-		DiceThrowController.start_charge()
-		
-		# 记录骰子的初始位置
-		original_positions.clear()
-		for dice in attr_dices:
-			if dice and is_instance_valid(dice):
-				original_positions[dice] = dice.position
+		# ✅ 使用统一的投掷控制器开始蓄力（传入骰子数组，自动处理震动）
+		DiceThrowController.start_charge(attr_dices)
 		print("开始蓄力...")
-	
+
 	# 空格键松开，投掷骰子
 	elif event.is_action_released("ui_accept") and is_charging:
 		is_charging = false
-		# ✅ 使用统一的投掷控制器结束蓄力并投掷
-		DiceThrowController.end_charge(attr_dices)
-		
+		# ✅ 使用统一的投掷控制器结束蓄力并投掷（不传参数，使用 start_charge 时记录的骰子）
+		DiceThrowController.end_charge()
+
 		# 清空原始位置
 		original_positions.clear()
 		print("投掷属性骰子！")

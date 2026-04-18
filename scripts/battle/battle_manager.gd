@@ -62,6 +62,7 @@ var battle_config: Dictionary = {
 	"player_first": true,  # 玩家先手
 	"auto_end_turn": false,  # 是否自动结束回合
 	"show_turn_indicator": true,  # 是否显示回合提示
+	"spawn_skill_dices": true,  # 是否生成技能骰子
 }
 
 ## 战斗数据（用于结算）
@@ -214,31 +215,36 @@ func _setup_phase():
 	print("【BattleManager】准备阶段：生成骰子")
 	_change_phase(BattlePhase.PHASE_SETUP)
 
-	# 为玩家角色生成技能骰子和物品骰子
-	for character in player_characters:
-		await _generate_character_dices(character)
+	# 1. 生成技能骰子（隐藏，不添加到场景，仅在 UI 中显示）
+	if battle_config.get("spawn_skill_dices", true):
+		for character in player_characters:
+			await _generate_skill_dices_for_character(character)
+		print("【BattleManager】技能骰子生成完成，总数：", skill_dices.size())
 
-	# 将技能骰子添加到场景中（如果有场景引用）
+	# 2. 生成属性骰子（悬浮待命，在场景中但不投掷）
 	var battle_scene = _get_battle_scene()
-	if battle_scene and battle_scene.has_node("Sandbox"):
-		var sandbox = battle_scene.get_node("Sandbox")
-		for dice in skill_dices:
-			if dice and dice is Node:
-				# 设置骰子位置（排成一排）
-				var index = skill_dices.find(dice)
-				dice.position = Vector3(-2.0 + index * 2.0, 4.0, 6.0)
-				sandbox.add_child(dice)
-				print("【BattleManager】技能骰子已添加到场景：位置=", dice.position)
+	var sandbox = battle_scene.get_node("Sandbox") if battle_scene and battle_scene.has_node("Sandbox") else null
+	if sandbox and player_characters.size() > 0:
+		await _generate_attribute_dices_for_player(player_characters[0], sandbox)
 
-	# 初始化 UI（如果有技能栏）
+	# 3. 初始化 UI（传入技能骰子供 UI 显示）
 	if battle_scene and battle_scene.has_method("get_skill_bar"):
 		var skill_bar = battle_scene.get_skill_bar()
 		if skill_bar:
-			skill_bar.initialize(player_characters, skill_dices, item_dices)
+			print("【BattleManager】准备初始化技能栏 UI")
+			print("  - skill_bar: ", skill_bar)
+			print("  - skill_dices 数组：", skill_dices)
+			print("  - skill_dices 大小：", skill_dices.size())
+			# 传入技能骰子列表和属性骰子列表
+			skill_bar.initialize(player_characters, skill_dices, [])
 			skill_bar.update_turn_display(current_turn)
 			if player_characters.size() > 0:
 				skill_bar.update_mp_display(player_characters[0])
 			print("【BattleManager】技能栏 UI 已初始化")
+		else:
+			print("【BattleManager】错误：skill_bar 为空")
+	else:
+		print("【BattleManager】错误：battle_scene 或 get_skill_bar 方法不存在")
 
 	await get_tree().create_timer(1.0).timeout
 	print("【BattleManager】准备阶段完成")
@@ -290,6 +296,70 @@ func _generate_character_dices(character: BaseCharacter):
 	#         character_dices.append(dice)
 
 	print("【BattleManager】", character.name, " 的骰子生成完成")
+
+
+## 为玩家角色生成技能骰子（隐藏，不添加到场景）
+## @param character 角色实例
+func _generate_skill_dices_for_character(character: BaseCharacter):
+	print("【BattleManager】为 ", character.name, " 生成技能骰子（隐藏）")
+	print("  - character.skill_dice_ids: ", character.skill_dice_ids)
+
+	# 生成技能骰子但不添加到场景，仅存储在 skill_dices 数组中供 UI 使用
+	if character.skill_dice_ids.size() > 0:
+		for skill_dice_id in character.skill_dice_ids:
+			if DiceManager:
+				# 创建技能骰子但不添加到场景（add_to_scene = false）
+				var dice = DiceManager.create_skill_dice(skill_dice_id, null, Vector3.ZERO, false)
+				if dice:
+					skill_dices.append(dice)
+					# 设置为隐藏状态（visible = false）
+					dice.visible = false
+					# 设置为悬浮状态
+					if dice.has_method("set_freeze"):
+						dice.set_freeze(true)
+					elif "freeze" in dice:
+						dice.freeze = true
+					dice.gravity_scale = 0.0
+					print("  - 生成技能骰子（隐藏）：", skill_dice_id, ", dice=", dice)
+				else:
+					print("  - 错误：技能骰子创建失败：", skill_dice_id)
+			else:
+				print("  - 错误：DiceManager 不可用")
+
+	# 生成属性骰子（悬浮待命）
+
+
+## 为玩家角色生成属性骰子（悬浮待命）
+## @param character 角色实例
+## @param sandbox 场景节点
+func _generate_attribute_dices_for_player(character: BaseCharacter, sandbox: Node):
+	print("【BattleManager】为 ", character.name, " 生成属性骰子（悬浮待命）")
+
+	var hero_id = character.hero_id
+
+	# 创建三个属性骰子（str, agi, int）
+	var attr_types = ["str", "agi", "int"]
+	var positions = [
+		Vector3(-2.0, 4.0, 6.0),  # 力量骰子位置
+		Vector3(0.0, 4.0, 6.0),   # 敏捷骰子位置
+		Vector3(2.0, 4.0, 6.0)    # 智力骰子位置
+	]
+
+	for i in range(3):
+		var attr_type = attr_types[i]
+		var position = positions[i]
+		if DiceManager:
+			var dice = DiceManager.create_attribute_dice(hero_id, attr_type, sandbox, position)
+			if dice:
+				# 设置为悬浮状态
+				if dice.has_method("set_freeze"):
+					dice.set_freeze(true)
+				elif "freeze" in dice:
+					dice.freeze = true
+				dice.gravity_scale = 0.0
+				dice.linear_velocity = Vector3.ZERO
+				dice.angular_velocity = Vector3.ZERO
+				print("  - 生成属性骰子（悬浮）：", attr_type)
 
 
 ## 战斗阶段
@@ -367,21 +437,178 @@ func _enemy_ai_turn():
 ## 敌方行动（简单 AI）
 ## @param character 敌方角色
 func _enemy_action(character: BaseCharacter):
-	# TODO: 实现 AI 决策
-	# 暂时随机选择一个行动
 	print("【BattleManager】", character.name, " 进行行动")
 
-	# 1. 检查是否有足够 MP
-	if character.current_mp >= 10:
-		# 使用技能
-		print("  - 使用技能（MP 足够）")
-		# TODO: 调用技能
-	else:
-		# 普通攻击
-		print("  - 普通攻击（MP 不足）")
-		# TODO: 实现普通攻击
+	# 1. 检查是否有技能骰子 ID
+	if character.skill_dice_ids.size() == 0:
+		print("  - 没有技能骰子，使用普通攻击")
+		await _enemy_simple_attack(character)
+		return
 
+	# 2. 随机选择一个技能骰子 ID
+	var skill_dice_id = character.skill_dice_ids[randi() % character.skill_dice_ids.size()]
+	print("  - 选择技能骰子：", skill_dice_id)
+
+	# 3. 执行投掷（显示投掷动画）
+	await _enemy_throw_dice(character, skill_dice_id)
+
+
+## 敌方简单攻击（无技能骰子时）
+func _enemy_simple_attack(character: BaseCharacter):
+	# 临时实现：直接造成伤害
+	var target = _get_first_alive_player()
+	if target:
+		var damage = 10
+		print("  - 对 ", target.name, " 造成 ", damage, " 点伤害")
 	await get_tree().create_timer(1.0).timeout
+
+
+## 获取第一个存活的玩家角色
+func _get_first_alive_player() -> BaseCharacter:
+	for character in player_characters:
+		if character.is_alive():
+			return character
+	return null
+
+
+## 敌方投掷骰子
+## @param character 敌方角色
+## @param skill_dice_id 技能骰子 ID
+func _enemy_throw_dice(character: BaseCharacter, skill_dice_id: String):
+	print("【BattleManager】敌方投掷骰子：", skill_dice_id)
+
+	var battle_scene = _get_battle_scene()
+	if not battle_scene or not battle_scene.has_node("Sandbox"):
+		print("  - 场景不存在，跳过投掷")
+		return
+
+	var sandbox = battle_scene.get_node("Sandbox")
+
+	# 1. 创建技能骰子（临时）
+	var skill_dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, Vector3(-4.0, 4.0, 6.0))
+	if not skill_dice:
+		print("  - 无法创建技能骰子")
+		return
+
+	# 2. 创建属性骰子（临时）
+	var attr_dices = []
+	var hero_id = character.hero_id
+	var attr_types = ["str", "agi", "int"]
+	var positions = [
+		Vector3(-2.0, 4.0, 6.0),
+		Vector3(0.0, 4.0, 6.0),
+		Vector3(2.0, 4.0, 6.0)
+	]
+
+	for i in range(3):
+		var attr_type = attr_types[i]
+		var position = positions[i]
+		var dice = DiceManager.create_attribute_dice(hero_id, attr_type, sandbox, position)
+		if dice:
+			attr_dices.append(dice)
+			# 设置为悬浮状态
+			if dice.has_method("set_freeze"):
+				dice.set_freeze(true)
+			elif "freeze" in dice:
+				dice.freeze = true
+			dice.gravity_scale = 0.0
+
+	# 3. 准备投掷（解除 freeze）
+	var all_dices = [skill_dice] + attr_dices
+	for dice in all_dices:
+		if dice.has_method("set_freeze"):
+			dice.set_freeze(false)
+		elif "freeze" in dice:
+			dice.freeze = false
+		dice.linear_velocity = Vector3.ZERO
+		dice.angular_velocity = Vector3.ZERO
+		dice.sleeping = false
+
+	# 4. 使用 DiceThrowController 投掷（固定力度）
+	if DiceThrowController:
+		print("  - 使用 DiceThrowController 投掷")
+		DiceThrowController.throw_normal(all_dices, 1.0)
+
+	# 5. 等待骰子停止
+	await get_tree().create_timer(2.0).timeout
+
+	# 6. 获取结果
+	var skill_result = 1
+	if skill_dice.has_method("get_dice_value"):
+		skill_result = skill_dice.get_dice_value()
+
+	var attr_results = {}
+	for dice in attr_dices:
+		if dice.has_method("get_attribute_value"):
+			attr_results[dice.attr_type] = dice.get_attribute_value()
+
+	print("  - 投掷结果：技能=", skill_result, ", 属性=", attr_results)
+
+	# 7. 释放技能
+	var skill_index = skill_result - 1
+	var skill_id = _get_skill_id_from_dice_id(skill_dice_id, skill_index)
+	if not skill_id.is_empty():
+		await _enemy_release_skill(character, skill_id, attr_results, all_dices)
+
+	# 8. 清理临时骰子
+	await get_tree().create_timer(1.5).timeout
+	for dice in all_dices:
+		if dice and is_instance_valid(dice):
+			dice.queue_free()
+
+
+## 从技能骰子 ID 获取技能 ID
+func _get_skill_id_from_dice_id(skill_dice_id: String, skill_index: int) -> String:
+	var reader = DiceCSVReader.new()
+	var dice_config = reader.get_skill_dice_config(skill_dice_id)
+	if dice_config.is_empty():
+		return ""
+
+	var skill_ids = dice_config.get("skill_ids", [])
+	if skill_index >= 0 and skill_index < skill_ids.size():
+		return skill_ids[skill_index]
+	return ""
+
+
+## 敌方释放技能
+func _enemy_release_skill(character: BaseCharacter, skill_id: String, attr_results: Dictionary, all_dices: Array):
+	print("【BattleManager】敌方释放技能：", skill_id)
+
+	# 获取目标
+	var targets = []
+	for player in player_characters:
+		if player.is_alive():
+			targets.append(player)
+			break
+
+	if targets.size() == 0:
+		return
+
+	# 创建施法者节点
+	var caster_marker = Marker3D.new()
+	if character.character_dice:
+		caster_marker.position = character.character_dice.position
+	else:
+		caster_marker.position = Vector3(-8.0, 0.5, 0.0)
+
+	get_tree().current_scene.add_child(caster_marker)
+
+	var dice_results = {
+		"str": attr_results.get("str", 0),
+		"agi": attr_results.get("agi", 0),
+		"int": attr_results.get("int", 0)
+	}
+
+	var params = {
+		"dice_results": dice_results,
+		"scene": get_tree().current_scene,
+		"caster_position": caster_marker.position
+	}
+
+	SkillManager.use_skill(skill_id, caster_marker, targets, params)
+
+	await get_tree().create_timer(3.0).timeout
+	caster_marker.queue_free()
 
 
 ## 玩家使用技能

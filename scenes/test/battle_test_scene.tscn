@@ -40,13 +40,13 @@ offset_right = -20.0
 offset_bottom = -20.0
 script = ExtResource("2_skill_bar")
 
-[node name="SkillContainer" type="HBoxContainer" parent="BattleUI/SkillBar"]
+[node name="SkillContainer" type="VBoxContainer" parent="BattleUI/SkillBar"]
 layout_mode = 0
 theme_override_constants/separation = 10
 offset_left = 20.0
 offset_top = 10.0
-offset_right = 400.0
-offset_bottom = 70.0
+offset_right = 100.0
+offset_bottom = 200.0
 
 [node name="ItemContainer" type="HBoxContainer" parent="BattleUI/SkillBar"]
 layout_mode = 0
@@ -92,3 +92,16 @@ offset_top = -50.0
 offset_right = -20.0
 offset_bottom = -20.0
 text = "结束回合"
+
+[node name="ThrowHintLabel" type="Label" parent="BattleUI/SkillBar"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 0.5
+anchor_right = 1.0
+grow_horizontal = 2
+offset_left = -200.0
+offset_top = 50.0
+offset_right = -20.0
+offset_bottom = 75.0
+text = "按空格键投掷"
+horizontal_alignment = 2

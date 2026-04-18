@@ -34,6 +34,8 @@ var charge_time: float = 0.0  ## 当前蓄力时间
 var charge_ratio: float = 0.0  ## 当前蓄力比例 (0-1)
 var original_positions: Dictionary = {}  ## 骰子原始位置
 var shaken_positions: Dictionary = {}  ## 震动后的位置
+var throw_dices: Array = []  ## 当前正在投掷的骰子数组（用于蓄力震动）
+var auto_shake_enabled: bool = true  ## 是否自动应用震动效果（在 _process 中）
 
 ## 单例实例
 static var _instance: DiceThrowController = null
@@ -50,16 +52,56 @@ static func get_instance() -> DiceThrowController:
 	return _instance
 
 
+## _process - 自动处理蓄力和震动效果
+## 注意：当 auto_shake_enabled = true 时，蓄力期间的震动会自动处理
+func _process(delta):
+	if is_charging and auto_shake_enabled and throw_dices.size() > 0:
+		# 更新蓄力比例
+		charge_time += delta
+		charge_time = min(charge_time, max_charge_time)
+		charge_ratio = charge_time / max_charge_time
+
+		# 应用震动效果
+		apply_shake(throw_dices, original_positions, charge_ratio, delta)
+
+
 ## 开始蓄力
-func start_charge():
+## @param dices 要投掷的骰子数组（可选，如果为空需要在之后调用 set_throw_dices）
+## @note 新方法：传入骰子后会自动记录位置并在 _process 中处理震动
+func start_charge(dices: Array = []):
 	is_charging = true
 	charge_time = 0.0
 	charge_ratio = 0.0
-	print("开始蓄力")
+
+	# 如果传入了骰子，记录下来用于震动
+	if dices.size() > 0:
+		throw_dices = dices
+		# 记录原始位置
+		original_positions.clear()
+		for dice in dices:
+			if dice and is_instance_valid(dice):
+				original_positions[dice] = dice.position
+
+	print("【DiceThrowController】开始蓄力，骰子数=", dices.size())
 
 
-## 更新蓄力 (在 _process 中调用)
-func update_charge(delta: float):
+## 设置投掷骰子数组（用于蓄力震动）
+## @param dices 骰子数组
+## @note 如果 start_charge 时没有传入骰子，需要调用此方法
+func set_throw_dices(dices: Array):
+	throw_dices = dices
+	# 记录原始位置
+	original_positions.clear()
+	for dice in dices:
+		if dice and is_instance_valid(dice):
+			original_positions[dice] = dice.position
+
+
+## 更新蓄力 (手动控制模式)
+## @param delta 帧时间
+## @return 当前蓄力比例 (0-1)
+## @note 兼容旧代码，推荐使用 start_charge(dices) + _process 自动处理
+func update_charge(delta: float) -> float:
 	if is_charging:
 		charge_time += delta
 		charge_time = min(charge_time, max_charge_time)
@@ -69,12 +111,24 @@ func update_charge(delta: float):
 
 
 ## 结束蓄力并投掷
-func end_charge(dices: Array):
+## @param dices 要投掷的骰子数组（可选，如果为空则使用 start_charge 时传入的骰子）
+## @note 新方法：如果不传参数，会使用 start_charge 时记录的骰子
+func end_charge(dices: Array = []):
 	is_charging = false
-	if charge_ratio > 0:
-		throw_with_charge(dices, charge_ratio)
-		charge_ratio = 0.0
-		charge_time = 0.0
+
+	# 如果没有传入骰子，使用之前记录的骰子
+	var actual_dices = dices
+	if dices.size() == 0:
+		actual_dices = throw_dices
+
+	if charge_ratio > 0 and actual_dices.size() > 0:
+		throw_with_charge(actual_dices, charge_ratio)
+
+	# 重置状态
+	charge_ratio = 0.0
+	charge_time = 0.0
+	throw_dices.clear()
+	original_positions.clear()
 
 
 ## 蓄力投掷
@@ -82,39 +136,35 @@ func throw_with_charge(dices: Array, charge_ratio: float, start_positions: Dicti
 	if dices.size() == 0:
 		print("DiceThrowController: 没有骰子可投掷")
 		return
-	
+
 	# 计算投掷力度
 	var force_ratio = min_force_ratio + (1.0 - min_force_ratio) * charge_ratio
 	var throw_force = max_force * force_ratio
-	
+
 	print("DiceThrowController: 蓄力投掷，比例=%.2f, 力度=%.2f" % [charge_ratio, throw_force])
-	
+
 	# 投掷每个骰子
 	for dice in dices:
 		if is_instance_valid(dice):
 			# 计算投掷方向 (朝向屏幕上方，即 z 轴负方向)
 			var direction = Vector3(0, 0, -1)
 			direction = direction.rotated(Vector3.RIGHT, deg_to_rad(randf_range(-45, 45)))
-			
+
 			# 应用投掷力
 			var force = direction * throw_force
 			force.y = throw_force * 0.5  # 向上的分力
-			
+
 			# 随机旋转力
 			var angular_force = Vector3(
 				randf_range(-10, 10),
 				randf_range(-10, 10),
 				randf_range(-10, 10)
 			)
-			
+
 			# 调用骰子的 roll 方法
 			if dice.has_method("roll"):
 				dice.roll(force, angular_force)
 				print("DiceThrowController: 投掷骰子，位置=", dice.position)
-	
-	# 重置状态
-	charge_ratio = 0.0
-	charge_time = 0.0
 
 
 ## 普通投掷
@@ -178,6 +228,7 @@ func reset():
 	charge_ratio = 0.0
 	original_positions.clear()
 	shaken_positions.clear()
+	throw_dices.clear()
 	print("DiceThrowController: 重置状态")
 
 
