@@ -226,6 +226,8 @@ func _create_character_dice(character: BaseCharacter, side: String):
 	# 存储到角色
 	character.character_dice = dice
 	print("【BattleManager】角色骰子已创建：", character.name)
+	print("【BattleManager】检查 dice 实例：", dice)
+	print("【BattleManager】检查 dice 是否有 set_dice_face_config 方法：", dice.has_method("set_dice_face_config"))
 
 
 ## 准备阶段（生成骰子）
