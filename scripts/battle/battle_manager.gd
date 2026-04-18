@@ -185,49 +185,28 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 	await get_tree().create_timer(1.0).timeout
 
 
-## 创建角色骰子
+## 创建角色骰子（使用 DiceManager 统一接口）
 ## @param character 角色
 ## @param side "player" 或 "enemy"
 func _create_character_dice(character: BaseCharacter, side: String):
-	var dice_scene = load("res://scenes/dice_6.tscn")
-	if not dice_scene:
-		print("【BattleManager】无法加载骰子场景")
+	var battle_scene = _get_battle_scene()
+	if not battle_scene or not battle_scene.has_node("Sandbox"):
+		print("【BattleManager】Sandbox 节点不存在，无法创建角色骰子")
 		return
 
-	var dice = dice_scene.instantiate()
-	if not dice:
-		print("【BattleManager】无法实例化骰子场景")
-		return
+	var sandbox = battle_scene.get_node("Sandbox")
 
-	dice.dice_type = "character"
-	dice.skip_skill_trigger = true
+	# 计算位置：敌方在左边，玩家在右边
+	var offset = -8.0 if side == "enemy" else 8.0
+	var index = (player_characters.find(character) if side == "player" else enemy_characters.find(character))
+	var position = Vector3(offset + index * 2.0, 0.5, 0.0)
 
-	# 应用角色贴图：使用 hero.json 中的 hero_texture 字段
-	# 格式：res://textures/hero/hero_{hero_id}_{state}.png
-	var texture_config = {}
-	var hero_id = character.hero_id
-	var hero_texture_states = character.hero_textures  # ["idle", "hit", "attack", "anger", "happy", "die"]
-
-	for i in range(6):
-		if i < hero_texture_states.size():
-			var texture_state = hero_texture_states[i]
-			var texture_path = "res://textures/hero/hero_" + str(hero_id) + "_" + texture_state + ".png"
-			texture_config[i] = texture_path
-			print("【BattleManager】角色骰子面 ", i, " 贴图：", texture_path)
-		else:
-			# 默认使用 idle 状态
-			var default_path = "res://textures/hero/hero_" + str(hero_id) + "_idle.png"
-			texture_config[i] = default_path
-			print("【BattleManager】角色骰子面 ", i, " 使用默认贴图：", default_path)
-
-	if dice.has_method("set_dice_face_config"):
-		dice.set_dice_face_config(texture_config, {})
-
-	# 存储到角色
-	character.character_dice = dice
-	print("【BattleManager】角色骰子已创建：", character.name)
-	print("【BattleManager】检查 dice 实例：", dice)
-	print("【BattleManager】检查 dice 是否有 set_dice_face_config 方法：", dice.has_method("set_dice_face_config"))
+	# 使用 DiceManager 统一创建
+	if DiceManager:
+		character.character_dice = DiceManager.create_character_dice(character, sandbox, position)
+	else:
+		print("【BattleManager】警告：DiceManager 不可用，使用备用方案")
+		_create_character_dice_fallback(character, side, sandbox, position)
 
 
 ## 准备阶段（生成骰子）
@@ -278,19 +257,29 @@ func _get_battle_scene() -> Node:
 	return null
 
 
-## 为角色生成骰子
+## 生成角色骰子（使用 DiceManager 统一接口）
 ## @param character 角色实例
 func _generate_character_dices(character: BaseCharacter):
 	print("【BattleManager】为 ", character.name, " 生成骰子")
 
-	# 1. 生成技能骰子
+	var battle_scene = _get_battle_scene()
+	var sandbox = battle_scene.get_node("Sandbox") if battle_scene and battle_scene.has_node("Sandbox") else null
+
+	# 1. 生成技能骰子（使用 DiceManager）
 	if character.skill_dice_ids.size() > 0:
 		for skill_dice_id in character.skill_dice_ids:
-			var dice = _create_skill_dice(skill_dice_id)
-			if dice:
-				skill_dices.append(dice)
-				character_dices.append(dice)
-				print("  - 生成技能骰子：", skill_dice_id)
+			if DiceManager:
+				var dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, Vector3(-2.0, 4.0, 6.0))
+				if dice:
+					skill_dices.append(dice)
+					character_dices.append(dice)
+					print("  - 生成技能骰子：", skill_dice_id)
+			else:
+				# 备用方案
+				var dice = _create_skill_dice_fallback(skill_dice_id)
+				if dice:
+					skill_dices.append(dice)
+					character_dices.append(dice)
 
 	# 2. 生成物品骰子（预留）
 	# TODO: 实现物品骰子
@@ -301,103 +290,6 @@ func _generate_character_dices(character: BaseCharacter):
 	#         character_dices.append(dice)
 
 	print("【BattleManager】", character.name, " 的骰子生成完成")
-
-
-## 创建技能骰子
-## @param skill_dice_id 技能骰子 ID
-func _create_skill_dice(skill_dice_id: String) -> RigidBody3D:
-	print("【BattleManager】创建技能骰子：", skill_dice_id)
-
-	# 1. 从 SkillDices.json 读取配置
-	var dice_config = _load_skill_dice_config(skill_dice_id)
-	if dice_config.is_empty():
-		push_error("【BattleManager】未找到技能骰子配置：", skill_dice_id)
-		return null
-
-	# 2. 加载技能骰子场景
-	var dice_scene = load("res://scenes/dice_6.tscn")
-	if not dice_scene:
-		push_error("【BattleManager】无法加载骰子场景：res://scenes/dice_6.tscn")
-		return null
-
-	var dice = dice_scene.instantiate()
-	if not dice:
-		push_error("【BattleManager】无法实例化骰子场景")
-		return null
-
-	# 3. 设置骰子类型
-	dice.dice_type = "skill"
-
-	# 4. 应用贴图配置
-	var texture_config = _build_skill_texture_config(dice_config)
-	var value_config = _build_skill_value_config(dice_config)
-
-	if dice.has_method("set_dice_face_config"):
-		dice.set_dice_face_config(texture_config, value_config)
-
-	# 5. 初始状态设置为悬浮
-	if dice.has_method("set_freeze"):
-		dice.set_freeze(true)
-	elif "freeze" in dice:
-		dice.freeze = true
-
-	dice.gravity_scale = 0.0
-	dice.linear_velocity = Vector3.ZERO
-	dice.angular_velocity = Vector3.ZERO
-
-	print("【BattleManager】技能骰子创建完成：", skill_dice_id)
-	return dice
-
-
-## 加载技能骰子配置
-## @param dice_id 技能骰子 ID
-## @return 配置字典
-func _load_skill_dice_config(dice_id: String) -> Dictionary:
-	var reader = DiceCSVReader.new()
-	return reader.get_skill_dice_config(dice_id)
-
-
-## 构建技能贴图配置
-## @param dice_config 技能骰子配置
-## @return 贴图配置字典
-func _build_skill_texture_config(dice_config: Dictionary) -> Dictionary:
-	var texture_config = {}
-	var skill_ids = dice_config.get("skill_ids", [])
-
-	for i in range(6):
-		if i < skill_ids.size():
-			var skill_id = skill_ids[i]
-			var skill_data = SkillManager.get_skill(skill_id)
-			if not skill_data.is_empty():
-				# 贴图路径：res://textures/skill/skill_{id}.png
-				texture_config[i] = "res://textures/skill/skill_" + skill_id + ".png"
-			else:
-				texture_config[i] = ""  # 空路径会使用备用颜色
-		else:
-			texture_config[i] = ""
-
-	return texture_config
-
-
-## 构建技能骰子点数配置
-## @param dice_config 技能骰子配置
-## @return 点数配置字典
-func _build_skill_value_config(dice_config: Dictionary) -> Dictionary:
-	var value_config = {}
-
-	# 技能骰子六个面对应六个技能索引
-	for i in range(6):
-		value_config[i] = i + 1  # 面索引 0-5 对应骰子点数 1-6
-
-	return value_config
-
-
-## 创建物品骰子（预留）
-## @param item_dice_id 物品骰子 ID
-func _create_item_dice(item_dice_id: String):
-	print("【BattleManager】创建物品骰子：", item_dice_id)
-	# TODO: 实现物品骰子
-	return null
 
 
 ## 战斗阶段
@@ -793,3 +685,88 @@ func get_battle_stats() -> Dictionary:
 		"damage_received": battle_data.damage_received,
 		"skills_used": battle_data.skills_used.size(),
 	}
+
+
+# ============================================================================
+# 备用方案方法（当 DiceManager 不可用时使用）
+# ============================================================================
+
+## 备用方案：创建角色骰子
+func _create_character_dice_fallback(character: BaseCharacter, side: String, sandbox: Node, position: Vector3):
+	var dice_scene = load("res://scenes/dice_6.tscn")
+	if not dice_scene:
+		return
+
+	var dice = dice_scene.instantiate()
+	if not dice:
+		return
+
+	dice.dice_type = "character"
+	dice.skip_skill_trigger = true
+
+	# 应用角色贴图
+	var texture_config = {}
+	var hero_id = character.hero_id
+	var hero_texture_states = character.hero_textures
+
+	for i in range(6):
+		if i < hero_texture_states.size():
+			var texture_state = hero_texture_states[i]
+			texture_config[i] = "res://textures/hero/hero_" + str(hero_id) + "_" + texture_state + ".png"
+		else:
+			texture_config[i] = "res://textures/hero/hero_" + str(hero_id) + "_idle.png"
+
+	if dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(texture_config, {})
+
+	dice.position = position
+	sandbox.add_child(dice)
+	character.character_dice = dice
+	print("【BattleManager】【备用方案】角色骰子已创建：", character.name)
+
+
+## 备用方案：创建技能骰子
+func _create_skill_dice_fallback(skill_dice_id: String) -> RigidBody3D:
+	var dice_scene = load("res://scenes/dice_6.tscn")
+	if not dice_scene:
+		return null
+
+	var dice = dice_scene.instantiate()
+	if not dice:
+		return null
+
+	dice.dice_type = "skill"
+
+	# 从 SkillDices.json 读取配置
+	var reader = DiceCSVReader.new()
+	var dice_config = reader.get_skill_dice_config(skill_dice_id)
+	var skill_ids = dice_config.get("skill_ids", [])
+
+	# 构建贴图配置
+	var texture_config = {}
+	for i in range(6):
+		if i < skill_ids.size():
+			var skill_id = skill_ids[i]
+			var skill_data = SkillManager.get_skill(skill_id)
+			if not skill_data.is_empty():
+				texture_config[i] = "res://textures/skill/skill_" + skill_id + ".png"
+			else:
+				texture_config[i] = ""
+		else:
+			texture_config[i] = ""
+
+	var value_config = {}
+	for i in range(6):
+		value_config[i] = i + 1
+
+	if dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(texture_config, value_config)
+
+	# 设置为悬浮状态
+	if dice.has_method("set_freeze"):
+		dice.set_freeze(true)
+	dice.gravity_scale = 0.0
+	dice.linear_velocity = Vector3.ZERO
+	dice.angular_velocity = Vector3.ZERO
+
+	return dice
