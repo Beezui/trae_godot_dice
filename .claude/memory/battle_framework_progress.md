@@ -1,58 +1,55 @@
 ---
-name: 战斗框架开发状态 (2026-04-18)
-description: 战斗框架基础已完成并验证通过，所有待修复问题已解决
+name: 战斗框架进度
+description: 战斗框架开发进度和已完成功能
 type: project
 ---
 
-## 战斗框架开发状态 - 2026-04-18
+## 战斗框架开发进度
 
-### 已验证完成的功能
+### 已完成功能
 
-#### 1. 敌人 ID 类型转换 ✅
-**文件**: `res://scripts/battle/battle_manager.gd:673`
-- 已将 String 类型的敌人 ID 转换为 int：`var enemy_id_int = int(enemy_id) if enemy_id is String else enemy_id`
+1. **伤害结算系统**
+   - 技能命中后即时结算伤害
+   - 支持公式计算（str*2 + agi*2 等）
+   - fireball_skill.gd 和 blizzard_skill.gd 已实现 `_apply_damage_to_target()`
 
-#### 2. BattleSkillBar.initialize 方法 ✅
-**文件**: `res://scripts/ui/battle_skill_bar.gd:46`
-- `initialize(characters, skills, items)` 方法存在且正常工作
-- 初始化玩家角色、技能骰子、物品骰子
+2. **投掷锁定机制**
+   - 技能释放期间禁止再次投掷
+   - `is_releasing_skill` 状态标志
+   - 骰子复位后解锁
 
-#### 3. BaseCharacter.recover_mp 方法 ✅
-**文件**: `res://scripts/character/BaseCharacter.gd:261`
-- `recover_mp(amount: int)` 方法已实现
-- 返回实际恢复量，并更新 current_mp
+3. **受击效果**
+   - 角色骰子原地抖动（0.16 秒）
+   - 骰面切换为 hit 贴图（持续 0.5 秒）
+   - 受击时调用 `take_hit_effect()`
 
-#### 4. UI 锚点预设 ✅
-- 未使用错误的 `set_anchors_preset = 18`
-- BattleSkillBar 使用正常的 Control 布局
+4. **敌方角色高亮**
+   - 行动前 0.5 秒高亮提示
+   - 使用背面剔除 + 放大网格实现边缘光效果
+   - 行动结束后移除高亮
 
-### 运行验证结果
+5. **投掷方向调整**
+   - 玩家：从南侧（Z=+6）向北投掷
+   - 敌方：从北侧（Z=-6）向南投掷
+   - 角色入场与技能投掷方向一致
 
-战斗场景可以成功运行：
-- ✅ 场景加载成功
-- ✅ BattleSceneBase 初始化完成
-- ✅ 摄像机、灯光、沙盘设置完成
-- ✅ BattleManager 初始化成功
-- ✅ 角色入场（玩家和敌人）
-- ✅ 骰子生成和贴图应用
-- ✅ 战斗阶段流转（PHASE_ENTER → PHASE_SETUP → PHASE_BATTLE）
-- ✅ 技能骰子创建和配置
-- ✅ MP 系统正常工作（recover_mp、take_mp_cost、can_afford_mp）
-- ✅ 技能栏 UI 初始化并响应
+6. **入场优化**
+   - 玩家优先入场，敌方后入场
+   - 玩家从中间位置入场（X=0）
+   - 敌方随机位置入场
+   - 投掷力度降低（12→8，旋转 -5~5→-3~3）
+
+7. **余韵时间调整**
+   - 玩家投掷后余韵：1.5 秒 → 1.0 秒
 
 ### 核心文件
 
-| 文件 | 说明 |
-|------|------|
-| `scripts/battle/battle_manager.gd` | 战斗管理器（Autoload） |
-| `scripts/battle/battle_scene_base.gd` | 战斗场景基类 |
-| `scripts/ui/battle_skill_bar.gd` | 技能栏 UI |
-| `scripts/character/BaseCharacter.gd` | 角色基类 |
+- `scripts/battle/battle_manager.gd` - 战斗流程管理
+- `scripts/ui/battle_skill_bar.gd` - 技能栏 UI 与投掷控制
+- `scenes/dice_6.gd` - 骰子逻辑（受击效果、高亮效果）
+- `scripts/character/BaseCharacter.gd` - 角色逻辑（伤害结算）
+- `skills/fireball_skill.gd` - 火球技能（伤害结算）
+- `skills/blizzard_skill.gd` - 冰风暴技能（伤害结算）
 
-### 下一步工作
-
-战斗框架基础已就绪，可以继续进行：
-1. 完善技能系统（SkillManager 实现）
-2. 实现敌方 AI 决策逻辑
-3. 完善战斗 UI（血条、动画、日志）
-4. 添加更多关卡和敌人配置
+### 最后更新
+2026-04-19

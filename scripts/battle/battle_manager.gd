@@ -127,13 +127,13 @@ func _enter_phase():
 	current_state = BattleState.ENTERING
 	_change_phase(BattlePhase.PHASE_ENTER)
 
-	# 1. 敌方角色入场
-	print("【BattleManager】敌方角色入场...")
-	await _character_enter(enemy_characters, "enemy")
-
-	# 2. 玩家角色入场
+	# 1. 玩家角色入场（从中间位置）
 	print("【BattleManager】玩家角色入场...")
 	await _character_enter(player_characters, "player")
+
+	# 2. 敌方角色入场（随机位置）
+	print("【BattleManager】敌方角色入场...")
+	await _character_enter(enemy_characters, "enemy")
 
 	print("【BattleManager】入场阶段完成")
 
@@ -147,6 +147,10 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 	if battle_scene and battle_scene.has_node("Sandbox"):
 		sandbox = battle_scene.get_node("Sandbox")
 
+	# 玩家角色从中间入场，敌方角色随机位置入场
+	var player_start_x = 0.0  # 玩家从中间 X=0 开始
+	var enemy_positions = [-6.0, -2.0, 2.0, 6.0]  # 敌方随机位置选项
+
 	for character in characters:
 		print("【BattleManager】", side, "角色 ", character.name, " 入场")
 
@@ -154,12 +158,27 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 		if not character.character_dice:
 			_create_character_dice(character, side)
 
+		# 计算位置
+		var index = characters.find(character)
+		var x_position: float
+
+		if side == "enemy":
+			# 敌方随机位置（从预设位置中随机选择）
+			var random_index = randi() % enemy_positions.size()
+			x_position = enemy_positions[random_index]
+			# 移除已使用的位置，避免重复
+			enemy_positions.remove_at(random_index)
+			if enemy_positions.is_empty():
+				enemy_positions = [-6.0, -2.0, 2.0, 6.0]  # 重置位置池
+		else:
+			# 玩家从中间向两侧排列
+			x_position = player_start_x + index * 2.0 * (1 if index % 2 == 0 else -1)
+			if index > 0:
+				x_position = x_position * (-1 if index % 2 == 0 else 1)
+
 		# 将骰子添加到场景
 		if character.character_dice and sandbox:
-			# 设置位置（敌方在左边，玩家在右边）
-			var offset = -8.0 if side == "enemy" else 8.0
-			var index = characters.find(character)
-			character.character_dice.position = Vector3(offset + index * 2.0, 0.5, 0.0)
+			character.character_dice.position = Vector3(x_position, 0.5, 0.0)
 			sandbox.add_child(character.character_dice)
 			print("【BattleManager】角色骰子已添加到场景：", character.character_dice.position)
 
@@ -170,9 +189,61 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 			character.character_dice.linear_velocity = Vector3.ZERO
 			character.character_dice.angular_velocity = Vector3.ZERO
 
-			# 使用 DiceThrowController 投掷
-			if DiceThrowController.get_instance():
-				DiceThrowController.throw_normal([character.character_dice], 1.0)
+			# 敌方角色从北侧入场（与技能投掷方向一致），玩家角色从南侧入场
+			if side == "enemy":
+				# 敌方角色从北墙附近入场（Z=-6），向南投掷（Z 正方向）
+				character.character_dice.position = Vector3(x_position, 4.0, -6.0)
+				character.character_dice.gravity_scale = 1.0
+
+				# 解除悬浮状态
+				if character.character_dice.has_method("set_freeze"):
+					character.character_dice.set_freeze(false)
+				elif "freeze" in character.character_dice:
+					character.character_dice.freeze = false
+
+				# 投掷方向：向后（Z 正方向）+ 稍微向下（Y 负方向）
+				var direction = Vector3(0, -0.3, 1).normalized()
+				var throw_force = 8.0  # 减小投掷力度（原 12.0）
+				var force = direction * throw_force
+
+				# 随机旋转力（减小力度）
+				var angular_force = Vector3(
+					randf_range(-3, 3),  # 原 -5 到 5
+					randf_range(-3, 3),
+					randf_range(-3, 3)
+				)
+
+				# 调用骰子的 roll 方法
+				if character.character_dice.has_method("roll"):
+					character.character_dice.roll(force, angular_force)
+					print("【BattleManager】敌方角色骰子入场投掷，位置=", character.character_dice.position)
+			else:
+				# 玩家角色从南侧入场（Z=+6），向北投掷（Z 负方向）
+				character.character_dice.position = Vector3(x_position, 4.0, 6.0)
+				character.character_dice.gravity_scale = 1.0
+
+				# 解除悬浮状态
+				if character.character_dice.has_method("set_freeze"):
+					character.character_dice.set_freeze(false)
+				elif "freeze" in character.character_dice:
+					character.character_dice.freeze = false
+
+				# 投掷方向：向前（Z 负方向）+ 稍微向下（Y 负方向）
+				var direction = Vector3(0, -0.3, -1).normalized()
+				var throw_force = 8.0  # 减小投掷力度（原 12.0）
+				var force = direction * throw_force
+
+				# 随机旋转力（减小力度）
+				var angular_force = Vector3(
+					randf_range(-3, 3),  # 原 -5 到 5
+					randf_range(-3, 3),
+					randf_range(-3, 3)
+				)
+
+				# 调用骰子的 roll 方法
+				if character.character_dice.has_method("roll"):
+					character.character_dice.roll(force, angular_force)
+					print("【BattleManager】玩家角色骰子入场投掷，位置=", character.character_dice.position)
 
 			# 等待骰子稳定
 			await get_tree().create_timer(2.0).timeout
@@ -416,8 +487,17 @@ func _enemy_ai_turn():
 
 		current_actor = character
 
+		# 添加高亮效果（标识当前行动角色）
+		_highlight_enemy_character(character)
+
+		# 等待 0.5 秒后再行动（先闪光后行动）
+		await get_tree().create_timer(0.5).timeout
+
 		# AI 决策（简单实现：随机行动）
 		await _enemy_action(character)
+
+		# 移除高亮效果
+		_remove_enemy_character_highlight(character)
 
 		current_actor = null
 		await get_tree().create_timer(1.0).timeout
@@ -432,6 +512,24 @@ func _enemy_ai_turn():
 	# 进入下一回合（玩家回合）
 	current_turn += 1
 	_start_player_turn()
+
+
+## 高亮敌方角色骰子
+func _highlight_enemy_character(character: BaseCharacter):
+	"""给当前行动的敌方角色骰子添加高亮效果"""
+	if character.character_dice and is_instance_valid(character.character_dice):
+		if character.character_dice.has_method("add_highlight"):
+			character.character_dice.add_highlight()
+			print("【BattleManager】已高亮敌方角色：", character.name)
+
+
+## 移除敌方角色骰子高亮
+func _remove_enemy_character_highlight(character: BaseCharacter):
+	"""移除敌方角色骰子的高亮效果"""
+	if character.character_dice and is_instance_valid(character.character_dice):
+		if character.character_dice.has_method("remove_highlight"):
+			character.character_dice.remove_highlight()
+			print("【BattleManager】已移除敌方角色高亮：", character.name)
 
 
 ## 敌方行动（简单 AI）
@@ -484,34 +582,43 @@ func _enemy_throw_dice(character: BaseCharacter, skill_dice_id: String):
 
 	var sandbox = battle_scene.get_node("Sandbox")
 
-	# 1. 创建技能骰子（临时）
-	var skill_dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, Vector3(-4.0, 4.0, 6.0))
+	# 1. 创建技能骰子（临时）- 从北墙附近进入（与玩家高度相同）
+	var skill_start_pos = Vector3(-4.0, 4.0, -6.0)  # Z=-6 靠近北墙，Y=4 与玩家相同
+	var skill_dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, skill_start_pos)
 	if not skill_dice:
 		print("  - 无法创建技能骰子")
 		return
+	# 设置初始位置为北墙附近，与玩家投掷高度相同
+	skill_dice.position = skill_start_pos
+	# 启用重力，让骰子自然下落
+	skill_dice.gravity_scale = 1.0
 
-	# 2. 创建属性骰子（临时）
+	# 2. 创建属性骰子（临时）- 从北墙附近进入（与玩家高度相同）
 	var attr_dices = []
 	var hero_id = character.hero_id
 	var attr_types = ["str", "agi", "int"]
+	# 敌方属性骰子位置：Z 轴为负值（北墙附近），比玩家位置更靠前，高度与玩家相同
 	var positions = [
-		Vector3(-2.0, 4.0, 6.0),
-		Vector3(0.0, 4.0, 6.0),
-		Vector3(2.0, 4.0, 6.0)
+		Vector3(-2.0, 4.0, -6.0),  # 力量骰子位置
+		Vector3(0.0, 4.0, -6.0),   # 敏捷骰子位置
+		Vector3(2.0, 4.0, -6.0)    # 智力骰子位置
 	]
 
 	for i in range(3):
 		var attr_type = attr_types[i]
 		var position = positions[i]
-		var dice = DiceManager.create_attribute_dice(hero_id, attr_type, sandbox, position)
+		var dice = DiceManager.create_attribute_dice(hero_id, attr_type, sandbox, Vector3(position.x, 4.0, position.z))
 		if dice:
 			attr_dices.append(dice)
-			# 设置为悬浮状态
+			# 设置初始位置为北墙附近，与玩家投掷高度相同
+			dice.position = position
+			# 启用重力，让骰子自然下落
+			dice.gravity_scale = 1.0
+			# 解除悬浮状态
 			if dice.has_method("set_freeze"):
-				dice.set_freeze(true)
+				dice.set_freeze(false)
 			elif "freeze" in dice:
-				dice.freeze = true
-			dice.gravity_scale = 0.0
+				dice.freeze = false
 
 	# 3. 准备投掷（解除 freeze）
 	var all_dices = [skill_dice] + attr_dices
@@ -524,10 +631,27 @@ func _enemy_throw_dice(character: BaseCharacter, skill_dice_id: String):
 		dice.angular_velocity = Vector3.ZERO
 		dice.sleeping = false
 
-	# 4. 使用 DiceThrowController 投掷（固定力度）
-	if DiceThrowController:
-		print("  - 使用 DiceThrowController 投掷")
-		DiceThrowController.throw_normal(all_dices, 1.0)
+	# 4. 敌方投掷：从北墙向南墙投掷（Z 正方向，向后）
+	# 投掷方向：向后（Z 正方向）+ 稍微向下（Y 负方向）
+	for dice in all_dices:
+		if dice and is_instance_valid(dice):
+			# 投掷方向：向后（Z 正方向）+ 向下（Y 负方向）
+			var direction = Vector3(0, -0.3, 1).normalized()
+			var throw_force = 12.0  # 投掷力度
+
+			var force = direction * throw_force
+
+			# 随机旋转力
+			var angular_force = Vector3(
+				randf_range(-5, 5),
+				randf_range(-5, 5),
+				randf_range(-5, 5)
+			)
+
+			# 调用骰子的 roll 方法
+			if dice.has_method("roll"):
+				dice.roll(force, angular_force)
+				print("【BattleManager】敌方骰子投掷，位置=", dice.position, ", 方向=", direction)
 
 	# 5. 等待骰子停止
 	await get_tree().create_timer(2.0).timeout
