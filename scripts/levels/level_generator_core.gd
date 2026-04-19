@@ -202,6 +202,8 @@ func _create_layer_node(node_id: int, stage: int, layer: int) -> LevelNode:
 	node.layer = layer
 	node.connections = [] as Array[String]
 	node.previous_nodes = [] as Array[String]
+	# 存储阶段信息到 data，用于敌人选择
+	node.data["stage"] = stage
 	return node
 
 
@@ -310,6 +312,7 @@ func _create_boss_node(node_id: int, stage: int, difficulty: int, boss_layer: in
 	node.data["boss_id"] = boss.get("id", "") if boss else ""
 	node.data["hero_id"] = boss.get("hero_id", "") if boss else ""
 	node.data["scene_id"] = boss.get("scene_id", "") if boss else ""
+	node.data["stage"] = stage  # Boss 所属阶段
 
 	return node
 

@@ -31,6 +31,7 @@ LevelTransitionController="*res://scripts/levels/level_transition_controller.gd"
 LevelStage="*res://scripts/levels/level_stage.gd"
 BattleManager="*res://scripts/battle/battle_manager.gd"
 DiceManager="*res://scripts/dice/dice_manager.gd"
+EnemySelector="*res://scripts/levels/enemy_selector.gd"
 
 [editor_plugins]
 

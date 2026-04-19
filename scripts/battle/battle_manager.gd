@@ -95,8 +95,8 @@ func initialize_battle(level_node: LevelNode, player_party: Array[int]) -> bool:
 	# 加载玩家角色
 	_load_player_characters(player_party)
 
-	# 加载敌方角色（从关卡节点配置）
-	_load_enemy_characters(level_node)
+	# 加载敌方角色（从关卡节点配置，传入玩家队伍用于阶段参考）
+	_load_enemy_characters(level_node, player_party)
 
 	if player_characters.is_empty() or enemy_characters.is_empty():
 		push_error("【BattleManager】玩家或敌方角色为空，无法开始战斗")
@@ -1006,26 +1006,57 @@ func _load_player_characters(player_party: Array[int]):
 
 
 ## 加载敌方角色
-func _load_enemy_characters(level_node: LevelNode):
+## @param level_node 关卡节点
+## @param player_party 玩家队伍（用于获取阶段信息，暂时从关卡节点读取）
+func _load_enemy_characters(level_node: LevelNode, player_party: Array[int] = []):
 	if not level_node:
 		print("【BattleManager】关卡节点为空")
 		return
 
-	if not level_node.data.has("enemies"):
-		print("【BattleManager】关卡节点无敌人配置")
+	# 从关卡节点获取阶段信息
+	var stage: int = level_node.data.get("stage", 1)
+	print("【BattleManager】当前阶段：", stage)
+
+	# 检查是否已经有预设的敌人配置（如 Boss 节点）
+	if level_node.data.has("enemies") and level_node.data["enemies"].size() > 0:
+		# 使用预设配置
+		var enemy_ids = level_node.data["enemies"]
+		print("【BattleManager】使用预设敌人配置：", enemy_ids)
+
+		for enemy_id in enemy_ids:
+			var enemy_id_int = int(enemy_id) if enemy_id is String else enemy_id
+			var character = CharacterManager.create_character(enemy_id_int, "enemy")
+			if character:
+				enemy_characters.append(character)
+				print("【BattleManager】敌人已加载：", character.name, " (ID: ", enemy_id_int, ")")
 		return
 
-	# 从关卡节点配置加载敌人
-	var enemy_ids = level_node.data["enemies"]
-	print("【BattleManager】加载敌人：", enemy_ids)
+	# 使用 EnemySelector 根据阶段随机选择敌人
+	print("【BattleManager】使用 EnemySelector 选择敌人...")
+	var enemy_selector = EnemySelector.get_instance()
+	if not enemy_selector:
+		push_error("【BattleManager】EnemySelector 不存在")
+		return
 
-	for enemy_id in enemy_ids:
-		# 将 String 类型的 ID 转换为 int
-		var enemy_id_int = int(enemy_id) if enemy_id is String else enemy_id
-		var character = CharacterManager.create_character(enemy_id_int, "enemy")
+	# 加载敌人池（根据阶段）
+	if not enemy_selector.load_enemy_pool(stage):
+		push_error("【BattleManager】阶段 ", stage, " 没有可用敌人")
+		return
+
+	# 选择一个敌人（每关卡固定 1 个）
+	var enemy_config = enemy_selector.select_enemy(stage)
+	if enemy_config.is_empty():
+		push_error("【BattleManager】无法选择敌人")
+		return
+
+	# 创建敌人角色
+	var enemy_id = int(enemy_config.get("id", 0))
+	if enemy_id > 0:
+		var character = CharacterManager.create_character(enemy_id, "enemy")
 		if character:
 			enemy_characters.append(character)
-			print("【BattleManager】敌人已加载：", character.name, " (ID: ", enemy_id_int, ")")
+			print("【BattleManager】敌人已加载：", character.name,
+				  " (type=", enemy_config.get("type"), ", stage=", enemy_config.get("stage"), ")")
 
 
 ## 获取战斗统计
