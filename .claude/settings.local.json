@@ -31,7 +31,22 @@
       "Bash(dir \"C:\\\\Users\\\\Administrator\\\\.claude\\\\projects\\\\D--Godot-Godot-v4-6-1-stable_win64-exe-game------\\\\memory\")",
       "Bash(git *)",
       "Bash(sed -i '424,425d' scripts/ui/battle_skill_bar.gd)",
-      "Bash(sed -i '441d' scripts/ui/battle_skill_bar.gd)"
+      "Bash(sed -i '441d' scripts/ui/battle_skill_bar.gd)",
+      "Read(//e/godot/Godot_v4.6.1-stable_win64.exe/**)",
+      "Bash(./Godot_v4.6.1-stable_win64.exe.exe --editor res://scenes/test/destiny_dice_sandbox_test.tscn)",
+      "Bash(taskkill /F /IM Godot_v4.6.1-stable_win64.exe.exe)",
+      "Bash(start Godot_v4.6.1-stable_win64.exe.exe --editor \"E:/godot/Godot_v4.6.1-stable_win64.exe/trae_godot_dice-master\")",
+      "Bash(dir *.exe)",
+      "Bash(start Godot_v4.6.1-stable_win64.exe --editor \"E:/godot/Godot_v4.6.1-stable_win64.exe/trae_godot_dice-master\")",
+      "mcp__godot__read_scene",
+      "Read(//d E:/godot/Godot_v4.6.1-stable_win64.exe/**)",
+      "Bash(godot --version)",
+      "mcp__godot__list_dir",
+      "mcp__godot__get_node_properties",
+      "mcp__godot__scene_tree_dump",
+      "Bash(del *)",
+      "mcp__godot__stop_scene",
+      "Bash(python convert_hero_csv_to_json.py)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -80,7 +80,24 @@ func create_character_dice(character: BaseCharacter, parent: Node, position: Vec
 	# 存储到角色
 	character.character_dice = dice
 
-	print("【DiceManager】角色骰子已创建：", character.name, " 位置：", position)
+	# 设置骰子与角色的关联（用于血条更新）
+	if dice.has_method("set_character"):
+		dice.set_character(character)
+
+	# 自动应用角色骰子缩放（从 CharacterManager 获取配置）
+	# 如果角色有特殊缩放配置，使用它；否则使用默认缩放 1.5
+	var dice_scale = character.get_dice_scale() if character.has_method("get_dice_scale") else Vector3(1.5, 1.5, 1.5)
+
+	# 使用骰子自身的 set_dice_scale 方法（优先）或通过 BaseCharacter 设置
+	if dice.has_method("set_dice_scale"):
+		dice.set_dice_scale(dice_scale)
+		print("【DiceManager】使用 dice.set_dice_scale() 设置缩放：", dice_scale)
+	elif dice.has_method("set_character_dice_scale"):
+		# 备用方案：通过 BaseCharacter 的方法设置（已废弃，保留兼容性）
+		dice.set_character_dice_scale(dice_scale)
+		print("【DiceManager】使用 dice.set_character_dice_scale() 设置缩放：", dice_scale)
+
+	print("【DiceManager】角色骰子已创建：", character.name, " 位置：", position, " 缩放：", dice_scale)
 	return dice
 
 

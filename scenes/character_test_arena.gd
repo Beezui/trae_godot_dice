@@ -270,12 +270,14 @@ func _create_character_dice():
 	# 设置骰子类型为角色骰子
 	if character_dice.has_method("set_dice_type"):
 		character_dice.set_dice_type("character")
-	
-	# 将角色骰子与角色关联
+
+	# 将角色骰子与角色关联（用于血条更新）
 	if player_character:
 		player_character.character_dice = character_dice
-		CharacterManager.set_character_dice_scale(1, Vector3(1.5, 1.5, 1.5))
-		print("【场景】角色骰子已与角色关联")
+		# 设置骰子与角色的关联（用于血条更新）
+		if character_dice.has_method("set_character"):
+			character_dice.set_character(player_character)
+			print("【场景】角色骰子已与角色关联，默认缩放：", player_character.dice_scale)
 	
 	# 自动投掷：玩家角色向前（z 负方向），NPC 向后（z 正方向）
 	var throw_direction = -1 if is_player else 1  # 玩家：-1（向前），NPC: 1（向后）

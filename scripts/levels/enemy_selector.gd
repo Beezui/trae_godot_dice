@@ -7,12 +7,10 @@ extends Node
 ##   3. type=2(普通敌人)、3(精英敌人)、4(Boss)
 
 ## 角色类型枚举
-enum CharacterType {
-	PLAYER = 1,      # 玩家角色
-	NORMAL_ENEMY = 2, # 普通敌人
-	ELITE_ENEMY = 3,  # 精英敌人
-	BOSS = 4         # Boss
-}
+const TYPE_PLAYER = 1      # 玩家角色
+const TYPE_NORMAL_ENEMY = 2 # 普通敌人
+const TYPE_ELITE_ENEMY = 3  # 精英敌人
+const TYPE_BOSS = 4         # Boss
 
 ## 敌人缓存（加载一次后缓存）
 var _enemy_pool: Array[Dictionary] = []
@@ -151,18 +149,18 @@ func clear():
 ## 获取敌人类型名称
 static func get_type_name(type: int) -> String:
 	match type:
-		PLAYER: return "玩家"
-		NORMAL_ENEMY: return "普通敌人"
-		ELITE_ENEMY: return "精英敌人"
-		BOSS: return "Boss"
+		TYPE_PLAYER: return "玩家"
+		TYPE_NORMAL_ENEMY: return "普通敌人"
+		TYPE_ELITE_ENEMY: return "精英敌人"
+		TYPE_BOSS: return "Boss"
 		_: return "未知"
 
 
 ## 获取敌人类型颜色
 static func get_type_color(type: int) -> Color:
 	match type:
-		PLAYER: return Color(0.3, 0.8, 0.3)    # 绿色 - 玩家
-		NORMAL_ENEMY: return Color(1, 0.3, 0.3)  # 红色 - 普通敌人
-		ELITE_ENEMY: return Color(1, 0.5, 0.0)   # 橙色 - 精英敌人
-		BOSS: return Color(0.8, 0.0, 0.8)        # 紫色 - Boss
+		TYPE_PLAYER: return Color(0.3, 0.8, 0.3)    # 绿色 - 玩家
+		TYPE_NORMAL_ENEMY: return Color(1, 0.3, 0.3)  # 红色 - 普通敌人
+		TYPE_ELITE_ENEMY: return Color(1, 0.5, 0.0)   # 橙色 - 精英敌人
+		TYPE_BOSS: return Color(0.8, 0.0, 0.8)        # 紫色 - Boss
 		_: return Color(1, 1, 1)                  # 白色 - 未知

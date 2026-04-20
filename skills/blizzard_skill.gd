@@ -86,9 +86,9 @@ func execute(caster: Node = null, targets: Array = [], params: Dictionary = {}) 
 	if caster and caster.has_method("get_global_position"):
 		caster_position = caster.global_position
 
-	var p1 = calculate_damage("int*2", dice_results)
-	var p2 = calculate_damage("str*2", dice_results)
-	var p3 = calculate_damage("agi*3", dice_results)
+	var duration = calculate_damage("int*2", dice_results)
+	var damage_per_second = calculate_damage("str*2", dice_results)
+	var range_bonus = calculate_damage("agi*3", dice_results)
 
 	if targets.is_empty():
 		cleanup()
@@ -110,27 +110,28 @@ func execute(caster: Node = null, targets: Array = [], params: Dictionary = {}) 
 	var center_pos = target_pos
 	center_pos.y += 3
 
-	_create_blizzard_effect(center_pos, p1, p2, p3, scene_node)
+	# 存储目标和场景引用，用于伤害结算
+	_create_blizzard_effect(center_pos, range_bonus, duration, damage_per_second, scene_node, target)
 
-func _create_blizzard_effect(center_pos: Vector3, range_bonus: int, duration: int, damage_per_second: int, scene_node: Node = null) -> void:
+func _create_blizzard_effect(center_pos: Vector3, range_bonus: int, duration: int, damage_per_second: int, scene_node: Node = null, target: RefCounted = null) -> void:
 	blizzard_area = Area3D.new()
 	blizzard_area.name = "BlizzardArea"
 	blizzard_area.position = center_pos
-	
+
 	var sphere_shape = SphereShape3D.new()
 	sphere_shape.radius = area_radius + range_bonus * 0.1
 	var collision_shape = CollisionShape3D.new()
 	collision_shape.shape = sphere_shape
 	blizzard_area.add_child(collision_shape)
-	
+
 	var blizzard_particles = _create_blizzard_particles()
 	blizzard_area.add_child(blizzard_particles)
-	
+
 	if scene_node:
 		scene_node.add_child(blizzard_area)
-	
+
 	_create_visual_indicator(center_pos, area_radius + range_bonus * 0.1, scene_node)
-	
+
 	var timer_duration = max(1, duration)
 	var timer = Timer.new()
 	timer.wait_time = timer_duration
@@ -139,22 +140,26 @@ func _create_blizzard_effect(center_pos: Vector3, range_bonus: int, duration: in
 		_cleanup_blizzard()
 		timer.queue_free()
 	)
-	
+
 	if scene_node:
 		scene_node.add_child(timer)
-	
+
 	timer.start()
-	
+
+	# 伤害计时器，每秒造成伤害
 	var damage_timer = Timer.new()
 	damage_timer.wait_time = 1.0
 	damage_timer.autostart = true
+	# 存储 target 引用用于伤害结算
+	var damage_ref = damage_per_second
+	var target_ref = target
 	damage_timer.timeout.connect(func():
-		_deal_damage(damage_per_second)
+		_deal_damage(damage_ref, target_ref)
 	)
-	
+
 	if scene_node:
 		scene_node.add_child(damage_timer)
-	
+
 	timer.timeout.connect(func():
 		if is_instance_valid(damage_timer):
 			damage_timer.queue_free()
@@ -238,8 +243,17 @@ func _create_visual_indicator(center_pos: Vector3, radius: float, scene_node: No
 	
 	timer.start()
 
-func _deal_damage(damage: int) -> void:
-	pass
+func _deal_damage(damage: int, target: RefCounted = null) -> void:
+	# 对目标造成伤害（暴风雪是持续性伤害，每秒结算一次）
+	if target and is_instance_valid(target):
+		if target is BaseCharacter:
+			# 调用角色的 take_damage 方法
+			target.take_damage(damage)
+			print("【BlizzardSkill】对 ", target.name, " 造成 ", damage, " 点持续伤害")
+		else:
+			print("【BlizzardSkill】目标类型不正确，伤害未生效")
+	else:
+		print("【BlizzardSkill】目标无效，伤害未生效")
 
 func _cleanup_blizzard() -> void:
 	if blizzard_area:

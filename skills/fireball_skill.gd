@@ -86,7 +86,7 @@ func execute(caster: Node = null, targets: Array = [], params: Dictionary = {}) 
 	if caster and caster.has_method("get_global_position"):
 		caster_position = caster.global_position
 
-	var p1 = calculate_damage("str*2 + agi*2", dice_results)
+	var damage = calculate_damage("str*2 + agi*2", dice_results)
 
 	if targets.is_empty():
 		cleanup()
@@ -105,45 +105,62 @@ func execute(caster: Node = null, targets: Array = [], params: Dictionary = {}) 
 	else:
 		target_pos = Vector3(6, 0.5, 0)
 
-	_launch_fireball(caster_position, target_pos, p1, scene_node)
+	# 存储目标和场景引用，用于伤害结算
+	_launch_fireball(caster_position, target_pos, damage, scene_node, target)
 
-func _launch_fireball(start_pos: Vector3, target_pos: Vector3, damage: int, scene_node: Node = null) -> void:
+func _launch_fireball(start_pos: Vector3, target_pos: Vector3, damage: int, scene_node: Node = null, target: RefCounted = null) -> void:
 	var fireball_mesh = SphereMesh.new()
 	fireball_mesh.radius = 0.3
 	fireball_mesh.height = 0.6
-	
+
 	var fireball_material = StandardMaterial3D.new()
 	fireball_material.albedo_color = Color(1, 0.8, 0, 1)
 	fireball_material.emission_enabled = true
 	fireball_material.emission = Color(1, 0.6, 0, 1)
 	fireball_material.emission_energy_multiplier = 3.0
-	
+
 	var fireball_mesh_instance = MeshInstance3D.new()
 	fireball_mesh_instance.mesh = fireball_mesh
 	fireball_mesh_instance.material_override = fireball_material
 	fireball_mesh_instance.position = start_pos
 	fireball_mesh_instance.name = "Fireball"
-	
+
 	if scene_node:
 		scene_node.add_child(fireball_mesh_instance)
-	
+
 	current_fireball = fireball_mesh_instance
-	
+
 	var distance = start_pos.distance_to(target_pos)
 	var travel_time = distance / fireball_speed
-	
+
 	var tween = fireball_mesh_instance.create_tween()
 	tween.tween_property(fireball_mesh_instance, "position", target_pos, travel_time)
-	tween.tween_callback(_on_fireball_hit.bind(target_pos, damage, scene_node))
+	tween.tween_callback(_on_fireball_hit.bind(target_pos, damage, scene_node, target))
 
-func _on_fireball_hit(hit_position: Vector3, damage: int, scene_node: Node = null) -> void:
+func _on_fireball_hit(hit_position: Vector3, damage: int, scene_node: Node = null, target: RefCounted = null) -> void:
+	# 触发爆炸特效
 	_trigger_explosion(hit_position, scene_node)
-	
+
+	# 对目标造成伤害（命中即结算）
+	if target and is_instance_valid(target):
+		_apply_damage_to_target(target, damage)
+
+	# 清理火球
 	if current_fireball:
 		current_fireball.queue_free()
 		current_fireball = null
-	
+
 	cleanup()
+
+
+## 对目标应用伤害
+func _apply_damage_to_target(target: RefCounted, damage: int) -> void:
+	if target is BaseCharacter:
+		# 调用角色的 take_damage 方法
+		target.take_damage(damage)
+		print("【FireballSkill】对 ", target.name, " 造成 ", damage, " 点伤害")
+	else:
+		print("【FireballSkill】目标类型不正确，伤害未生效")
 
 func _trigger_explosion(hit_position: Vector3, scene_node: Node = null) -> void:
 	var explosion_particles = CPUParticles3D.new()

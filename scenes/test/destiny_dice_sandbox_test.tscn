@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://destiny_dice_sandbox_test"]
+
+[ext_resource type="Script" path="res://scripts/test/destiny_dice_sandbox_test.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://c2x0x5e4k0rag" path="res://scenes/dice_6.tscn" id="3_dice"]
+
+[node name="DestinyDiceSandboxTest" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 60, 0)
+current = true
+fov = 15.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
+
+[node name="Sandbox" type="StaticBody3D" parent="."]
+
+[node name="Ground" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+
+[node name="WallNorth" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, -6.75)
+
+[node name="WallSouth" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 6.75)
+
+[node name="WallEast" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -4, 0)
+
+[node name="WallWest" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, -4, 0)

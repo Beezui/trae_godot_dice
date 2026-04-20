@@ -47,6 +47,9 @@ var is_player: bool = false
 ## 角色状态 (idle, hit, attack, anger, happy, die)
 var current_state: String = "idle"
 
+## 角色骰子缩放比例（默认 1.5 倍）
+var dice_scale: Vector3 = Vector3(1.5, 1.5, 1.5)
+
 
 func _init(data: Dictionary = {}):
 	"""
@@ -137,6 +140,14 @@ func take_damage(damage: int) -> int:
 	# 更新状态为受击
 	set_state("hit")
 
+	# 播放受击效果（骰子抖动 + 贴图切换）
+	if character_dice and is_instance_valid(character_dice):
+		if character_dice.has_method("take_hit_effect"):
+			character_dice.take_hit_effect()
+
+	# 更新血条显示（如果骰子已创建）
+	update_health_bar()
+
 	return damage
 
 
@@ -154,6 +165,10 @@ func heal(amount: int) -> int:
 	var actual_heal = current_hp - old_hp
 
 	print("【BaseCharacter】", name, " 恢复 ", actual_heal, " 点 HP，当前 HP: ", current_hp)
+
+	# 更新血条显示（如果骰子已创建）
+	update_health_bar()
+
 	return actual_heal
 
 
@@ -186,21 +201,25 @@ func set_state(state: String):
 func set_character_dice_scale(scale: Vector3):
 	"""
 	设置角色骰子的缩放比例
+	注意：直接缩放 RigidBody3D 节点，这样网格和碰撞体会同步缩放
 	:param scale: 缩放比例向量
 	"""
 	if character_dice and is_instance_valid(character_dice):
-		var mesh = character_dice.get_node("MeshInstance3D")
-		if mesh:
-			mesh.scale = scale
-			print("【BaseCharacter】", name, " 角色骰子网格缩放已设置为：", scale)
+		# 优先使用骰子自身的 set_dice_scale 方法
+		if character_dice.has_method("set_dice_scale"):
+			character_dice.set_dice_scale(scale)
+			print("【BaseCharacter】调用 dice.set_dice_scale() 设置缩放：", scale)
+		else:
+			# 备用方案：直接设置根节点缩放
+			character_dice.scale = scale
+			print("【BaseCharacter】直接设置根节点缩放：", scale)
 
-		# 同步放大碰撞体
-		var collision_shape = character_dice.get_node("CollisionShape3D")
-		if collision_shape and collision_shape.shape:
-			# 根据缩放比例调整碰撞体大小
-			var base_size = Vector3(1, 1, 1)  # 基础碰撞体大小
-			collision_shape.shape.size = base_size * scale
-			print("【BaseCharacter】", name, " 角色骰子碰撞体已同步放大：", collision_shape.shape.size)
+			# 同步调整碰撞体大小
+			var collision_shape = character_dice.get_node_or_null("CollisionShape3D")
+			if collision_shape and collision_shape.shape:
+				var base_size = Vector3(1, 1, 1)
+				collision_shape.shape.size = base_size * scale
+				print("【BaseCharacter】碰撞体已同步调整：", collision_shape.shape.size)
 
 
 func get_attribute_value(attr_type: String, face_index: int = 0) -> int:
@@ -254,8 +273,30 @@ func get_config() -> Dictionary:
 		"skill_dice_ids": skill_dice_ids,
 		"texture_ids": texture_ids,
 		"portrait_id": portrait_id,
-		"hero_textures": hero_textures
+		"hero_textures": hero_textures,
+		"dice_scale": dice_scale
 	}
+
+
+## 获取角色骰子缩放比例
+func get_dice_scale() -> Vector3:
+	"""
+	获取角色骰子的缩放比例
+	:return: 缩放比例向量
+	"""
+	return dice_scale
+
+
+## 设置角色骰子缩放比例
+func set_dice_scale(scale: Vector3):
+	"""
+	设置角色骰子的缩放比例
+	:param scale: 缩放比例向量
+	"""
+	dice_scale = scale
+	# 如果骰子已经存在，立即应用缩放
+	if character_dice and is_instance_valid(character_dice):
+		set_character_dice_scale(scale)
 
 
 func recover_mp(amount: int) -> int:
@@ -296,3 +337,14 @@ func can_afford_mp(amount: int) -> bool:
 	:return: true 如果 MP 足够
 	"""
 	return current_mp >= amount
+
+
+func update_health_bar():
+	"""
+	更新角色骰子上的 3D 血条显示
+	调用时机：HP 变化时（受到伤害或治疗）
+	"""
+	if character_dice and is_instance_valid(character_dice):
+		if character_dice.has_method("update_hp_text"):
+			character_dice.update_hp_text(current_hp, attr_hp)
+			print("【BaseCharacter】已更新血条显示：", current_hp, "/", attr_hp)

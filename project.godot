@@ -13,7 +13,7 @@ main_scene="res://scenes/test/battle_test_scene.tscn"
 [application]
 
 config/name="晋升吧骰子"
-run/main_scene="res://scenes/test/battle_test_scene.tscn"
+run/main_scene="res://scenes/ui/title_screen/title_screen.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -32,6 +32,7 @@ LevelStage="*res://scripts/levels/level_stage.gd"
 BattleManager="*res://scripts/battle/battle_manager.gd"
 DiceManager="*res://scripts/dice/dice_manager.gd"
 EnemySelector="*res://scripts/levels/enemy_selector.gd"
+LoadingOverlay="*res://scripts/ui/loading_overlay.gd"
 
 [editor_plugins]
 

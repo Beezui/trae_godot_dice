@@ -1,3 +1,6 @@
 - [2D 血条实现方案](2d_health_bar.md) — 角色骰子血条使用 SubViewport+Sprite3D+Billboard 方案
 - [关卡类型开发进度](level_development_progress.md) — 四种关卡类型开发进度与架构设计
 - [敌人选择器设计](enemy_selector_design.md) — EnemySelector 单例的实现逻辑和使用方式
+- [游戏主入口场景完成](game_main_entry.md) — 标题→角色选择→游戏主入口完整流程
+- [战斗框架进度](battle_framework_progress.md) — 战斗系统开发进度和已完成功能
+- [游戏流程架构](game_flow_architecture.md) — 从游戏开始到结束的完整流程设计

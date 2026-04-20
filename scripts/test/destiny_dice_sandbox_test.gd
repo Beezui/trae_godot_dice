@@ -8,8 +8,8 @@ extends Node3D
 # Sandbox
 @onready var sandbox = $Sandbox
 
-# DiceManager
-@onready var dice_manager = $DiceManager
+# DiceManager (autoload)
+var dice_manager: Node = null
 
 # 命运骰子管理器（autoload）
 @onready var destiny_dice_manager = DestinyDiceManager.get_instance()
@@ -41,6 +41,9 @@ var initial_z = 4.75
 
 func _ready():
 	print("=== 命运骰子测试场景初始化 ===")
+
+	# 0. 获取 DiceManager 实例（autoload）
+	dice_manager = DiceManager.get_instance()
 
 	# 1. 注册摄像机到 CameraManager
 	if camera:
@@ -177,17 +180,23 @@ func _setup_sandbox():
 
 ## 生成关卡数据
 func _generate_level_data():
-	# LevelGenerator 是 autoload，直接使用
+	# LevelGenerator 是 autoload，使用实例调用
 	var seed_value = Time.get_ticks_msec()
-	level_data = LevelGenerator.generate_level(1, seed_value)
-	if level_data:
-		print("【关卡】生成成功，节点数：", level_data.total_nodes)
-		# 设置起始节点
-		if level_data.start_node_id:
-			current_node = level_data.get_node(level_data.start_node_id)
-			print("【关卡】起始节点：", current_node.id, " - ", current_node.name)
+	var level_gen = LevelGenerator.get_instance()
+	if level_gen:
+		level_data = level_gen.generate_level(1, seed_value)
+		if level_data:
+			print("【关卡】生成成功，节点数：", level_data.total_nodes)
+			# 设置起始节点
+			if level_data.start_node_id:
+				current_node = level_data.get_node(level_data.start_node_id)
+				print("【关卡】起始节点：", current_node.id, " - ", current_node.name)
+		else:
+			push_error("【关卡】LevelGenerator 生成失败")
+			# 创建测试数据
+			level_data = _create_test_level_data()
 	else:
-		push_error("【关卡】LevelGenerator 生成失败")
+		push_error("【关卡】LevelGenerator 未初始化")
 		# 创建测试数据
 		level_data = _create_test_level_data()
 

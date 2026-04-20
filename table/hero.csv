@@ -1,3 +1,4 @@
 id,name,type,stage,attr_str,attr_agi,attr_int,attr_hp,attr_mp,mp_name,skill_slot,skill_dice_id,texture,portrait,hero_texture
-1,test_hero,1,1,"1;1;2;2;3;3","1;3;3;3;5;5","1;1;2;2;3;3",100,50,MP,1,"4001","1001;1001;1001;1001;1001;1001",1,"idle;idle;idle;idle;idle;idle"
-2,test_enemy,2,1,"2;2;4;4;5;5","1;3;3;3;5;5","1;1;2;2;3;3",100,50,MP,1,"4002","1001;1001;1001;1001;1001;1001",1,"idle;idle;idle;idle;idle;idle"
+1,test_hero1,1,1,1;1;2;2;3;3,1;3;3;3;5;5,1;1;2;2;3;3,100,50,MP,1,4001,1001;1001;1001;1001;1001;1001,1,idle;idle;idle;idle;idle;idle
+2,test_hero2,2,1,2;2;4;4;5;5,1;3;3;3;5;5,1;1;2;2;3;3,100,50,MP,1,4002,1001;1001;1001;1001;1001;1001,1,idle;idle;idle;idle;idle;idle
+3,test_enemy,1,1,2;2;4;4;5;5,1;3;3;3;5;5,1;1;2;2;3;3,100,50,MP,1,4002,1001;1001;1001;1001;1001;1001,1,idle;idle;idle;idle;idle;idle

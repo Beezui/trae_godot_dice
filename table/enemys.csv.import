@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://2h26na0y1oq3"
+
+[deps]
+
+files=["res://table/enemys.name.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.mp.translation", "res://table/enemys.skill.translation", "res://table/enemys.skill.translation", "res://table/enemys.texture.translation", "res://table/enemys.portrait.translation", "res://table/enemys.hero.translation"]
+
+source_file="res://table/enemys.csv"
+dest_files=["res://table/enemys.name.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.attr.translation", "res://table/enemys.mp.translation", "res://table/enemys.skill.translation", "res://table/enemys.skill.translation", "res://table/enemys.texture.translation", "res://table/enemys.portrait.translation", "res://table/enemys.hero.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

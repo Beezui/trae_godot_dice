@@ -23,6 +23,14 @@ var final_wait_timer: Timer  # 最终等待计时器（余韵时间）
 const FINAL_WAIT_TIME: float = 1.5  # 完全稳定后的等待时间（秒）- 余韵
 var is_in_final_wait: bool = false  # 是否在余韵等待中
 
+# 角色骰子相关
+var character: RefCounted = null  # 关联的角色对象
+var health_bar: Node3D = null  # 血条引用
+
+# 受击效果相关
+var idle_texture_config: Dictionary = {}  # idle 贴图配置（用于受击后恢复）
+var is_hit_animating: bool = false  # 是否正在播放受击动画
+
 func _ready():
 	# 初始化系统
 	print("【骰子】_ready() 开始执行")
@@ -50,18 +58,18 @@ func _ready():
 	
 	# 初始状态：禁用重力，使骰子悬浮
 	gravity_scale = 0.0
-	
+
 	# 确保骰子静止
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
-	
+
 	# 确保骰子可见
 	visible = true
-	
-	# 确保骰子大小合适
-	scale = Vector3(1, 1, 1)
-	
-	# 创建碰撞形状
+
+	# 注意：不在 _ready 中重置 scale，允许外部设置缩放
+	# scale = Vector3(1, 1, 1)  # 已移除，避免覆盖外部设置的缩放
+
+	# 创建碰撞形状（使用默认大小，后续可通过 set_dice_scale 调整）
 	var collision_shape = $CollisionShape3D
 	if collision_shape:
 		var cube_shape = BoxShape3D.new()
@@ -283,6 +291,8 @@ func _on_final_wait_timeout():
 	# 如果是角色骰子，停止后锁定位置
 	if dice_type == "character":
 		lock_character_dice()
+		# 创建血条（角色骰子完全稳定后）
+		create_health_bar()
 
 	# 通知骰子管理器
 	var parent = get_parent()
@@ -294,19 +304,68 @@ func lock_character_dice():
 	"""锁定角色骰子，使其不受外力影响"""
 	# 禁用重力
 	gravity_scale = 0.0
-	
+
 	# 清除所有速度
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
-	
+
 	# 设置睡眠状态，防止物理引擎继续计算
 	sleeping = true
-	
+
 	# 设置碰撞层，避免与其他骰子碰撞
 	collision_layer = 0
 	collision_mask = 0
-	
+
 	print("【角色骰子】已锁定位置，不受外力影响")
+
+
+func create_health_bar():
+	"""创建 3D 血条（仅在角色骰子上）- 使用 2D 血条"""
+	if dice_type != "character":
+		print("【骰子】不是角色骰子，跳过血条创建")
+		return
+
+	if health_bar:
+		print("【骰子】血条已存在，跳过创建")
+		return
+
+	# 加载 2D 血条脚本
+	var health_bar_script = load("res://scripts/ui/dice_health_bar_2d.gd")
+	if not health_bar_script:
+		print("【骰子】无法加载 2D 血条脚本")
+		return
+
+	# 创建血条节点 - 添加到 sandbox
+	var parent = get_parent()
+	health_bar = Node3D.new()
+	health_bar.name = "HealthBar2D"
+	health_bar.set_script(health_bar_script)
+
+	# 直接设置 parent_dice 属性（在添加到场景树之前）
+	health_bar.parent_dice = self
+
+	parent.add_child(health_bar)
+
+	print("【骰子】2D 血条已创建，路径：", health_bar.get_path())
+	print("【骰子】血条父节点：", parent.name)
+
+
+func get_character() -> RefCounted:
+	"""获取关联的角色对象"""
+	return character
+
+
+func set_character(chara: RefCounted):
+	"""设置关联的角色对象"""
+	character = chara
+
+
+func update_hp_text(current_hp: int, max_hp: int):
+	"""更新 HP 文字显示（由 BaseCharacter.update_health_bar 调用）"""
+	if health_bar and is_instance_valid(health_bar):
+		if health_bar.has_method("update_hp_text"):
+			health_bar.update_hp_text(current_hp, max_hp)
+
 
 func _on_result_control_timeout():
 	# 控制骰子结果
@@ -492,6 +551,32 @@ func get_dice_face_index() -> int:
 func get_collision_count() -> int:
 	return collision_count
 
+## 设置骰子缩放（同步调整网格和碰撞体）
+func set_dice_scale(scale: Vector3):
+	"""
+	设置骰子的缩放比例
+	注意：直接缩放 RigidBody3D 根节点，这样网格和碰撞体会同步缩放
+	:param scale: 缩放比例向量
+	"""
+	# 直接缩放 RigidBody3D 根节点
+	self.scale = scale
+	print("【骰子】根节点缩放已设置为：", scale)
+
+	# 同步调整碰撞体大小（确保碰撞体形状匹配缩放后的骰子）
+	var collision_shape = get_node_or_null("CollisionShape3D")
+	if collision_shape and collision_shape.shape:
+		# BoxShape3D 的 size 是半尺寸，需要乘以 2
+		var base_size = Vector3(1, 1, 1)  # 基础碰撞体大小（对应 scale=1 时的尺寸）
+		collision_shape.shape.size = base_size * scale
+		print("【骰子】碰撞体已同步调整：", collision_shape.shape.size)
+
+	# 也设置网格的缩放（双重保障）
+	var mesh = get_node_or_null("MeshInstance3D")
+	if mesh:
+		mesh.scale = Vector3(1, 1, 1)  # 根节点已缩放，网格保持 1:1
+		print("【骰子】网格缩放已重置为 1:1")
+
+
 func get_dice_value() -> int:
 	# 获取骰子点数
 	return dice_value
@@ -517,6 +602,8 @@ func set_dice_face_config(config: Dictionary, value_config: Dictionary = {}):
 	print("【骰子】dice_face_config 已赋值：", dice_face_config)
 	# 设置骰子面的点数配置
 	dice_value_config = value_config
+	# 保存 idle 贴图配置（用于受击后恢复）
+	idle_texture_config = config.duplicate()
 	# 使用 DiceTextureManager 统一应用贴图
 	print("【骰子】准备调用 apply_textures_from_manager")
 	apply_textures_from_manager()
@@ -537,3 +624,176 @@ func apply_textures_from_manager():
 func update_dice_textures():
 	# 动态更新骰子贴图（已废弃，使用 apply_textures_from_manager 替代）
 	apply_textures_from_manager()
+
+
+## 受击效果：抖动 + 切换 hit 贴图
+func take_hit_effect():
+	"""
+	播放受击效果：
+	1. 骰子轻微震动一下
+	2. 所有骰面切换为 hit 贴图
+	3. 持续 0.5 秒后恢复 idle 贴图
+	"""
+	if is_hit_animating:
+		print("【受击效果】正在播放受击动画，跳过")
+		return
+
+	is_hit_animating = true
+	print("【受击效果】开始播放受击效果")
+
+	# 1. 切换到 hit 贴图
+	_apply_hit_textures()
+
+	# 2. 播放轻微震动动画（简单前后移动一下）
+	var shake_tween = create_tween()
+	var shake_offset = Vector3(0.1, 0.1, 0.1)  # 轻微震动幅度
+	var shake_duration = 0.08  # 震动时间（快速）
+
+	# 震出去
+	shake_tween.tween_property(self, "position", global_position + shake_offset, shake_duration)
+	# 震回来
+	shake_tween.tween_property(self, "position", global_position, shake_duration)
+
+	# 3. 0.5 秒后恢复 idle 贴图
+	var recover_timer = get_tree().create_timer(0.5)
+	recover_timer.timeout.connect(_on_hit_effect_finished)
+
+	print("【受击效果】受击动画播放中...")
+
+
+## 应用 hit 贴图
+func _apply_hit_textures():
+	"""将骰子所有面切换为 hit 状态的贴图"""
+	if not character or idle_texture_config.size() == 0:
+		print("【受击效果】角色或贴图配置为空，跳过 hit 贴图切换")
+		return
+
+	# 获取角色的 hit 贴图 ID
+	var hero_id = character.hero_id
+	var hero_textures = character.hero_textures
+
+	# 查找 hit 状态的索引
+	var hit_texture_state = "hit"
+	var hit_texture_path = ""
+
+	# 构建 hit 贴图配置
+	var hit_config = {}
+
+	# 检查 hero_textures 中是否有 hit 状态
+	if hero_textures.has("hit"):
+		# hero_textures 是字典格式
+		var texture_state = hero_textures["hit"]
+		hit_texture_path = "res://textures/hero/hero_" + str(hero_id) + "_" + texture_state + ".png"
+	else:
+		# hero_textures 是数组格式，按顺序对应 6 个面
+		# 默认 hit 贴图使用所有面相同的 hit 状态
+		if hero_textures.size() >= 1:
+			# 使用第一个贴图状态作为 hit
+			# 通常 hero.json 中 hero_texture 是 ["idle", "hit", "attack", ...] 这样的格式
+			# 我们需要找到 "hit" 对应的索引
+			for i in range(hero_textures.size()):
+				if hero_textures[i] == "hit":
+					hit_texture_path = "res://textures/hero/hero_" + str(hero_id) + "_hit.png"
+					break
+
+			# 如果没找到，尝试直接使用 "hit" 状态
+			if hit_texture_path.is_empty():
+				hit_texture_path = "res://textures/hero/hero_" + str(hero_id) + "_hit.png"
+
+	# 为所有面设置 hit 贴图
+	for i in range(6):
+		hit_config[i] = hit_texture_path
+
+	print("【受击效果】应用 hit 贴图：", hit_texture_path)
+
+	# 临时保存当前 config，然后应用 hit 贴图
+	var old_config = dice_face_config.duplicate()
+	dice_face_config = hit_config
+	apply_textures_from_manager()
+
+
+## 恢复 idle 贴图
+func _apply_idle_textures():
+	"""将骰子所有面恢复为 idle 状态的贴图"""
+	if idle_texture_config.size() == 0:
+		print("【受击效果】idle 贴图配置为空，无法恢复")
+		return
+
+	print("【受击效果】恢复 idle 贴图")
+
+	# 恢复 idle 贴图配置
+	dice_face_config = idle_texture_config.duplicate()
+	apply_textures_from_manager()
+
+
+## 受击效果结束回调
+func _on_hit_effect_finished():
+	"""受击效果结束，恢复 idle 贴图"""
+	print("【受击效果】受击效果结束，恢复 idle 贴图")
+	_apply_idle_textures()
+	is_hit_animating = false
+
+
+## 高亮效果相关
+var highlight_material: StandardMaterial3D = null  # 高亮材质
+var highlight_mesh: MeshInstance3D = null  # 高亮网格
+
+
+## 添加高亮/描边效果
+func add_highlight():
+	"""给骰子添加高亮效果（边缘光）"""
+	if highlight_mesh:
+		print("【高亮效果】高亮已存在，跳过")
+		return
+
+	print("【高亮效果】添加高亮")
+
+	# 获取原始网格实例
+	var mesh_instance = get_node_or_null("MeshInstance3D")
+	if not mesh_instance or not mesh_instance.mesh:
+		print("【高亮效果】网格实例不存在")
+		return
+
+	# 创建高亮网格（复制原始网格）
+	highlight_mesh = MeshInstance3D.new()
+	highlight_mesh.name = "HighlightMesh"
+	highlight_mesh.mesh = mesh_instance.mesh
+
+	# 放大形成边框效果（5% 放大，更明显的描边）
+	highlight_mesh.scale = Vector3(1.05, 1.05, 1.05)
+
+	# 创建高亮材质（只渲染背面，形成边缘光效果）
+	highlight_material = StandardMaterial3D.new()
+	highlight_material.albedo_color = Color(1, 1, 1, 1)  # 白色
+	highlight_material.emission_enabled = true
+	highlight_material.emission = Color(1, 0.8, 0, 1)  # 橙黄色发光
+	highlight_material.emission_energy_multiplier = 3.0
+
+	# 关键：只渲染背面，配合放大形成边缘光
+	highlight_material.cull_mode = StandardMaterial3D.CULL_FRONT
+	highlight_material.blend_mode = StandardMaterial3D.BLEND_MODE_ADD
+
+	highlight_mesh.material_override = highlight_material
+
+	# 将高亮网格添加为子节点
+	add_child(highlight_mesh)
+
+	print("【高亮效果】高亮已添加")
+
+
+## 移除高亮效果
+func remove_highlight():
+	"""移除骰子的高亮效果"""
+	if not highlight_mesh:
+		print("【高亮效果】没有高亮效果")
+		return
+
+	print("【高亮效果】移除高亮")
+
+	# 移除并清理高亮网格
+	if highlight_mesh and is_instance_valid(highlight_mesh):
+		highlight_mesh.queue_free()
+
+	# 清除引用
+	highlight_mesh = null
+	highlight_material = null
