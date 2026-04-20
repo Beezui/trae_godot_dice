@@ -43,6 +43,8 @@ var selected_character: BaseCharacter = null
 var is_throw_preparing: bool = false
 ## 是否正在蓄力
 var is_charging: bool = false
+## 是否正在释放技能（禁止再次投掷）
+var is_releasing_skill: bool = false
 
 
 func _ready():
@@ -218,6 +220,12 @@ func _create_placeholder_texture() -> Texture2D:
 func _on_skill_button_pressed(skill_dice):
 	print("【BattleSkillBar】技能按钮被点击")
 
+	# 检查是否正在释放技能期间
+	if is_releasing_skill:
+		print("【BattleSkillBar】技能释放中，忽略点击")
+		_show_throw_hint("技能释放中...")
+		return
+
 	# 检查是否已经选择了骰子
 	if selected_skill_dice:
 		print("【BattleSkillBar】已有骰子被选择，忽略")
@@ -325,12 +333,12 @@ func _input(event):
 	if event is InputEventKey:
 		# 空格键按下：开始蓄力
 		if event.keycode == KEY_SPACE and event.pressed:
-			if selected_skill_dice and not is_charging:
+			if selected_skill_dice and not is_charging and not is_releasing_skill:
 				_start_throw()
 
 		# 空格键松开：投掷
 		if event.keycode == KEY_SPACE and not event.pressed:
-			if is_charging:
+			if is_charging and not is_releasing_skill:
 				_execute_throw()
 
 
@@ -353,6 +361,8 @@ func _start_throw():
 ## 执行投掷（松开空格键）
 func _execute_throw():
 	is_charging = false
+	# 设置技能释放中状态，禁止再次投掷
+	is_releasing_skill = true
 
 	# 获取所有要投掷的骰子（技能骰子 + 属性骰子）
 	var all_throw_dices = _get_all_throw_dices()
@@ -514,8 +524,8 @@ func _get_skill_id_from_dice(skill_dice, skill_index: int) -> String:
 
 ## 复位投掷的骰子
 func _reset_throw_dices():
-	print("【BattleSkillBar】等待 1.5 秒余韵时间...")
-	await get_tree().create_timer(1.5).timeout
+	print("【BattleSkillBar】等待 1.0 秒余韵时间...")
+	await get_tree().create_timer(1.0).timeout
 
 	# 隐藏技能骰子（从场景移除）
 	if selected_skill_dice and is_instance_valid(selected_skill_dice):
@@ -541,6 +551,9 @@ func _reset_throw_dices():
 	# 清空选择
 	selected_skill_dice = null
 	selected_character = null
+
+	# 重置技能释放状态，允许再次投掷
+	is_releasing_skill = false
 
 	# 恢复技能栏
 	set_skill_bar_enabled(true)

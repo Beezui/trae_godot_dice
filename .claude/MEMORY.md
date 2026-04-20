@@ -1,3 +1,4 @@
-- [战斗框架开发进度 (2026-04-18)](battle_framework_progress.md) — 战斗框架基础已完成并验证通过
 - [战斗框架架构与使用](memory/battle_framework.md) — 战斗框架的单例结构、核心方法、调用流程和场景创建指南
 - [战斗框架使用指南](docs/battle_framework_guide.md) — 完整的战斗框架使用文档（GitHub 发布版）
+- [战斗框架进度](memory/battle_framework_progress.md) — 战斗框架开发进度和已完成功能
+- [2D 血条设计](memory/2d_health_bar.md) — 2D 血条 UI 设计方案和实现细节

@@ -1,21 +1,59 @@
 ---
-name: 战斗框架开发进度 (2026-04-18)
-description: 战斗框架核心功能已完成并上传 GitHub，包含完整的投掷系统、结果检测、UI 集成和文档
+name: 战斗框架进度
+description: 战斗框架开发进度和已完成功能
 type: project
 ---
 
-# 战斗框架开发进度记录
+## 战斗框架开发进度
 
-**记录时间**: 2026-04-18  
-**当前版本**: 可用开发版本  
-**Git Commit**: `d8f4b4d`  
-**GitHub**: https://github.com/Beezui/trae_godot_dice
+### 已完成功能
 
----
+1. **伤害结算系统**
+   - 技能命中后即时结算伤害
+   - 支持公式计算（str*2 + agi*2 等）
+   - fireball_skill.gd 和 blizzard_skill.gd 已实现 `_apply_damage_to_target()`
 
-## 已完成的功能
+2. **投掷锁定机制**
+   - 技能释放期间禁止再次投掷
+   - `is_releasing_skill` 状态标志
+   - 骰子复位后解锁
 
-### 1. 核心单例系统 (Autoload)
+3. **受击效果**
+   - 角色骰子原地抖动（0.16 秒）
+   - 骰面切换为 hit 贴图（持续 0.5 秒）
+   - 受击时调用 `take_hit_effect()`
+
+4. **敌方角色高亮**
+   - 行动前 0.5 秒高亮提示
+   - 使用背面剔除 + 放大网格实现边缘光效果
+   - 行动结束后移除高亮
+
+5. **投掷方向调整**
+   - 玩家：从南侧（Z=+6）向北投掷
+   - 敌方：从北侧（Z=-6）向南投掷
+   - 角色入场与技能投掷方向一致
+
+6. **入场优化**
+   - 玩家优先入场，敌方后入场
+   - 玩家从中间位置入场（X=0）
+   - 敌方随机位置入场
+   - 投掷力度降低（12→8，旋转 -5~5→-3~3）
+
+7. **余韵时间调整**
+   - 玩家投掷后余韵：1.5 秒 → 1.0 秒
+
+**DiceThrowController** 统一投掷管理：
+- ✅ 蓄力功能（空格键按住蓄力，0-2 秒）
+- ✅ 震动效果（蓄力期间自动震动，无需手动调用）
+- ✅ 力度计算（根据蓄力时间比例）
+- ✅ 多骰子同时投掷支持
+
+**DiceResultDetector** 统一结果检测：
+- ✅ 向量点积法检测骰子面值
+- ✅ `wait_for_dice_stable()` 等待骰子稳定
+- ✅ 超时保护（默认 5 秒）
+
+### 核心单例系统 (Autoload)
 
 以下 7 个单例已在 `project.godot` 中注册并正常工作：
 
@@ -29,20 +67,7 @@ type: project
 | `SkillManager` | `skills/skill_manager.gd` | 技能注册/冷却/释放 | ✅ 完成 |
 | `CameraManager` | `scripts/camera_manager.gd` | 摄像机配置管理 | ✅ 完成 |
 
-### 2. 投掷系统
-
-**DiceThrowController** 统一投掷管理：
-- ✅ 蓄力功能（空格键按住蓄力，0-2 秒）
-- ✅ 震动效果（蓄力期间自动震动，无需手动调用）
-- ✅ 力度计算（根据蓄力时间比例）
-- ✅ 多骰子同时投掷支持
-
-**DiceResultDetector** 统一结果检测：
-- ✅ 向量点积法检测骰子面值
-- ✅ `wait_for_dice_stable()` 等待骰子稳定
-- ✅ 超时保护（默认 5 秒）
-
-### 3. 战斗流程 (BattleManager)
+### 战斗流程 (BattleManager)
 
 **战斗阶段流程**：
 ```
@@ -64,7 +89,7 @@ PHASE_ENTER → PHASE_SETUP → PHASE_BATTLE → PHASE_RESOLVE → PHASE_TRANSIT
 - ⚠️ 战斗奖励结算（TODO）
 - ⚠️ 命运骰子转换阶段（预留接口）
 
-### 4. UI 系统 (BattleSkillBar)
+### UI 系统 (BattleSkillBar)
 
 **已完成功能**：
 - ✅ 技能按钮列表（垂直排列，TextureButton）
@@ -79,7 +104,7 @@ PHASE_ENTER → PHASE_SETUP → PHASE_BATTLE → PHASE_RESOLVE → PHASE_TRANSIT
 - ✅ 属性骰子重置位置重合 → 使用 Dictionary 记录各自初始位置
 - ✅ 技能骰子结果检测 → 确认使用 DiceResultDetector
 
-### 5. 角色系统
+### 角色系统
 
 **CharacterManager** 角色管理：
 - ✅ 从 hero.csv/json 加载配置
@@ -94,7 +119,7 @@ BaseCharacter (基类)
 └── EnemyCharacter (敌方角色)
 ```
 
-### 6. 技能系统
+### 技能系统
 
 **SkillManager** 技能管理：
 - ✅ 从 skill.csv 自动注册技能
@@ -106,7 +131,7 @@ BaseCharacter (基类)
 - ✅ `blizzard_skill.gd` - 暴风雪（10002）
 - ✅ `skill_base.gd` - 技能基类
 
-### 7. 场景系统
+### 场景系统
 
 **BattleSceneBase** 战斗场景基类：
 - ✅ 沙盘搭建（地面 + 4 面墙）
@@ -120,7 +145,7 @@ BaseCharacter (基类)
 - ✅ `skill_dice_test.tscn` - 技能骰子测试场景
 - ✅ `attr_dice_test.tscn` - 属性骰子测试场景
 
-### 8. 配置文件
+### 配置文件
 
 **已提交配置文件**：
 | 配置文件 | 说明 | 状态 |
@@ -133,7 +158,7 @@ BaseCharacter (基类)
 | `table/random_nodes.csv` + `.json` | 随机节点配置 | ✅ |
 | `table/骰子面配置.csv` | 骰子面配置 | ✅ |
 
-### 9. 文档
+### 文档
 
 **已创建文档**：
 - ✅ `docs/battle_framework_guide.md` - 完整使用指南（GitHub 发布版）
@@ -279,3 +304,6 @@ BaseCharacter (基类)
 - GitHub 仓库：https://github.com/Beezui/trae_godot_dice
 - 战斗框架文档：`docs/battle_framework_guide.md`
 - 参考文档（速查表）：`.claude/memory/battle_framework.md`
+
+### 最后更新
+2026-04-19
