@@ -2,3 +2,5 @@
 - [战斗框架使用指南](docs/battle_framework_guide.md) — 完整的战斗框架使用文档（GitHub 发布版）
 - [战斗框架进度](memory/battle_framework_progress.md) — 战斗框架开发进度和已完成功能
 - [2D 血条设计](memory/2d_health_bar.md) — 2D 血条 UI 设计方案和实现细节
+- [游戏完整流程架构](memory/game_flow_architecture.md) — 从游戏开始到结束的完整流程架构设计，包含 8 个开发任务和流程衔接说明
+- [游戏流程开发计划](docs/游戏流程开发计划.md) — 详细的开发计划文档，包含每个任务的文件、步骤和测试清单
