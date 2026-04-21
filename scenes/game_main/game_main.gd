@@ -63,11 +63,11 @@ func _ready():
 	# 6. 生成关卡数据
 	_generate_level_data()
 
-	# 7. 创建地图 UI
-	_create_map_overlay()
-
-	# 8. 设置初始节点（奖励关卡）
+	# 7. 设置初始节点（奖励关卡）
 	_setup_start_node()
+
+	# 8. 创建地图 UI（需要在 current_node 设置后初始化）
+	_create_map_overlay()
 
 	# 9. 连接信号
 	_connect_signals()

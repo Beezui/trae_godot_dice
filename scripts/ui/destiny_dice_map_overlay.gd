@@ -405,25 +405,33 @@ func _draw_arrow(start: Vector2, end: Vector2):
 func _draw_current_marker(marker_pos: Vector2, rect_size: Vector2):
 	var marker_size = 8.0
 
-	# 绘制星形
+	# 绘制星形（使用正确的顶点顺序）
+	# 星形由 10 个三角形组成，从中心点向外辐射
 	var points = []
+	var center = marker_pos
+
+	# 生成星形的 10 个顶点（5 个外点 + 5 个内点）
+	var vertices = []
 	for i in range(5):
-		var angle = i * 4 * PI / 5 - PI / 2
+		var angle = i * 2 * PI / 5 - PI / 2  # 外点角度
 		var outer_point = Vector2(
-			marker_pos.x + cos(angle) * marker_size,
-			marker_pos.y + sin(angle) * marker_size
+			center.x + cos(angle) * marker_size,
+			center.y + sin(angle) * marker_size
 		)
-		points.append(outer_point)
+		vertices.append(outer_point)
 
-		var inner_angle = angle + 2 * PI / 10
+		var inner_angle = angle + PI / 5  # 内点角度（偏移 36 度）
 		var inner_point = Vector2(
-			marker_pos.x + cos(inner_angle) * marker_size * 0.5,
-			marker_pos.y + sin(inner_angle) * marker_size * 0.5
+			center.x + cos(inner_angle) * marker_size * 0.5,
+			center.y + sin(inner_angle) * marker_size * 0.5
 		)
-		points.append(inner_point)
+		vertices.append(inner_point)
 
-	# 绘制星形
-	canvas.draw_colored_polygon(points, Color(1, 1, 0.5))
+	# 使用三角形扇绘制星形（从中心点开始）
+	for i in range(vertices.size()):
+		var next_i = (i + 1) % vertices.size()
+		var triangle = [center, vertices[i], vertices[next_i]]
+		canvas.draw_colored_polygon(triangle, Color(1, 1, 0.5))
 
 	# 绘制"当前"文字
 	var font = ThemeDB.fallback_font
