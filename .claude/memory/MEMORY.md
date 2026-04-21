@@ -4,3 +4,4 @@
 - [游戏主入口场景完成](game_main_entry.md) — 标题→角色选择→游戏主入口完整流程
 - [战斗框架进度](battle_framework_progress.md) — 战斗系统开发进度和已完成功能
 - [游戏流程架构](game_flow_architecture.md) — 从游戏开始到结束的完整流程设计
+- [地图拖动修复](map_drag_fix.md) — 命运骰子地图覆盖层拖动问题的修复方案
