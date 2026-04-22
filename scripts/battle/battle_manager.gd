@@ -127,21 +127,33 @@ func _enter_phase():
 	current_state = BattleState.ENTERING
 	_change_phase(BattlePhase.PHASE_ENTER)
 
-	# 1. 玩家角色入场（从中间位置）
-	print("【BattleManager】玩家角色入场...")
-	await _character_enter(player_characters, "player")
+	# 获取场景 Sandbox
+	var battle_scene = _get_battle_scene()
+	var sandbox = null
+	if battle_scene and battle_scene.has_node("Sandbox"):
+		sandbox = battle_scene.get_node("Sandbox")
 
-	# 2. 敌方角色入场（随机位置）
-	print("【BattleManager】敌方角色入场...")
-	await _character_enter(enemy_characters, "enemy")
+	# 使用 CharacterEnterManager 统一处理角色入场
+	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+	if enter_manager:
+		print("【BattleManager】使用 CharacterEnterManager 处理玩家入场")
+		await enter_manager.player_batch_enter(player_characters, sandbox)
+
+		print("【BattleManager】使用 CharacterEnterManager 处理敌方入场")
+		await enter_manager.enemy_batch_enter(enemy_characters, sandbox)
+	else:
+		# 备用方案：使用原有逻辑
+		print("【BattleManager】CharacterEnterManager 不可用，使用备用方案")
+		await _character_enter_fallback(player_characters, "player")
+		await _character_enter_fallback(enemy_characters, "enemy")
 
 	print("【BattleManager】入场阶段完成")
 
 
-## 角色入场（自动投掷）
+## 角色入场（备用方案）
 ## @param characters 角色列表
 ## @param side "player" 或 "enemy"
-func _character_enter(characters: Array[BaseCharacter], side: String):
+func _character_enter_fallback(characters: Array[BaseCharacter], side: String):
 	var battle_scene = _get_battle_scene()
 	var sandbox = null
 	if battle_scene and battle_scene.has_node("Sandbox"):
@@ -152,7 +164,7 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 	var enemy_positions = [-6.0, -2.0, 2.0, 6.0]  # 敌方随机位置选项
 
 	for character in characters:
-		print("【BattleManager】", side, "角色 ", character.name, " 入场")
+		print("【BattleManager】【备用方案】", side, "角色 ", character.name, " 入场")
 
 		# 创建角色骰子（如果还没有）
 		if not character.character_dice:
@@ -180,7 +192,7 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 		if character.character_dice and sandbox:
 			character.character_dice.position = Vector3(x_position, 0.5, 0.0)
 			sandbox.add_child(character.character_dice)
-			print("【BattleManager】角色骰子已添加到场景：", character.character_dice.position)
+			print("【BattleManager】【备用方案】角色骰子已添加到场景：", character.character_dice.position)
 
 		# 自动投掷
 		if character.character_dice:
@@ -216,7 +228,7 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 				# 调用骰子的 roll 方法
 				if character.character_dice.has_method("roll"):
 					character.character_dice.roll(force, angular_force)
-					print("【BattleManager】敌方角色骰子入场投掷，位置=", character.character_dice.position)
+					print("【BattleManager】【备用方案】敌方角色骰子入场投掷，位置=", character.character_dice.position)
 			else:
 				# 玩家角色从南侧入场（Z=+6），向北投掷（Z 负方向）
 				character.character_dice.position = Vector3(x_position, 4.0, 6.0)
@@ -243,7 +255,7 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 				# 调用骰子的 roll 方法
 				if character.character_dice.has_method("roll"):
 					character.character_dice.roll(force, angular_force)
-					print("【BattleManager】玩家角色骰子入场投掷，位置=", character.character_dice.position)
+					print("【BattleManager】【备用方案】玩家角色骰子入场投掷，位置=", character.character_dice.position)
 
 			# 等待骰子稳定
 			await get_tree().create_timer(2.0).timeout
@@ -260,6 +272,7 @@ func _character_enter(characters: Array[BaseCharacter], side: String):
 ## 创建角色骰子（使用 DiceManager 统一接口）
 ## @param character 角色
 ## @param side "player" 或 "enemy"
+## @deprecated 已废弃，使用 CharacterEnterManager 统一处理
 func _create_character_dice(character: BaseCharacter, side: String):
 	var battle_scene = _get_battle_scene()
 	if not battle_scene or not battle_scene.has_node("Sandbox"):

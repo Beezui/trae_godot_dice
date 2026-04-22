@@ -33,6 +33,8 @@ BattleManager="*res://scripts/battle/battle_manager.gd"
 DiceManager="*res://scripts/dice/dice_manager.gd"
 EnemySelector="*res://scripts/levels/enemy_selector.gd"
 LoadingOverlay="*res://scripts/ui/loading_overlay.gd"
+CharacterEnterManager="*res://scripts/character/character_enter_manager.gd"
+
 
 [editor_plugins]
 

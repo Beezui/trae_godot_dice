@@ -281,25 +281,48 @@ func _spawn_player():
 	print("【角色】玩家入场...")
 
 	# 使用 CharacterManager 创建玩家角色
+	var characters: Array[BaseCharacter] = []
 	for hero_id in player_party:
 		var character = CharacterManager.create_character(hero_id, "player")
 		if character:
+			characters.append(character)
 			print("【角色】创建玩家角色：英雄 ID=", hero_id)
 
-			# 创建角色骰子
-			var dice_position = Vector3(0, 1.5, initial_z - 3)  # 靠近南侧
-			var dice = DiceManager.create_character_dice(character, sandbox, dice_position)
+	# 使用 CharacterEnterManager 统一处理角色投掷入场
+	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+	if enter_manager:
+		print("【角色入场】使用 CharacterEnterManager 处理入场")
+		var results = await enter_manager.player_batch_enter(characters, sandbox)
 
-			if dice:
-				# 设置骰子缩放
-				CharacterManager.set_character_dice_scale(hero_id, Vector3(0.4, 0.4, 0.4))
-				print("【角色】角色骰子已创建")
+		# 检查入场结果
+		var success_count = 0
+		for result in results:
+			if result.get("success", false):
+				success_count += 1
+
+		print("【角色入场】入场完成，成功：", success_count, "/", characters.size())
+	else:
+		push_error("【角色入场】CharacterEnterManager 不可用，使用备用方案")
+		_spawn_player_fallback()
 
 	is_player_spawned = true
 
 	# 玩家入场后，延迟生成命运骰子
 	await get_tree().create_timer(1.0).timeout
 	_spawn_destiny_dice()
+
+
+## 玩家入场（备用方案）
+func _spawn_player_fallback():
+	print("【角色入场】备用方案：直接创建角色骰子")
+
+	for hero_id in player_party:
+		var character = CharacterManager.get_character(hero_id)
+		if character:
+			var dice_position = Vector3(0, 1.5, initial_z - 3)  # 靠近南侧
+			var dice = DiceManager.create_character_dice(character, sandbox, dice_position)
+			if dice:
+				print("【角色】角色骰子已创建（备用方案）")
 
 
 ## 生成命运骰子
