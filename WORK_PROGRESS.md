@@ -1,12 +1,12 @@
 # 工作进度报告
 
 ## 更新日期
-2026-04-16
+2026-04-22
 
 ## 项目状态
 - **分支**: master
 - **与远程同步**: 已同步
-- **开发阶段**: 节点网与关卡系统开发
+- **开发阶段**: 游戏主入口流程与地图 UI 优化
 
 ---
 
@@ -46,7 +46,18 @@
   - 可拖动查看
 - [x] M 键开关地图显示
 
-### 5. 测试场景功能
+### 5. 游戏主入口流程
+- [x] 游戏主入口场景 (`game_main.tscn`)
+  - 标题场景 → 角色选择 → 游戏主入口完整流程
+  - 沙盘环境搭建
+  - 玩家角色生成
+  - 命运骰子生成与投掷
+  - 地图 UI 覆盖层集成
+- [x] 关卡转换系统 (`level_transition_controller.gd`)
+  - LoadingOverlay 加载动画
+  - 场景平滑切换
+
+### 6. 测试场景功能
 - [x] level_stage_test.tscn 功能完善
   - 按 M 键 - 开关地图
   - 按 T 键 - 投掷命运骰子
@@ -57,7 +68,23 @@
 
 ## 已修复问题
 
-### 1. 重复场景问题（严重）
+### 1. 地图拖动问题（2026-04-22 修复）
+**问题描述**: 命运骰子地图覆盖层无法拖动，日志显示 `canvas_offset` 在变化但视觉不动
+
+**根本原因**:
+1. 拖动算法错误：`drag_start_position = mouse_pos - canvas_offset` 导致 `canvas_offset` 永远不变
+2. UI 重复创建：`_create_ui()` 被多次调用，导致多个子节点堆叠
+3. 布局系统覆盖位置：即使设置 `layout_mode = 0`，Godot 仍可能覆盖 `position`
+
+**解决方案**:
+1. 修正拖动算法：`drag_start_position = get_local_mouse_position() - canvas.position`
+2. 添加 `ui_created` 标志防止重复创建 UI
+3. 使用 `call_deferred("_force_position_after_layout")` 强制应用位置
+4. 使用 `set_position()` 和 `set_size()` 绕过布局系统
+
+**文件**: `scripts/ui/destiny_dice_map_overlay.gd`
+
+### 2. 重复场景问题（严重）
 **问题描述**: 运行时出现两组地面和围墙，一组包含命运骰子，另一组包含角色骰子、技能骰子、属性骰子
 
 **根本原因**: 
@@ -72,7 +99,7 @@
 
 **提交**: b711498
 
-### 2. 墙碰撞体位置问题
+### 3. 墙碰撞体位置问题
 **问题描述**: 角色骰子入场投掷时与空气发生碰撞
 
 **根本原因**:
@@ -86,7 +113,7 @@
 
 **提交**: 64fd472
 
-### 3. 主场景配置冲突
+### 4. 主场景配置冲突
 **问题描述**: F5 运行时加载错误的场景
 
 **解决方案**:
@@ -94,7 +121,7 @@
 
 **提交**: 8f6f76d
 
-### 4. NPC 场景方法名冲突
+### 5. NPC 场景方法名冲突
 **问题描述**: get_position() 和 set_position() 与 Node3D 内置方法冲突
 
 **解决方案**:
@@ -108,6 +135,7 @@
 
 | 提交哈希 | 类型 | 描述 |
 |---------|------|------|
+| 待定 | fix | 修复地图拖动算法，使用正确的相对偏移量 |
 | 977efdf | fix | 修复 NPC 场景方法名冲突 |
 | b711498 | fix | 创建简易 NPC 场景解决重复场景问题 |
 | 8f6f76d | fix | 统一主场景配置为 level_stage_test.tscn |
@@ -151,11 +179,15 @@
 │   ├── level_transition_controller.gd # 关卡转换控制器
 │   ├── npc_spawner.gd       # NPC 生成器
 │   └── destiny_dice_manager.gd # 命运骰子管理器
+├── scripts/ui/              # UI 系统
+│   └── destiny_dice_map_overlay.gd # 命运骰子地图覆盖层
 ├── scripts/test/            # 测试脚本
 │   └── level_stage_test.gd  # 关卡场景测试
 ├── scenes/
 │   ├── test/
 │   │   └── level_stage_test.tscn # 主测试场景
+│   ├── game_main/           # 游戏主入口场景
+│   │   └── game_main.tscn   # 游戏主入口
 │   ├── ui/
 │   │   └── level_map_display.tscn # 地图显示 UI
 │   ├── 游戏场景/            # 关卡场景
@@ -191,9 +223,16 @@
 3. 根据投掷结果选择目标节点
 4. LevelTransitionController 执行场景切换
 
+### 地图拖动技术要点（Godot 4.x）
+1. 使用 `layout_mode = 0` (POSITION) 允许手动设置位置
+2. 使用 `anchors_preset = TOP_LEFT` 左上角锚点
+3. 使用 `set_position()` 和 `set_size()` 比直接赋值更可靠
+4. 使用 `call_deferred()` 在布局完成后再次设置位置
+5. 拖动算法：保存鼠标相对控件的偏移量，而非相对 offset
+
 ---
 
 ## 备注
-- 当前开发重点：完善关卡场景系统和命运骰子流程
+- 当前开发重点：完善游戏主入口流程和地图 UI
 - 代码质量：生产级，可直接运行
 - 注释语言：中文

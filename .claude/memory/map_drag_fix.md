@@ -1,83 +1,129 @@
 ---
 name: 地图拖动修复
-description: 命运骰子地图覆盖层拖动问题的修复方案
+description: 命运骰子地图覆盖层拖动问题的完整修复方案（2026-04-22）
 type: feedback
 ---
 
-## 地图拖动问题修复
+## 地图拖动问题修复（完整版）
 
 ### 问题描述
-命运骰子地图覆盖层（`destiny_dice_map_overlay.gd`）在拖动时存在两个问题：
-1. 可拖动区域与地图区域不一致，操作不便
-2. 拖动时会有闪烁/抖动
+命运骰子地图覆盖层（`destiny_dice_map_overlay.gd`）无法拖动，尽管日志显示 `canvas_offset` 在变化，但视觉上地图不动。
+
+### 根本原因
+
+1. **拖动算法错误**：
+   ```gdscript
+   # 错误的代码
+   drag_start_position = mouse_pos - canvas_offset
+   canvas_offset = mouse_pos - drag_start_position
+   # 代入后：canvas_offset = mouse_pos - (mouse_pos - canvas_offset) = canvas_offset
+   # 结果：canvas_offset 永远不会变化！
+   ```
+
+2. **UI 重复创建**：`_create_ui()` 被多次调用，导致多个子节点堆叠，尺寸混乱。
+
+3. **布局系统覆盖位置**：即使设置了 `layout_mode = 0`，Godot 的布局系统仍可能在布局 pass 后覆盖 `position`。
 
 ### 修复方案
 
-**最终解决方案**：移除 ScrollContainer，直接使用 Control 节点绘制地图，使用 `canvas_offset` 实现拖动。
+#### 1. 修正拖动算法
+```gdscript
+func _on_canvas_gui_input(event: InputEvent):
+    if event is InputEventMouseButton:
+        if event.button_index == MOUSE_BUTTON_LEFT:
+            if event.pressed:
+                is_dragging = true
+                # 正确：保存鼠标相对于 canvas 左上角的偏移量
+                drag_start_position = get_local_mouse_position() - canvas.position
+            else:
+                is_dragging = false
+    elif event is InputEventMouseMotion:
+        if is_dragging:
+            var mouse_pos = get_local_mouse_position()
+            # canvas 位置 = 鼠标位置 - 拖动开始时的偏移量
+            canvas_offset = mouse_pos - drag_start_position
+            _update_map_position()
+```
 
-**关键代码改动**：
+#### 2. 防止 UI 重复创建
+```gdscript
+var ui_created: bool = false
 
-1. **移除 ScrollContainer**
-   ```gdscript
-   # 之前：使用 ScrollContainer + Canvas
-   scroll_container = ScrollContainer.new()
-   canvas = Control.new()
-   scroll_container.add_child(canvas)
-   
-   # 修复后：直接使用 Canvas
-   canvas = Control.new()
-   canvas.mouse_filter = Control.MOUSE_FILTER_STOP
-   add_child(canvas)
-   ```
+func _create_ui():
+    if ui_created:
+        return
+    ui_created = true
+    # ... 创建 UI 代码
+```
 
-2. **设置 clip_contents = false**
-   ```gdscript
-   func _ready():
-       clip_contents = false  # 允许绘制内容超出边界
-   ```
+#### 3. 强制位置应用（防止布局覆盖）
+```gdscript
+func _update_map_position():
+    if canvas:
+        canvas.set_position(canvas_offset)
+        canvas.layout_mode = 0  # POSITION
+    if map_texture_rect:
+        map_texture_rect.set_position(canvas_offset)
+        map_texture_rect.layout_mode = 0  # POSITION
+    
+    # 强制在下一帧再次设置位置，防止布局系统覆盖
+    call_deferred("_force_position_after_layout")
 
-3. **使用 canvas_offset 实现拖动**
-   ```gdscript
-   func _on_canvas_gui_input(event: InputEvent):
-       if event is InputEventMouseButton:
-           if event.button_index == MOUSE_BUTTON_LEFT:
-               if event.pressed:
-                   is_dragging = true
-                   drag_start_position = event.position - canvas_offset
-               else:
-                   is_dragging = false
-       elif event is InputEventMouseMotion:
-           if is_dragging:
-               canvas_offset = event.position - drag_start_position
-               canvas.queue_redraw()
-   ```
+func _force_position_after_layout():
+    if canvas:
+        canvas.set_position(canvas_offset)
+    if map_texture_rect:
+        map_texture_rect.set_position(canvas_offset)
+```
 
-4. **绘制时应用 offset**
-   ```gdscript
-   func _on_canvas_draw():
-       var canvas_x = pos.x - min_x + layer_padding + canvas_offset.x
-       var canvas_y = pos.y - min_y + layer_padding + canvas_offset.y
-       # 使用 canvas_x, canvas_y 绘制节点
-   ```
+#### 4. 使用 set_position 和 set_size 绕过布局系统
+```gdscript
+func _update_canvas_size():
+    if canvas:
+        canvas.set_size(Vector2(map_width, map_height))
+        canvas.set_position(Vector2.ZERO)
+        canvas.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+        canvas.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+```
 
-### 为什么这样修复
+### 节点结构
+```
+MapOverlay (Control) - 覆盖层，尺寸=屏幕尺寸
+├── InfoLabel (Label) - 信息标签，layout_mode=POSITION
+├── ChargeLabel (Label) - 蓄力标签，layout_mode=POSITION
+├── map_texture_rect (TextureRect) - 地图纹理显示
+│   ├── position = canvas_offset
+│   ├── size = 地图尺寸 (9160x660)
+│   ├── anchors_preset = TOP_LEFT
+│   ├── layout_mode = POSITION
+│   └── z_index = 1（在 canvas 上方渲染）
+└── canvas (Control) - 输入捕获层
+    ├── position = canvas_offset
+    ├── size = 地图尺寸 (9160x660)
+    ├── anchors_preset = TOP_LEFT
+    ├── layout_mode = POSITION
+    └── mouse_filter = MOUSE_FILTER_STOP
+```
 
-1. **ScrollContainer 的问题**：
-   - ScrollContainer 的滚动范围基于子节点尺寸
-   - 当使用 `canvas_offset` 偏移绘制内容时，滚动范围不会自动更新
-   - 导致可拖动区域（canvas 尺寸）与绘制内容（地图）不匹配
+### 关键知识点
 
-2. **直接使用 Control 的优势**：
-   - `clip_contents = false` 允许绘制内容超出边界
-   - `canvas_offset` 完全控制绘制位置
-   - canvas 尺寸始终等于地图尺寸，可拖动区域与地图区域一致
+1. **Godot 4.x Control 布局系统**：
+   - `layout_mode = 0` (POSITION) 允许手动设置位置和尺寸
+   - `anchors_preset = TOP_LEFT` 使用左上角锚点
+   - `set_position()` 和 `set_size()` 比直接赋值更可靠
+   - 即使设置 `layout_mode = 0`，布局系统仍可能在下一帧覆盖，需要 `call_deferred()` 强制应用
 
-3. **参考实现**：
-   - `level_map_display.gd` 使用相同的模式
-   - 拖动流畅无闪烁
+2. **拖动算法**：
+   - 正确：`drag_start_position = mouse_pos - canvas.position`（鼠标相对于控件的偏移）
+   - 拖动时：`canvas_offset = mouse_pos - drag_start_position`
+
+3. **z_index 层级**：
+   - `map_texture_rect.z_index = 1` 在 canvas 上方渲染
+   - `canvas.z_index = 0` 在底层接收输入
 
 ### 文件位置
 - `scripts/ui/destiny_dice_map_overlay.gd`
 
 ### 相关记忆
-- 地图拖动使用 `canvas_offset` 模式，不要使用 ScrollContainer 的滚动功能
+- 地图拖动使用 `canvas_offset` 模式，配合 `call_deferred()` 防止布局覆盖
+- 拖动算法：保存鼠标相对控件的偏移量，而不是相对 offset 的偏移量
