@@ -3,7 +3,7 @@ extends Control
 ## 允许玩家选择出战的角色
 
 # 信号：角色选择完成
-signal on_character_selected(hero_ids: Array[int])
+signal on_character_selected(hero_id: String)
 
 # UI 组件
 @onready var character_container = $MarginContainer/VBoxContainer/CharacterContainer
@@ -12,12 +12,12 @@ signal on_character_selected(hero_ids: Array[int])
 @onready var hint_label = $MarginContainer/VBoxContainer/HintLabel
 
 # 数据
-var selected_hero_ids: Array[int] = []
+var selected_hero_id: String = ""  # 当前选择的英雄 ID，空字符串表示未选择
 var available_heroes: Array[Dictionary] = []
 var character_cards: Array = []
 
-# 最大选择数量
-var max_selection: int = 3
+# 最大选择数量（固定为 1，单选）
+var max_selection: int = 1
 
 
 func _ready():
@@ -52,7 +52,7 @@ func _setup_ui():
 
 	# 设置提示
 	if hint_label:
-		hint_label.text = "点击角色卡片选择/取消选择（最多选择 %d 个）" % max_selection
+		hint_label.text = "点击角色卡片选择（只能选择 1 名角色）"
 		hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		hint_label.add_theme_font_size_override("font_size", 16)
 
@@ -196,7 +196,7 @@ func _on_card_gui_input(event: InputEvent, card: PanelContainer, hero: Dictionar
 ## 切换卡片选择状态
 func _toggle_card_selection(card: PanelContainer, indicator: Label):
 	var is_selected = card.get_meta("is_selected")
-	var hero_id = int(card.get_meta("hero_data").get("id", "0"))
+	var hero_id = card.get_meta("hero_data").get("id", "")
 
 	if is_selected:
 		# 取消选择
@@ -212,14 +212,13 @@ func _toggle_card_selection(card: PanelContainer, indicator: Label):
 		style.corner_radius_bottom_right = 10
 		card.add_theme_stylebox_override("panel", style)
 
-		selected_hero_ids.erase(hero_id)
+		selected_hero_id = ""
 	else:
-		# 检查是否已达上限
-		if selected_hero_ids.size() >= max_selection:
-			print("【角色选择】已达最大选择数量（%d 个）" % max_selection)
-			return
+		# 单选：先取消之前选择的卡片
+		if selected_hero_id != "":
+			_clear_previous_selection()
 
-		# 选择
+		# 选择新卡片
 		card.set_meta("is_selected", true)
 		indicator.text = "已选择"
 		indicator.modulate = Color(0.3, 1.0, 0.5)
@@ -234,28 +233,55 @@ func _toggle_card_selection(card: PanelContainer, indicator: Label):
 		style.set_border_width_all(2)
 		card.add_theme_stylebox_override("panel", style)
 
-		selected_hero_ids.append(hero_id)
+		selected_hero_id = hero_id
 
-	print("【角色选择】当前选择：", selected_hero_ids)
+	print("【角色选择】当前选择：", selected_hero_id)
+
+
+## 清空之前的选择
+func _clear_previous_selection():
+	for card in character_cards:
+		if card and is_instance_valid(card):
+			var card_hero_id = card.get_meta("hero_data").get("id", "")
+			if card_hero_id == selected_hero_id:
+				card.set_meta("is_selected", false)
+
+				var indicator = card.get_node("VBoxContainer/SelectIndicator")
+				if indicator:
+					indicator.text = "未选择"
+					indicator.modulate = Color(0.7, 0.7, 0.7)
+
+				var style = StyleBoxFlat.new()
+				style.bg_color = Color(0.25, 0.25, 0.3, 1)
+				style.corner_radius_top_left = 10
+				style.corner_radius_top_right = 10
+				style.corner_radius_bottom_left = 10
+				style.corner_radius_bottom_right = 10
+				card.add_theme_stylebox_override("panel", style)
+				break
 
 
 ## 确认按钮点击
 func _on_confirm_pressed():
-	if selected_hero_ids.size() > 0:
-		print("【角色选择】确认选择：", selected_hero_ids)
+	if selected_hero_id != "":
+		print("【角色选择】确认选择：英雄 ID=", selected_hero_id)
 
-		# 存储玩家队伍到 LevelTransitionController
+		# 存储玩家队伍到 LevelTransitionController（单元素数组）
+		# 注意：hero.json 中的 id 是字符串，但 game_main.gd 期望 Array[int]
+		# 所以需要转换为整数数组
+		var party_array: Array[int] = [selected_hero_id.to_int()]
+
 		var transition_controller = LevelTransitionController.get_instance()
 		if transition_controller:
-			transition_controller.set_meta("player_party", selected_hero_ids)
+			transition_controller.set_meta("player_party", party_array)
 
 		# 发出信号并切换到游戏主入口
-		on_character_selected.emit(selected_hero_ids)
+		on_character_selected.emit(selected_hero_id)
 
 		# 使用加载动画过渡
 		_transition_to_game_main()
 	else:
-		print("【角色选择】请至少选择一个角色")
+		print("【角色选择】请选择一个角色")
 
 
 ## 切换到游戏主入口
