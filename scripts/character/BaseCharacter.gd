@@ -50,6 +50,10 @@ var current_state: String = "idle"
 ## 角色骰子缩放比例（默认 1.5 倍）
 var dice_scale: Vector3 = Vector3(1.5, 1.5, 1.5)
 
+## 金币
+var gold: int = 0        # 当前金币
+var initial_gold: int = 0 # 初始金币（从 hero.json 读取）
+
 
 func _init(data: Dictionary = {}):
 	"""
@@ -104,6 +108,11 @@ func load_from_data(data: Dictionary):
 
 	# 解析角色状态贴图
 	hero_textures = _parse_array(data.get("hero_texture", []))
+
+	# 解析金币
+	var gold_value = data.get("initial_gold", "0")
+	initial_gold = int(gold_value) if gold_value is String else gold_value
+	gold = initial_gold
 
 	print("【BaseCharacter】加载角色数据：", name, " (ID: ", hero_id, ")")
 
@@ -274,7 +283,9 @@ func get_config() -> Dictionary:
 		"texture_ids": texture_ids,
 		"portrait_id": portrait_id,
 		"hero_textures": hero_textures,
-		"dice_scale": dice_scale
+		"dice_scale": dice_scale,
+		"gold": gold,
+		"initial_gold": initial_gold
 	}
 
 

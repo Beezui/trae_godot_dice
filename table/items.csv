@@ -1,0 +1,16 @@
+id,name,type,price,description,icon,weight
+101,火焰术,技能书,100,学习火焰技能,fire_skill.png,30
+102,冰霜术,技能书,120,学习冰霜技能,ice_skill.png,25
+103,雷电术,技能书,150,学习雷电技能,lightning_skill.png,20
+104,治愈术,技能书,80,学习治愈技能,heal_skill.png,35
+201,力量护符,宝物,200,增加力量属性,amulet_str.png,15
+202,敏捷披风,宝物,180,增加敏捷属性,cloak_agi.png,15
+203,智慧之戒,宝物,220,增加智力属性,ring_int.png,10
+204,生命水晶,宝物,300,提升最大生命值,life_crystal.png,8
+301,生命药水,消耗品,30,恢复少量生命值,potion_hp_small.png,50
+302,魔力药水,消耗品,30,恢复少量魔法值,potion_mp_small.png,50
+303,大生命药水,消耗品,80,恢复大量生命值,potion_hp_large.png,30
+304,大魔力药水,消耗品,80,恢复大量魔法值,potion_mp_large.png,30
+305,铁壁药剂,消耗品,50,暂时提升防御,defense_potion.png,25
+306,疾风药剂,消耗品,50,暂时提升敏捷,speed_potion.png,25
+307,力量药剂,消耗品,50,暂时提升力量,strength_potion.png,25

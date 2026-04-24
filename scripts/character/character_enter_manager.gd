@@ -98,23 +98,39 @@ func _character_enter(character, sandbox: Node, x_position: float, side: String)
 	# 4. 投掷骰子
 	var throw_direction = Vector3(0, throw_config["throw_direction_y"], -1 if side == "player" else 1).normalized()
 	var force = throw_direction * throw_config["throw_force"]
-	
+
 	var angular_force = Vector3(
 		randf_range(-3, 3),
 		randf_range(-3, 3),
 		randf_range(-3, 3)
 	)
-	
+
 	if dice.has_method("roll"):
 		dice.roll(force, angular_force)
 		print("【CharacterEnterManager】", side, "角色骰子投掷，位置=", dice.position, ", 方向=", throw_direction)
-	
-	# 5. 等待骰子稳定
-	await get_tree().create_timer(throw_config["stable_wait_time"]).timeout
-	
-	# 6. 锁定骰子
-	await get_tree().create_timer(throw_config["lock_delay"]).timeout
-	_lock_dice(dice)
+
+	# 5. 等待骰子自然停止（带安全超时）
+	# 骰子停止后会自动调用 lock_character_dice()（由 dice_6.gd 内部处理）
+	# 使用轮询方式等待，确保有安全超时机制
+	if dice.has_method("get_is_rolling"):
+		var max_wait = 10.0
+		var elapsed = 0.0
+		var check_interval = 0.2  # 每 0.2 秒检查一次
+		var is_stopped = false
+
+		while elapsed < max_wait:
+			if not dice.get_is_rolling():
+				is_stopped = true
+				break
+			await get_tree().create_timer(check_interval).timeout
+			elapsed += check_interval
+
+		if is_stopped:
+			print("【CharacterEnterManager】角色骰子已自然停止，位置=", dice.position)
+		else:
+			# 超时仍未停止
+			push_warning("【CharacterEnterManager】角色骰子停止超时（10秒），强制锁定，位置=", dice.position)
+			_lock_dice(dice)
 	
 	on_character_enter_completed.emit(character, side)
 	

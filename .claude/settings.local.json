@@ -46,7 +46,18 @@
       "mcp__godot__scene_tree_dump",
       "Bash(del *)",
       "mcp__godot__stop_scene",
-      "Bash(python convert_hero_csv_to_json.py)"
+      "Bash(python convert_hero_csv_to_json.py)",
+      "Bash(dir \"D:\\\\Godot\\\\Godot_v4.6.1-stable_win64.exe\\\\game\\\\晋升吧骰子\\\\memory\")",
+      "mcp__godot__create_script",
+      "mcp__godot__setup_autoload",
+      "mcp__godot__edit_script",
+      "Bash(\"D:/Godot/Godot_v4.6.1-stable_win64.exe\" --path \"D:/Godot/Godot_v4.6.1-stable_win64.exe/game/晋升吧骰子\" --headless --quit)",
+      "Bash(\"D:/Godot/Godot_v4.6.1-stable_win64.exe/Godot_v4.6.1-stable_win64.exe\" --path \"D:/Godot/Godot_v4.6.1-stable_win64.exe/game/晋升吧骰子\" --headless --quit)",
+      "Bash(find *)",
+      "mcp__godot__list_settings",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "mcp__godot__classdb_query"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -177,16 +177,17 @@ func _create_wall(size: Vector3, position: Vector3, material: StandardMaterial3D
 
 
 func _setup_battle_ui():
-	# 使用场景中已定义的 skill_bar 节点（从场景文件加载）
-	# 如果 skill_bar 为空，尝试从 BattleUI 子节点查找
+	# 注意：此 BattleSceneBase 拥有本地 UI 节点（BattleUI/SkillBar）
+	# 但战斗框架已改用 BattleUIManager 统一管理全局 UI
+	# 如果场景有 SkillBar 节点，连接其信号作为备用；否则完全由 BattleUIManager 处理
+
 	if not skill_bar:
 		if battle_ui and battle_ui.has_node("SkillBar"):
 			skill_bar = battle_ui.get_node("SkillBar")
 			print("【BattleSceneBase】从场景中找到 SkillBar 节点")
 		else:
-			print("【BattleSceneBase】警告：SkillBar 节点不存在")
+			print("【BattleSceneBase】未找到 SkillBar 节点，由 BattleUIManager 管理 UI")
 
-	# 连接信号（如果技能栏存在且有这些信号）
 	if skill_bar:
 		print("【BattleSceneBase】连接技能栏信号，skill_bar=", skill_bar)
 		if skill_bar.has_signal("on_skill_selected"):
@@ -196,7 +197,7 @@ func _setup_battle_ui():
 			if not skill_bar.on_end_turn_pressed.is_connected(_on_end_turn_pressed):
 				skill_bar.on_end_turn_pressed.connect(_on_end_turn_pressed)
 	else:
-		print("【BattleSceneBase】错误：skill_bar 为空，无法连接信号")
+		print("【BattleSceneBase】SkillBar 不存在，UI 由 BattleUIManager 管理")
 
 	print("【BattleSceneBase】战斗 UI 已设置，skill_bar=", skill_bar)
 

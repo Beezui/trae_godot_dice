@@ -102,32 +102,63 @@ func _setup_ui():
 
 ## 属性骰子初始位置（用于复位）
 var attribute_dice_initial_positions: Dictionary = {}
-
-## 查找场景中的属性骰子
-func _find_attribute_dices():
-	var battle_scene = _get_battle_scene()
-	if battle_scene and battle_scene.has_node("Sandbox"):
-		var sandbox = battle_scene.get_node("Sandbox")
-		# 查找属性骰子（根据命名或类型）
-		for child in sandbox.get_children():
-			if child.has_method("get_attribute_value") or child.name.contains("Attr"):
-				attribute_dices.append(child)
-				# 记录初始位置
-				attribute_dice_initial_positions[child] = child.position
-				print("【BattleSkillBar】找到属性骰子：", child.name, ", 初始位置：", child.position)
+## 原始位置存储（用于震动效果）
+var original_positions: Dictionary = {}
 
 
-## 获取战斗场景引用
-func _get_battle_scene() -> Node:
-	var tree = Engine.get_main_loop()
-	if tree and tree.root:
-		for i in range(tree.root.get_child_count()):
-			var child = tree.root.get_child(i)
-			if child.is_in_group("battle"):
-				return child
+## 获取骰子容器（Sandbox 或 GameManager）
+func _get_dice_container(scene: Node) -> Node:
+	if scene.has_node("Sandbox"):
+		return scene.get_node("Sandbox")
+	if scene.has_node("GameManager"):
+		return scene.get_node("GameManager")
 	return null
 
 
+## 查找战斗场景（统一方法）
+func _find_battle_scene() -> Node:
+	"""从 LevelStage 或场景树获取当前战斗场景"""
+	var tree = Engine.get_main_loop()
+	if not tree or not tree.root:
+		return null
+
+	# 1. 优先从 LevelStage 获取当前加载的场景（关卡转换后的场景）
+	var level_stage = LevelStage.get_instance() if tree.root.has_node("LevelStage") else null
+	if level_stage and level_stage.has_method("get_current_scene"):
+		var current_scene = level_stage.get_current_scene()
+		if current_scene and is_instance_valid(current_scene):
+			return current_scene
+
+	# 2. 回退方案：从根节点查找 battle 组或 Sandbox 节点
+	for i in range(tree.root.get_child_count()):
+		var child = tree.root.get_child(i)
+		if child.is_in_group("battle") or child.has_node("Sandbox"):
+			return child
+
+	return null
+
+
+## 查找属性骰子
+func _find_attribute_dices():
+	var battle_scene = _find_battle_scene()
+	if not battle_scene:
+		print("【BattleSkillBar】找不到战斗场景")
+		return
+
+	# 查找属性骰子（优先 Sandbox，备用 GameManager）
+	var container = _get_dice_container(battle_scene)
+	if not container:
+		print("【BattleSkillBar】找不到骰子容器（Sandbox/GameManager）")
+		return
+
+	for child in container.get_children():
+		if child.has_method("get_attribute_value") or child.name.contains("Attr"):
+			attribute_dices.append(child)
+			attribute_dice_initial_positions[child] = child.position
+			print("【BattleSkillBar】找到属性骰子：", child.name, ", 初始位置：", child.position)
+
+
+## 清空按钮
 func _clear_buttons():
 	if skill_container:
 		for child in skill_container.get_children():
@@ -152,7 +183,7 @@ func _create_skill_button(skill_dice):
 	button.custom_minimum_size = Vector2(80, 80)
 	button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 
-	# 获取技能图标
+	# 获取技能图标（缩放至合理尺寸，防止撑大 UI）
 	var skill_icon = _get_skill_icon(skill_dice)
 	if skill_icon:
 		button.texture_normal = skill_icon
@@ -204,7 +235,16 @@ func _get_skill_icon(skill_dice) -> Texture2D:
 	var texture_path = "res://textures/skill/skill_" + skill_id + ".png"
 	if ResourceLoader.exists(texture_path):
 		print("【BattleSkillBar】加载技能贴图：", texture_path)
-		return load(texture_path)
+		var texture = load(texture_path)
+		# 如果纹理过大，缩放到合理尺寸（防止 UI 膨胀）
+		if texture and texture.get_width() > 256:
+			print("【BattleSkillBar】纹理过大（%dx%d），缩放到 64x64" % [texture.get_width(), texture.get_height()])
+			var img = texture.get_image()
+			if img:
+				img.resize(64, 64, Image.INTERPOLATE_CUBIC)
+				var new_texture = ImageTexture.create_from_image(img)
+				return new_texture
+		return texture
 	else:
 		print("【BattleSkillBar】技能贴图不存在：", texture_path)
 	return _create_placeholder_texture()
@@ -264,12 +304,15 @@ func _can_afford_throw(character: BaseCharacter) -> bool:
 
 ## 将技能骰子移动到场景（悬浮待投掷状态）
 func _move_skill_dice_to_scene(skill_dice):
-	var battle_scene = _get_battle_scene()
-	if not battle_scene or not battle_scene.has_node("Sandbox"):
-		print("【BattleSkillBar】场景或 Sandbox 不存在")
+	var battle_scene = _find_battle_scene()
+	if not battle_scene:
+		print("【BattleSkillBar】找不到战斗场景")
 		return
 
-	var sandbox = battle_scene.get_node("Sandbox")
+	var container = _get_dice_container(battle_scene)
+	if not container:
+		print("【BattleSkillBar】找不到骰子容器（Sandbox/GameManager）")
+		return
 
 	# 设置骰子为可见
 	skill_dice.visible = true
@@ -287,7 +330,7 @@ func _move_skill_dice_to_scene(skill_dice):
 	skill_dice.angular_velocity = Vector3.ZERO
 
 	# 添加到场景
-	sandbox.add_child(skill_dice)
+	container.add_child(skill_dice)
 	print("【BattleSkillBar】技能骰子已移动到场景")
 
 
@@ -492,11 +535,17 @@ func _release_skill(skill_index: int, attr_results: Dictionary):
 	# 创建临时 Marker3D 作为施法者节点
 	var caster_marker = Marker3D.new()
 	caster_marker.position = caster_position
-	get_tree().current_scene.add_child(caster_marker)
+
+	# 获取战斗场景（3D 场景）来添加 Marker3D
+	var battle_scene = _find_battle_scene()
+	if battle_scene:
+		battle_scene.add_child(caster_marker)
+	else:
+		get_tree().current_scene.add_child(caster_marker)
 
 	var params = {
 		"dice_results": dice_results,
-		"scene": get_tree().current_scene,
+		"scene": battle_scene if battle_scene else get_tree().current_scene,
 		"caster_position": caster_position
 	}
 
@@ -567,9 +616,6 @@ func _hide_throw_hint():
 	if throw_hint_label:
 		throw_hint_label.visible = false
 
-
-## 原始位置存储（用于震动效果）
-var original_positions: Dictionary = {}
 
 
 ## 更新回合显示

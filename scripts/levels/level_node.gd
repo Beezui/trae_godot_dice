@@ -80,9 +80,9 @@ func load_from_dict(config: Dictionary) -> void:
 		for item in config["enemy"]:
 			enemies.append(String(item))
 		data["enemies"] = enemies
-	if config.has("Npc"):
+	if config.has("npc"):
 		var npcs: Array[String] = []
-		for item in config["Npc"]:
+		for item in config["npc"]:
 			npcs.append(String(item))
 		data["npcs"] = npcs
 	if config.has("scene"):

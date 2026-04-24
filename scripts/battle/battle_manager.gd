@@ -127,15 +127,13 @@ func _enter_phase():
 	current_state = BattleState.ENTERING
 	_change_phase(BattlePhase.PHASE_ENTER)
 
-	# 获取场景 Sandbox
+	# 获取场景 Sandbox（优先 Sandbox，备用 GameManager）
 	var battle_scene = _get_battle_scene()
-	var sandbox = null
-	if battle_scene and battle_scene.has_node("Sandbox"):
-		sandbox = battle_scene.get_node("Sandbox")
+	var sandbox = _get_sandbox_from_scene(battle_scene)
 
 	# 使用 CharacterEnterManager 统一处理角色入场
 	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
-	if enter_manager:
+	if enter_manager and sandbox:
 		print("【BattleManager】使用 CharacterEnterManager 处理玩家入场")
 		await enter_manager.player_batch_enter(player_characters, sandbox)
 
@@ -155,9 +153,7 @@ func _enter_phase():
 ## @param side "player" 或 "enemy"
 func _character_enter_fallback(characters: Array[BaseCharacter], side: String):
 	var battle_scene = _get_battle_scene()
-	var sandbox = null
-	if battle_scene and battle_scene.has_node("Sandbox"):
-		sandbox = battle_scene.get_node("Sandbox")
+	var sandbox = _get_sandbox_from_scene(battle_scene)
 
 	# 玩家角色从中间入场，敌方角色随机位置入场
 	var player_start_x = 0.0  # 玩家从中间 X=0 开始
@@ -275,11 +271,10 @@ func _character_enter_fallback(characters: Array[BaseCharacter], side: String):
 ## @deprecated 已废弃，使用 CharacterEnterManager 统一处理
 func _create_character_dice(character: BaseCharacter, side: String):
 	var battle_scene = _get_battle_scene()
-	if not battle_scene or not battle_scene.has_node("Sandbox"):
-		print("【BattleManager】Sandbox 节点不存在，无法创建角色骰子")
+	var sandbox = _get_sandbox_from_scene(battle_scene)
+	if not battle_scene or not sandbox:
+		print("【BattleManager】Sandbox/Gamemanager 节点不存在，无法创建角色骰子")
 		return
-
-	var sandbox = battle_scene.get_node("Sandbox")
 
 	# 计算位置：敌方在左边，玩家在右边
 	var offset = -8.0 if side == "enemy" else 8.0
@@ -307,28 +302,28 @@ func _setup_phase():
 
 	# 2. 生成属性骰子（悬浮待命，在场景中但不投掷）
 	var battle_scene = _get_battle_scene()
-	var sandbox = battle_scene.get_node("Sandbox") if battle_scene and battle_scene.has_node("Sandbox") else null
+	var sandbox = _get_sandbox_from_scene(battle_scene)
 	if sandbox and player_characters.size() > 0:
 		await _generate_attribute_dices_for_player(player_characters[0], sandbox)
 
-	# 3. 初始化 UI（传入技能骰子供 UI 显示）
-	if battle_scene and battle_scene.has_method("get_skill_bar"):
-		var skill_bar = battle_scene.get_skill_bar()
-		if skill_bar:
-			print("【BattleManager】准备初始化技能栏 UI")
-			print("  - skill_bar: ", skill_bar)
-			print("  - skill_dices 数组：", skill_dices)
-			print("  - skill_dices 大小：", skill_dices.size())
-			# 传入技能骰子列表和属性骰子列表
-			skill_bar.initialize(player_characters, skill_dices, [])
-			skill_bar.update_turn_display(current_turn)
-			if player_characters.size() > 0:
-				skill_bar.update_mp_display(player_characters[0])
+	# 3. 初始化 UI（通过 BattleUIManager 创建持久化全局 UI）
+	print("【BattleManager】通过 BattleUIManager 初始化技能栏 UI")
+	print("  - skill_dices 数组：", skill_dices)
+	print("  - skill_dices 大小：", skill_dices.size())
+
+	if BattleUIManager:
+		var success = BattleUIManager.show_skill_bar(player_characters, skill_dices, [])
+		if success:
+			var skill_bar = BattleUIManager.get_skill_bar()
+			if skill_bar:
+				skill_bar.update_turn_display(current_turn)
+				if player_characters.size() > 0:
+					skill_bar.update_mp_display(player_characters[0])
 			print("【BattleManager】技能栏 UI 已初始化")
 		else:
-			print("【BattleManager】错误：skill_bar 为空")
+			print("【BattleManager】错误：BattleUIManager.show_skill_bar 失败")
 	else:
-		print("【BattleManager】错误：battle_scene 或 get_skill_bar 方法不存在")
+		print("【BattleManager】错误：BattleUIManager 不可用")
 
 	await get_tree().create_timer(1.0).timeout
 	print("【BattleManager】准备阶段完成")
@@ -337,13 +332,44 @@ func _setup_phase():
 ## 获取战斗场景引用
 func _get_battle_scene() -> Node:
 	"""获取当前战斗场景引用"""
-	# 尝试从场景树中查找带有"battle"组的节点
 	var tree = Engine.get_main_loop()
-	if tree and tree.root:
-		for i in range(tree.root.get_child_count()):
-			var child = tree.root.get_child(i)
-			if child.is_in_group("battle"):
-				return child
+	if not tree or not tree.root:
+		return null
+
+	# 1. 优先从 LevelStage 获取当前加载的场景（关卡转换后的场景）
+	var level_stage = LevelStage.get_instance()
+	if level_stage and level_stage.has_method("get_current_scene"):
+		var current_scene = level_stage.get_current_scene()
+		if current_scene and is_instance_valid(current_scene):
+			print("【BattleManager】从 LevelStage 获取战斗场景：", current_scene.name)
+			return current_scene
+
+	# 2. 尝试从场景树中查找带有"battle"组的节点
+	for i in range(tree.root.get_child_count()):
+		var child = tree.root.get_child(i)
+		if child.is_in_group("battle"):
+			return child
+
+	# 3. 回退方案：查找带有 Sandbox 子节点的节点（game_main）
+	for i in range(tree.root.get_child_count()):
+		var child = tree.root.get_child(i)
+		if child.has_node("Sandbox"):
+			return child
+
+	return null
+
+
+## 从战斗场景获取骰子容器（Sandbox 或 GameManager）
+func _get_sandbox_from_scene(scene: Node) -> Node:
+	"""获取场景中用于存放骰子的容器节点"""
+	if not scene:
+		return null
+	# 优先使用 Sandbox（game_main 和 BattleSceneBase 使用）
+	if scene.has_node("Sandbox"):
+		return scene.get_node("Sandbox")
+	# 备用使用 GameManager（关卡模板场景使用）
+	if scene.has_node("GameManager"):
+		return scene.get_node("GameManager")
 	return null
 
 
@@ -353,7 +379,7 @@ func _generate_character_dices(character: BaseCharacter):
 	print("【BattleManager】为 ", character.name, " 生成骰子")
 
 	var battle_scene = _get_battle_scene()
-	var sandbox = battle_scene.get_node("Sandbox") if battle_scene and battle_scene.has_node("Sandbox") else null
+	var sandbox = _get_sandbox_from_scene(battle_scene)
 
 	# 1. 生成技能骰子（使用 DiceManager）
 	if character.skill_dice_ids.size() > 0:
@@ -589,11 +615,10 @@ func _enemy_throw_dice(character: BaseCharacter, skill_dice_id: String):
 	print("【BattleManager】敌方投掷骰子：", skill_dice_id)
 
 	var battle_scene = _get_battle_scene()
-	if not battle_scene or not battle_scene.has_node("Sandbox"):
+	var sandbox = _get_sandbox_from_scene(battle_scene)
+	if not battle_scene or not sandbox:
 		print("  - 场景不存在，跳过投掷")
 		return
-
-	var sandbox = battle_scene.get_node("Sandbox")
 
 	# 1. 创建技能骰子（临时）- 从北墙附近进入（与玩家高度相同）
 	var skill_start_pos = Vector3(-4.0, 4.0, -6.0)  # Z=-6 靠近北墙，Y=4 与玩家相同

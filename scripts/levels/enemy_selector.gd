@@ -11,6 +11,7 @@ const TYPE_PLAYER = 1      # 玩家角色
 const TYPE_NORMAL_ENEMY = 2 # 普通敌人
 const TYPE_ELITE_ENEMY = 3  # 精英敌人
 const TYPE_BOSS = 4         # Boss
+const TYPE_MERCHANT = 5     # 商人
 
 ## 敌人缓存（加载一次后缓存）
 var _enemy_pool: Array[Dictionary] = []
@@ -140,6 +141,36 @@ func _pick_by_weight(weighted_pool: Array[Dictionary]) -> Dictionary:
 	return weighted_pool[0]["enemy"] as Dictionary
 
 
+## 根据阶段随机选择商人
+## @param stage 当前阶段（1-4）
+## @return 商人配置字典，空字典表示失败
+func select_merchant(stage: int) -> Dictionary:
+	if _enemy_pool.size() == 0:
+		# 尝试重新加载
+		if not load_enemy_pool(stage):
+			return {}
+
+	# 筛选商人（type == 5 且 stage 匹配）
+	var merchant_pool: Array[Dictionary] = []
+	for hero in _enemy_pool:
+		var hero_type = hero.get("type", 1) as int
+		var hero_stage = hero.get("stage", 1) as int
+		if hero_type == EnemySelector.TYPE_MERCHANT and hero_stage <= stage:
+			var weight = 1.0
+			if hero_stage == stage:
+				weight = 2.0
+			merchant_pool.append({"enemy": hero, "weight": weight})
+
+	if merchant_pool.size() == 0:
+		push_warning("[EnemySelector] 阶段 ", stage, " 没有可用的商人")
+		return {}
+
+	var selected = _pick_by_weight(merchant_pool)
+	print("[EnemySelector] 选择商人：", selected.get("name", "Unknown"),
+		  " (type=", selected.get("type"), ", stage=", selected.get("stage"), ")")
+	return selected
+
+
 ## 清空缓存
 func clear():
 	_enemy_pool.clear()
@@ -153,6 +184,7 @@ static func get_type_name(type: int) -> String:
 		TYPE_NORMAL_ENEMY: return "普通敌人"
 		TYPE_ELITE_ENEMY: return "精英敌人"
 		TYPE_BOSS: return "Boss"
+		TYPE_MERCHANT: return "商人"
 		_: return "未知"
 
 
@@ -163,4 +195,5 @@ static func get_type_color(type: int) -> Color:
 		TYPE_NORMAL_ENEMY: return Color(1, 0.3, 0.3)  # 红色 - 普通敌人
 		TYPE_ELITE_ENEMY: return Color(1, 0.5, 0.0)   # 橙色 - 精英敌人
 		TYPE_BOSS: return Color(0.8, 0.0, 0.8)        # 紫色 - Boss
+		TYPE_MERCHANT: return Color(1.0, 0.84, 0.0)   # 金色 - 商人
 		_: return Color(1, 1, 1)                  # 白色 - 未知

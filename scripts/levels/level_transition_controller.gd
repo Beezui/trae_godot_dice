@@ -127,6 +127,7 @@ func throw_destiny_dice():
 
 ## 处理命运骰子投掷完成（内部回调）
 func _on_destiny_roll_completed(selected_node: LevelNode):
+	print("[LevelTransitionController] _on_destiny_roll_completed 被调用, selected_node=", selected_node)
 	if not selected_node:
 		push_error("[LevelTransitionController] 选择的节点为空")
 		return

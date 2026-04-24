@@ -80,6 +80,87 @@ func _preload_destiny_dice_textures():
 			print("【贴图管理器】命运骰子贴图不存在：", path)
 
 
+## 创建折扣骰子面纹理（百分比文字）
+## @param face_index 面索引（0-5）
+## @param percentage_text 百分比文字（如 "0%", "10%"）
+## @param face_size 骰面尺寸
+## @param mesh_instance 网格实例（用于添加 Viewport）
+## @return ViewportTexture 动态生成的贴图
+func create_discount_face_texture(
+	face_index: int,
+	percentage_text: String,
+	face_size: Vector2i,
+	mesh_instance: MeshInstance3D = null
+) -> Texture2D:
+	# 创建 SubViewport（渲染目标）
+	var viewport = SubViewport.new()
+	viewport.name = "DiscountFace_%d" % face_index
+	viewport.size = Vector2i(max(face_size.x, 512), max(face_size.y, 512))
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	viewport.transparent_bg = true
+
+	# 根 Control
+	var control = Control.new()
+	control.anchors_preset = Control.PRESET_FULL_RECT
+	control.size = viewport.size
+	viewport.add_child(control)
+
+	# 半透明背景 ColorRect
+	var bg = ColorRect.new()
+	bg.color = Color(0.15, 0.15, 0.25, 0.9)
+	bg.anchors_preset = Control.PRESET_FULL_RECT
+	bg.size = viewport.size
+	control.add_child(bg)
+
+	# 百分比文字标签
+	var label = Label.new()
+	label.name = "DiscountText"
+	label.text = percentage_text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.anchors_preset = Control.PRESET_FULL_RECT
+	label.size = viewport.size
+	# 根据文字长度自适应字号
+	var text_length = percentage_text.length()
+	var font_size = 288
+	if text_length <= 3:
+		font_size = 288
+	elif text_length <= 5:
+		font_size = 240
+	elif text_length <= 7:
+		font_size = 192
+	else:
+		font_size = 144
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", Color.YELLOW)
+	control.add_child(label)
+
+	# 描边层
+	var outline_label = Label.new()
+	outline_label.name = "DiscountOutline"
+	outline_label.text = percentage_text
+	outline_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	outline_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	outline_label.anchors_preset = Control.PRESET_FULL_RECT
+	outline_label.size = viewport.size
+	outline_label.add_theme_font_size_override("font_size", int(font_size * 1.15))
+	outline_label.add_theme_color_override("font_color", Color(0.8, 0.6, 0.0))
+	control.add_child(outline_label)
+	control.add_child(label)
+
+	# 添加到场景树以触发渲染
+	if mesh_instance and mesh_instance.get_parent():
+		mesh_instance.get_parent().add_child(viewport)
+		viewport.set_meta("auto_cleanup", true)
+	else:
+		var root = get_tree().current_scene
+		if root:
+			root.add_child(viewport)
+			viewport.set_meta("auto_cleanup", true)
+
+	return viewport.get_texture()
+
+
 ## 应用贴图到骰子（统一接口）
 func apply_textures_to_dice(dice: RigidBody3D, config: Dictionary):
 	"""
@@ -127,6 +208,8 @@ func apply_textures_to_dice(dice: RigidBody3D, config: Dictionary):
 
 	# 判断是否是命运骰子配置
 	var is_destiny_dice = false
+	# 判断是否是折扣骰子配置
+	var is_discount_dice = false
 	if config.size() > 0:
 		var first_key = config.keys()[0]
 		var first_value = config[first_key]
@@ -134,8 +217,13 @@ func apply_textures_to_dice(dice: RigidBody3D, config: Dictionary):
 			is_destiny_dice = true
 		elif typeof(first_value) == TYPE_STRING and first_value.begins_with("boss_"):
 			is_destiny_dice = true
-	
-	if is_attr_dice:
+
+		if typeof(first_value) == TYPE_STRING and first_value.begins_with("discount_"):
+			is_discount_dice = true
+
+	if is_discount_dice:
+		_apply_discount_dice_textures(mesh_instance, config)
+	elif is_attr_dice:
 		# 属性骰子：动态生成带数值的贴图
 		_apply_attr_dice_textures(mesh_instance, config)
 	elif is_skill_dice:
@@ -680,6 +768,41 @@ func _apply_destiny_dice_textures(mesh_instance: MeshInstance3D, config: Diction
 		materials.append(material)
 
 	# 应用材质到网格
+	_apply_materials_to_mesh(mesh_instance, materials)
+
+
+## 应用折扣骰子贴图（百分比文字）
+func _apply_discount_dice_textures(mesh_instance: MeshInstance3D, config: Dictionary):
+	print("【贴图管理器】应用折扣骰子贴图")
+
+	# 折扣值固定配置
+	var discount_values = ["0%", "10%", "10%", "15%", "20%", "50%"]
+
+	# 获取骰面尺寸
+	var face_size = Vector2i(512, 512)
+	if mesh_instance.mesh:
+		var aabb = mesh_instance.mesh.get_aabb()
+		face_size = Vector2i(int(aabb.size.x), int(aabb.size.y))
+
+	# 为每个面创建动态纹理
+	var materials = []
+	for i in range(6):
+		var percentage_text = discount_values[i] if i < discount_values.size() else "0%"
+		var dynamic_texture = create_discount_face_texture(i, percentage_text, face_size, mesh_instance)
+
+		var material = StandardMaterial3D.new()
+		material.roughness = 0.8
+		material.metallic = 0.0
+
+		if dynamic_texture:
+			material.albedo_texture = dynamic_texture
+			print("【贴图管理器】折扣骰子面 ", i, " 生成动态贴图：", percentage_text)
+		else:
+			material.albedo_color = Color(0.7, 0.6, 0.0)
+			print("【贴图管理器】折扣骰子面 ", i, " 贴图创建失败，使用默认颜色")
+
+		materials.append(material)
+
 	_apply_materials_to_mesh(mesh_instance, materials)
 
 

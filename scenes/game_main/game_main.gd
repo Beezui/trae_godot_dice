@@ -36,6 +36,10 @@ var is_scene_loaded: bool = false
 var is_player_spawned: bool = false
 var is_dice_available: bool = false
 
+# 贸易阶段状态
+var is_trade_phase: bool = false
+var is_discount_charging: bool = false
+
 
 func _ready():
 	print("=== 游戏主入口场景初始化 ===")
@@ -325,23 +329,20 @@ func _spawn_player_fallback():
 				print("【角色】角色骰子已创建（备用方案）")
 
 
-## 生成命运骰子
+## 生成命运骰子（通过 LevelTransitionController 统一启动）
 func _spawn_destiny_dice():
-	print("【命运骰子】生成命运骰子...")
+	print("【命运骰子】启动命运骰子流程...")
+	print("【命运骰子】level_transition_controller=", level_transition_controller, ", current_node=", current_node)
+	print("【命运骰子】当前 destiny_dice_instances.size()=", destiny_dice_manager.destiny_dice_instances.size())
+	print("【命运骰子】DestinyDiceManager 实例 ID=", destiny_dice_manager.get_instance_id() if destiny_dice_manager else "null")
 
-	# 设置 DestinyDiceManager 配置
-	destiny_dice_manager.destiny_dice_scene = load("res://scenes/dice_6.tscn")
-	destiny_dice_manager.dice_count = 1
-
-	# 初始化命运骰子管理器
-	var success = destiny_dice_manager.initialize(current_node, level_data)
+	# 通过 LevelTransitionController 启动命运骰子流程
+	var success = level_transition_controller.start_destiny_dice_flow(self)
+	print("【命运骰子】start_destiny_dice_flow 结果: ", success)
+	print("【命运骰子】创建后 destiny_dice_instances.size()=", destiny_dice_manager.destiny_dice_instances.size())
+	print("【命运骰子】DestinyDiceManager 实例 ID=", destiny_dice_manager.get_instance_id() if destiny_dice_manager else "null")
 	if success:
-		print("【命运骰子】初始化成功")
-
-		# 创建命运骰子实例
-		destiny_dice_manager.create_destiny_dice(self)
-
-		# 设置骰子位置（投掷区域）
+		# 调整骰子位置（覆盖默认位置）
 		var dice_array = destiny_dice_manager.destiny_dice_instances
 		if dice_array.size() > 0:
 			for dice in dice_array:
@@ -349,9 +350,9 @@ func _spawn_destiny_dice():
 					dice.position = Vector3(0, 4, initial_z)
 
 		is_dice_available = true
-		print("【命运骰子】生成完成，可投掷")
+		print("【命运骰子】创建完成，可投掷")
 	else:
-		push_error("【命运骰子】初始化失败")
+		push_error("【命运骰子】启动失败")
 
 
 ## 创建地图 UI 覆盖层
@@ -374,15 +375,12 @@ func _create_map_overlay():
 
 ## 连接信号
 func _connect_signals():
-	# 连接命运骰子投掷完成信号
-	if destiny_dice_manager:
-		if not destiny_dice_manager.on_destiny_dice_roll_completed.is_connected(_on_destiny_roll_completed):
-			destiny_dice_manager.on_destiny_dice_roll_completed.connect(_on_destiny_roll_completed)
-
-	# 连接关卡转换完成信号
+	# 连接关卡转换完成信号（用于更新 UI 等后续处理）
 	if level_transition_controller:
 		if not level_transition_controller.on_transition_completed.is_connected(_on_transition_completed):
 			level_transition_controller.on_transition_completed.connect(_on_transition_completed)
+		if not level_transition_controller.on_game_clear_triggered.is_connected(_on_game_clear_triggered):
+			level_transition_controller.on_game_clear_triggered.connect(_on_game_clear_triggered)
 
 
 ## 输入处理
@@ -390,6 +388,16 @@ func _input(event):
 	# M 键切换地图
 	if event is InputEventKey and event.pressed and event.keycode == KEY_M:
 		_toggle_map()
+
+	# 贸易阶段：空格键投掷折扣骰子
+	if is_trade_phase and event is InputEventKey and event.keycode == KEY_SPACE:
+		if event.pressed and not is_discount_charging:
+			_start_discount_throw()
+			is_discount_charging = true
+		elif not event.pressed and is_discount_charging:
+			_execute_discount_throw()
+			is_discount_charging = false
+		return  # 贸易阶段不处理命运骰子投掷
 
 	# 空格键投掷命运骰子
 	if event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
@@ -426,7 +434,7 @@ func _start_throw():
 
 ## 结束蓄力并投掷
 func _end_throw():
-	if not DiceThrowController or not destiny_dice_manager:
+	if not DiceThrowController:
 		return
 
 	is_charging = false
@@ -434,97 +442,280 @@ func _end_throw():
 	# 结束蓄力并投掷
 	DiceThrowController.end_charge()
 
-	print("【投掷】投掷完成，等待骰子稳定...")
-
-	# 等待骰子稳定
-	var dices = destiny_dice_manager.destiny_dice_instances
-	await _wait_for_dice_stable(dices)
-
-	# 处理投掷结果
-	_process_roll_result()
-
-
-## 等待骰子稳定
-func _wait_for_dice_stable(dices: Array) -> void:
-	print("【投掷】等待骰子稳定...")
-
-	var max_wait_frames = 300  # 约 5 秒
-	var wait_frames = 0
-
-	while wait_frames < max_wait_frames:
-		var all_stopped = true
-		for dice in dices:
-			if dice and is_instance_valid(dice):
-				if dice.has_method("get_is_rolling"):
-					if dice.get_is_rolling():
-						all_stopped = false
-						break
-
-		if all_stopped:
-			break
-
-		await get_tree().process_frame
-		wait_frames += 1
-
-	print("【投掷】骰子已稳定（耗时：", wait_frames / 60.0, "秒）")
-
-
-## 处理投掷结果
-func _process_roll_result():
-	if destiny_dice_manager:
-		print("【投掷】处理投掷结果")
-		destiny_dice_manager.on_roll_completed()
-
-
-## 命运骰子投掷完成回调
-func _on_destiny_roll_completed(selected_node: LevelNode):
-	print("【投掷完成】选择节点：", selected_node.id, " - ", selected_node.name)
-
-	# 更新当前节点
-	current_node = selected_node
-
-	# 更新地图显示
-	if map_overlay and map_overlay.has_method("update_current_node"):
-		map_overlay.update_current_node(selected_node)
-
-	# 触发关卡转换
-	_transition_to_node(selected_node)
-
-
-## 关卡转换到目标节点
-func _transition_to_node(target_node: LevelNode):
-	if level_transition_controller:
-		level_transition_controller.set_current_node(target_node)
-		print("【关卡转换】目标节点：", target_node.name)
-
-		# 使用 LoadingOverlay 进行场景切换
-		_transition_with_loading(target_node)
-
-
-## 使用加载动画进行场景转换
-func _transition_with_loading(target_node: LevelNode):
-	# 淡入黑色蒙版
-	if LoadingOverlay:
-		LoadingOverlay.fade_in(0.3)
-		await LoadingOverlay.wait_fade_in()
-
-	# 加载新场景（由 LevelStage 处理）
-	var level_stage_node = LevelStage.get_instance()
-	if level_stage_node:
-		level_stage_node.transition_to_node(target_node)
-
-	# 淡出黑色蒙版
-	if LoadingOverlay:
-		LoadingOverlay.fade_out(0.3)
-		await LoadingOverlay.wait_fade_out()
-
-	# 转换完成
-	_on_transition_completed(target_node)
+	print("【投掷】投掷完成，命运骰子停止后自动处理结果")
 
 
 ## 关卡转换完成回调
 func _on_transition_completed(target_node: LevelNode):
 	print("【关卡转换】完成，当前节点：", target_node.name)
+
+	# 更新当前节点引用
+	current_node = target_node
+
+	# 更新地图显示
+	if map_overlay and map_overlay.has_method("update_current_node"):
+		map_overlay.update_current_node(target_node)
+
+	# 根据节点类型触发不同后续动作
+	match target_node.type:
+		LevelNodeType.Type.COMBAT, 5:  # 战斗 / 精英战斗
+			print("【战斗】检测到战斗节点，启动 BattleManager")
+			await _start_battle(target_node)
+		LevelNodeType.Type.ADVENTURE:  # 奇遇
+			print("【奇遇】检测到奇遇节点，等待后续实现")
+			# TODO: 奇遇事件系统
+		LevelNodeType.Type.TRADE:  # 交易
+			print("【交易】检测到交易节点，启动贸易流程")
+			await _start_trade(target_node)
+		LevelNodeType.Type.REWARD:  # 奖励
+			print("【奖励】检测到奖励节点，等待后续实现")
+			# TODO: 奖励系统
+		_:
+			print("【未知】未知节点类型：", target_node.type)
+
+	# 检查是否还有下一轮投掷
+	if level_transition_controller.can_throw_again():
+		await get_tree().create_timer(1.0).timeout
+		_spawn_destiny_dice()
+	else:
+		print("【游戏】当前节点无连接，流程结束")
+		_on_game_clear_triggered()
+
+
+## 启动战斗流程
+func _start_battle(node: LevelNode):
+	print("【战斗】开始战斗流程，节点：", node.name)
+
+	var battle_manager = BattleManager  # Autoload 单例
+	if not battle_manager:
+		push_error("【战斗】BattleManager 不可用")
+		return
+
+	# 初始化战斗
+	var success = battle_manager.initialize_battle(node, player_party)
+	if not success:
+		push_error("【战斗】初始化失败")
+		return
+
+	# 开始战斗流程（使用 await 等待战斗完成）
+	await battle_manager.start_battle()
+
+	# 等待战斗结束信号
+	await battle_manager.on_battle_finished
+	print("【战斗】战斗结束，继续游戏流程")
+
+
+## 启动贸易流程
+func _start_trade(node: LevelNode):
+	print("【贸易】开始贸易流程，节点：", node.name)
+
+	is_trade_phase = true
+
+	# 1. 商人优先入场
+	await _trade_merchant_enter(node)
+
+	# 2. 玩家入场
+	await _trade_player_enter()
+
+	# 3. 等待短暂延迟
+	await get_tree().create_timer(1.0).timeout
+
+	# 4. 生成折扣骰子（悬浮待投掷状态）
+	_generate_discount_dice()
+
+	# 5. 连接折扣骰子停止信号
+	if not ShopManager.on_discount_dice_stopped.is_connected(_on_discount_dice_finished):
+		ShopManager.on_discount_dice_stopped.connect(_on_discount_dice_finished)
+
+	# 6. 初始化商店会话（加载道具、随机选择）
+	var stage = node.data.get("stage", 1)
+	ShopManager.initialize_trade_session(stage, CharacterManager.player_characters)
+
+	# 7. 等待玩家投掷折扣骰子（通过 _input 处理），然后等待商店关闭
+	print("【贸易】等待玩家投掷折扣骰子...")
+	var discount_result = await _wait_for_discount_result()
+	print("【贸易】折扣骰子结果：%d%%" % discount_result)
+
+	# 8. 打开商店
+	ShopManager.set_discount(discount_result)
+	ShopManager.open_shop()
+
+	# 9. 等待玩家点击前进（ShopManager._on_advance_pressed 会触发命运骰子）
+	print("【贸易】等待玩家完成交易...")
+
+
+## 等待折扣骰子结果
+var _discount_result_ready: bool = false
+var _discount_result_value: int = 0
+
+func _on_discount_dice_finished(discount: int):
+	_discount_result_ready = true
+	_discount_result_value = discount
+	print("【贸易】折扣骰子结果已就绪：", discount)
+
+
+func _wait_for_discount_result() -> int:
+	_discount_result_ready = false
+	_discount_result_value = 0
+
+	# 等待骰子停止
+	while not _discount_result_ready:
+		await get_tree().create_timer(0.2).timeout
+
+	return _discount_result_value
+
+
+## 贸易 - 商人入场
+func _trade_merchant_enter(node: LevelNode):
+	print("【贸易】商人入场...")
+
+	# 从 EnemySelector 选择商人
+	var stage = node.data.get("stage", 1)
+	var merchant_data = EnemySelector.select_merchant(stage)
+	if merchant_data.is_empty():
+		push_warning("【贸易】没有找到商人，使用默认商人")
+		merchant_data = {"id": "4", "name": "商人"}
+
+	var merchant_id = int(merchant_data.get("id", "4"))
+
+	# 使用 CharacterManager 创建商人角色
+	var merchant = CharacterManager.create_character(merchant_id, "enemy")
+	if not merchant:
+		push_error("【贸易】商人创建失败")
+		return
+
+	# 使用 CharacterEnterManager 入场（从北侧，类似敌方）
+	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+	if enter_manager:
+		var results = await enter_manager.enemy_batch_enter([merchant], sandbox)
+		print("【贸易】商人入场完成")
+	else:
+		push_warning("【贸易】CharacterEnterManager 不可用，使用备用方案")
+		_spawn_merchant_fallback(merchant)
+
+
+## 贸易 - 商人入场备用方案
+func _spawn_merchant_fallback(merchant):
+	var dice = DiceManager.create_character_dice(merchant, sandbox, Vector3(0, 4, -6))
+	if dice:
+		print("【贸易】商人骰子已创建（备用方案）")
+
+
+## 贸易 - 玩家入场
+func _trade_player_enter():
+	print("【贸易】玩家入场...")
+
+	var characters: Array[BaseCharacter] = []
+	for hero_id in player_party:
+		var character = CharacterManager.create_character(hero_id, "player")
+		if character:
+			characters.append(character)
+
+	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+	if enter_manager:
+		var results = await enter_manager.player_batch_enter(characters, sandbox)
+		print("【贸易】玩家入场完成")
+
+
+## 生成折扣骰子
+var _discount_dice: RigidBody3D = null
+
+func _generate_discount_dice():
+	print("【贸易】生成折扣骰子...")
+
+	var dice_scene = load("res://scenes/dice_6.tscn")
+	if not dice_scene:
+		push_error("【贸易】无法加载骰子场景")
+		return
+
+	var dice = dice_scene.instantiate()
+	dice.name = "DiscountDice"
+	dice.dice_type = "discount"
+	dice.position = Vector3(4.0, 4.0, 6.0)
+
+	# 应用折扣骰子贴图（百分比文字）
+	var discount_values = ["0%", "10%", "10%", "15%", "20%", "50%"]
+	var texture_config = {}
+	for i in range(6):
+		texture_config[i] = "discount_" + discount_values[i]
+
+	if dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(texture_config, {})
+
+	# 设置为悬浮状态
+	dice.freeze = true
+	dice.gravity_scale = 0.0
+	dice.linear_velocity = Vector3.ZERO
+	dice.angular_velocity = Vector3.ZERO
+	dice.sleeping = true
+
+	sandbox.add_child(dice)
+	_discount_dice = dice
+
+	print("【贸易】折扣骰子已生成，等待玩家投掷")
+
+
+## 投掷折扣骰子（蓄力）
+func _start_discount_throw():
+	if not _discount_dice or not is_instance_valid(_discount_dice):
+		return
+
+	# 解除悬浮，开始蓄力
+	_discount_dice.freeze = false
+	_discount_dice.gravity_scale = 0.0
+	_discount_dice.sleeping = false
+
+	if DiceThrowController:
+		DiceThrowController.start_charge([_discount_dice])
+
+
+## 投掷折扣骰子（松开蓄力）
+func _execute_discount_throw():
+	if not _discount_dice or not is_instance_valid(_discount_dice):
+		return
+
+	if DiceThrowController:
+		DiceThrowController.end_charge()
+
+	# 等待骰子停止
+	print("【贸易】等待折扣骰子停止...")
+	if DiceResultDetector and _discount_dice:
+		var is_stable = await DiceResultDetector.wait_for_dice_stable([_discount_dice], 5.0)
+		if not is_stable:
+			print("【贸易】等待折扣骰子稳定超时")
+
+	# 获取结果
+	var result = _get_discount_dice_result()
+	print("【贸易】折扣骰子结果：", result)
+
+	# 清理骰子
+	if _discount_dice and is_instance_valid(_discount_dice):
+		_discount_dice.queue_free()
+	_discount_dice = null
+
+	# 通知 ShopManager
+	is_trade_phase = false
+	ShopManager.set_discount(result)
+	ShopManager.on_discount_dice_stopped.emit(result)
+
+
+## 获取折扣骰子结果
+func _get_discount_dice_result() -> int:
+	if not _discount_dice or not is_instance_valid(_discount_dice):
+		return 0
+
+	var discount_values = [0, 10, 10, 15, 20, 50]
+	if _discount_dice.has_method("get_dice_value"):
+		var face_index = _discount_dice.get_dice_value() - 1
+		if face_index >= 0 and face_index < 6:
+			return discount_values[face_index]
+	return 0
+
+
+## 结算/通关触发
+func _on_game_clear_triggered():
+	print("【游戏】触发结算/通关")
+	# TODO: 显示结算界面
 
 
 ## 切换地图显示

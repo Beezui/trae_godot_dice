@@ -80,8 +80,8 @@ func _transition_to_character_select():
 		LoadingOverlay.fade_in(0.3)
 		await LoadingOverlay.wait_fade_in()
 
-		# 切换到角色选择场景
-		var tree = get_tree()
+		# 切换到角色选择场景（使用 Engine.get_main_loop() 避免 get_tree() 返回 null）
+		var tree = Engine.get_main_loop()
 		tree.change_scene_to_file("res://scenes/ui/character_select/character_select.tscn")
 
 		await LoadingOverlay.wait_fade_out()

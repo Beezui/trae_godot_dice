@@ -36,7 +36,8 @@ signal on_config_generated(config: Variant)
 
 func _ready():
 	_instance = self
-	print("[DestinyDiceManager] 初始化完成")
+	print("[DestinyDiceManager] 初始化完成, 实例 ID=", get_instance_id())
+	print("[DestinyDiceManager] destiny_dice_instances 数组初始引用=", destiny_dice_instances)
 
 
 ## 获取单例实例
@@ -77,7 +78,8 @@ func initialize(p_current_node: LevelNode, p_level_data: LevelData = null) -> bo
 	# 3. 发出配置生成完成信号
 	on_config_generated.emit(current_config)
 
-	print("[DestinyDiceManager] 命运骰子初始化完成")
+	print("[DestinyDiceManager] initialize 被调用, 实例 ID=", get_instance_id())
+	print("[DestinyDiceManager] DestinyDiceManager 初始化完成")
 	print("  - 当前节点：", current_node.id)
 	print("  - 连接节点：", connected_nodes.size())
 	print("  - 是否 Boss 战：", current_config.is_boss_battle)
@@ -113,8 +115,12 @@ func create_destiny_dice(parent: Node) -> bool:
 		push_error("[DestinyDiceManager] 配置未生成")
 		return false
 
+	print("[DestinyDiceManager] create_destiny_dice 被调用, 当前数组大小=", destiny_dice_instances.size())
+
 	# 清理现有骰子
-	clear_dice_instances()
+	if destiny_dice_instances.size() > 0:
+		print("[DestinyDiceManager] 清理旧骰子实例")
+		clear_dice_instances()
 
 	# 加载命运骰子场景
 	if not destiny_dice_scene:
@@ -132,8 +138,10 @@ func create_destiny_dice(parent: Node) -> bool:
 			return false
 
 		dice.name = "DestinyDice_%d" % i
+		dice.skip_skill_trigger = true  # 命运骰子不触发技能
 		parent.add_child(dice)
 		destiny_dice_instances.append(dice)
+		print("[DestinyDiceManager] 骰子已添加到数组, 当前大小=", destiny_dice_instances.size(), ", dice=", dice)
 
 		# 设置骰子位置（居中排列）
 		var spacing = 1.5
@@ -141,11 +149,41 @@ func create_destiny_dice(parent: Node) -> bool:
 		var x_pos = start_x + (i * spacing)
 		dice.position = Vector3(x_pos, 6, 4.75)
 
+		# 连接骰子停止信号（自动触发结果处理）
+		dice.dice_stopped.connect(_on_destiny_dice_stopped)
+
 		# 应用命运骰子贴图
 		_apply_destiny_dice_textures(dice)
 
 	print("[DestinyDiceManager] 创建了 ", destiny_dice_instances.size(), " 个命运骰子")
+	print("[DestinyDiceManager] destiny_dice_instances 数组引用=", destiny_dice_instances)
 	return true
+
+
+## 命运骰子停止时自动处理结果（内部回调）
+func _on_destiny_dice_stopped():
+	print("[DestinyDiceManager] 命运骰子已停止，自动处理结果")
+	print("[DestinyDiceManager] 实例 ID=", get_instance_id())
+	print("[DestinyDiceManager] current_config=", current_config, ", level_data=", level_data)
+	print("[DestinyDiceManager] destiny_dice_instances.size()=", destiny_dice_instances.size())
+	print("[DestinyDiceManager] destiny_dice_instances 数组引用=", destiny_dice_instances)
+
+	# 修复：如果数组引用意外丢失，从场景中找回骰子
+	if destiny_dice_instances.size() == 0:
+		print("[DestinyDiceManager] 数组为空，从场景中查找骰子...")
+		var root = Engine.get_main_loop().get_root()
+		for i in range(root.get_child_count()):
+			var scene_root = root.get_child(i)
+			for j in range(scene_root.get_child_count()):
+				var child = scene_root.get_child(j)
+				if child and is_instance_valid(child) and child.name.begins_with("DestinyDice_"):
+					print("[DestinyDiceManager] 从场景中找回骰子: ", child.name, " 在 ", scene_root.name)
+					destiny_dice_instances.append(child)
+					break
+			if destiny_dice_instances.size() > 0:
+				break
+
+	on_roll_completed()
 
 
 ## 应用命运骰子贴图
@@ -206,27 +244,37 @@ func _throw_direct():
 ## @return 面索引（0-5），-1 表示失败
 func get_roll_result() -> int:
 	if destiny_dice_instances.size() == 0:
+		print("[DestinyDiceManager] ERROR: 骰子实例数组为空")
 		return -1
+
+	print("[DestinyDiceManager] 骰子实例数: ", destiny_dice_instances.size())
 
 	# 获取第一个骰子的结果
 	var dice = destiny_dice_instances[0]
-	if dice and is_instance_valid(dice) and dice.has_method("get_dice_value"):
-		var value = dice.get_dice_value()
-		# 骰子值转换为面索引（1-6 -> 0-5）
-		var face_index = value - 1
-		face_index = clamp(face_index, 0, 5)
-		return face_index
+	print("[DestinyDiceManager] dice=", dice, ", is_valid=", is_instance_valid(dice))
+	if dice:
+		print("[DestinyDiceManager] dice.has_method('get_dice_value')=", dice.has_method("get_dice_value"))
+		if dice.has_method("get_dice_value"):
+			var value = dice.get_dice_value()
+			print("[DestinyDiceManager] dice.get_dice_value()=", value)
+			# 骰子值转换为面索引（1-6 -> 0-5）
+			var face_index = value - 1
+			face_index = clamp(face_index, 0, 5)
+			return face_index
 
 	return -1
 
 
 ## 处理投掷完成
 func on_roll_completed():
+	print("[DestinyDiceManager] on_roll_completed 被调用, current_config=", current_config)
 	if not current_config:
+		push_error("[DestinyDiceManager] current_config 为空，无法处理结果")
 		return
 
 	# 获取投掷结果
 	var face_index = get_roll_result()
+	print("[DestinyDiceManager] 投掷结果面索引: ", face_index)
 	if face_index < 0:
 		push_error("[DestinyDiceManager] 无法获取投掷结果")
 		return
@@ -236,6 +284,7 @@ func on_roll_completed():
 
 	# 选择节点
 	var selected_node_id = current_config.select_node_from_result()
+	print("[DestinyDiceManager] 选中节点 ID: ", selected_node_id)
 
 	# 发出完成信号
 	var selected_node = _get_node_by_id(selected_node_id)
@@ -255,6 +304,8 @@ func _get_node_by_id(node_id: String) -> LevelNode:
 
 ## 清理骰子实例
 func clear_dice_instances():
+	print("[DestinyDiceManager] clear_dice_instances 被调用, 当前数量=", destiny_dice_instances.size())
+	get_stack()  # 打印调用栈
 	for dice in destiny_dice_instances:
 		if dice and is_instance_valid(dice):
 			dice.queue_free()

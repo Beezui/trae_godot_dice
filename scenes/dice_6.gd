@@ -1,5 +1,7 @@
 extends RigidBody3D
 
+signal dice_stopped  # 骰子完全停止并锁定后发出的信号
+
 @export var dice_value: int = 1              # 当前点数
 @export var dice_faces: Array = [1,2,3,4,5,6]  # 骰子面数组
 @export var dice_type: String = "normal"      # 骰子类型
@@ -299,6 +301,9 @@ func _on_final_wait_timeout():
 	if parent and parent.has_method("on_dice_stopped"):
 		parent.on_dice_stopped()
 
+	# 发出停止信号（供 CharacterEnterManager 等外部系统监听）
+	dice_stopped.emit()
+
 
 func lock_character_dice():
 	"""锁定角色骰子，使其不受外力影响"""
@@ -386,6 +391,9 @@ func _on_result_control_timeout():
 
 func _on_result_check_timeout():
 	# 定期检查骰子状态
+	# 角色骰子不需要预防措施（不依赖特定点数）
+	if dice_type == "character":
+		return
 	if not is_rolling and not has_valid_result:
 		# 骰子停止但没有有效结果，应用预防措施
 		_apply_preventive_measure()

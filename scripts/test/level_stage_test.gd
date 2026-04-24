@@ -50,8 +50,8 @@ func _ready():
 	# 4. 创建地图显示 UI（默认隐藏）
 	_create_map_display()
 
-	# 5. 连接命运骰子完成信号
-	_connect_destiny_dice_signal()
+	# 5. 连接关卡转换完成信号（通过 LevelTransitionController 统一处理）
+	_connect_transition_signal()
 
 	print("=== 测试完成 ===")
 
@@ -151,13 +151,13 @@ func _toggle_map_display():
 		print("【地图 UI】%s" % ("已显示" if is_map_visible else "已隐藏"))
 
 
-## 连接命运骰子完成信号
-func _connect_destiny_dice_signal():
-	var destiny_dice_manager = DestinyDiceManager.get_instance()
-	if destiny_dice_manager:
-		if not destiny_dice_manager.on_destiny_dice_roll_completed.is_connected(_on_destiny_dice_roll_completed):
-			destiny_dice_manager.on_destiny_dice_roll_completed.connect(_on_destiny_dice_roll_completed)
-			print("【命运骰子】已连接投掷完成信号")
+## 连接关卡转换完成信号（通过 LevelTransitionController 统一处理）
+func _connect_transition_signal():
+	var level_transition = LevelTransitionController.get_instance()
+	if level_transition:
+		if not level_transition.on_transition_completed.is_connected(_on_transition_completed):
+			level_transition.on_transition_completed.connect(_on_transition_completed)
+			print("【关卡转换】已连接转换完成信号")
 
 
 ## 投掷命运骰子
@@ -176,33 +176,24 @@ func _throw_destiny_dice():
 		print("【命运骰子】当前节点无连接，可能是终点")
 		return
 
-	is_rolling_destiny_dice = true
-	print("\n【命运骰子】开始投掷...")
-
-	# 使用 LevelTransitionController 投掷
+	# 需要先初始化命运骰子流程（创建骰子实例）
 	var level_transition = LevelTransitionController.get_instance()
 	if level_transition:
+		# 检查是否已有骰子实例（可能上一轮已创建）
+		var destiny_dice_manager = DestinyDiceManager.get_instance()
+		if destiny_dice_manager and destiny_dice_manager.destiny_dice_instances.size() == 0:
+			# 创建命运骰子
+			level_transition.start_destiny_dice_flow(self)
+
+		is_rolling_destiny_dice = true
+		print("\n【命运骰子】开始投掷...")
 		level_transition.throw_destiny_dice()
 
 
-## 命运骰子投掷完成回调
-func _on_destiny_dice_roll_completed(selected_node: LevelNode):
+## 关卡转换完成回调
+func _on_transition_completed(target_node: LevelNode):
 	is_rolling_destiny_dice = false
-
-	if not selected_node:
-		push_error("【命运骰子】选择的节点为空")
-		return
-
-	print("\n【命运骰子】投掷完成，选择节点：%s (类型：%d)" % [selected_node.name, selected_node.type])
-
-	# 切换到选中的节点
-	var level_stage: Node = LevelStage.get_instance()
-	if level_stage:
-		var success = level_stage.transition_to_node(selected_node)
-		if success:
-			print("【命运骰子】已切换到节点：%s" % selected_node.name)
-		else:
-			push_error("【命运骰子】场景切换失败")
+	print("【关卡转换】已完成，当前节点：%s (类型：%d)" % [target_node.name, target_node.type])
 
 
 ## 切换到下一个节点

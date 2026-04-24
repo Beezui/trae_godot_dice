@@ -33,7 +33,7 @@ var dice_face_config: Dictionary = {}
 # 投掷结果映射（投掷后填充）
 var roll_result_face_index: int = -1  # 投掷结果对应的面索引
 var roll_result_type: int = -1  # 投掷结果对应的类型
-var roll_result_node_ids: Array[String] = []  # 该类型对应的所有节点 ID
+var roll_result_node_ids: Array = []  # 该类型对应的所有节点 ID
 var selected_node_id: String = ""  # 最终选择的节点 ID（从结果类型中随机选择）
 
 
@@ -185,7 +185,7 @@ func set_roll_result(face_index: int) -> bool:
 	roll_result_face_index = face_index
 	var face_data = faces[face_index]
 	roll_result_type = face_data["type"]
-	roll_result_node_ids = (face_data["node_ids"] as Array).duplicate()
+	roll_result_node_ids = (face_data["node_ids"] as Array)
 
 	print("[DestinyDiceConfig] 投掷结果：面=", face_index, ", 类型=", _get_type_name(roll_result_type), ", 可选节点=", roll_result_node_ids)
 

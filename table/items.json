@@ -1,0 +1,139 @@
+{
+  "items": [
+    {
+      "id": "101",
+      "name": "火焰术",
+      "type": "技能书",
+      "price": 100,
+      "description": "学习火焰技能",
+      "icon": "fire_skill.png",
+      "weight": 30
+    },
+    {
+      "id": "102",
+      "name": "冰霜术",
+      "type": "技能书",
+      "price": 120,
+      "description": "学习冰霜技能",
+      "icon": "ice_skill.png",
+      "weight": 25
+    },
+    {
+      "id": "103",
+      "name": "雷电术",
+      "type": "技能书",
+      "price": 150,
+      "description": "学习雷电技能",
+      "icon": "lightning_skill.png",
+      "weight": 20
+    },
+    {
+      "id": "104",
+      "name": "治愈术",
+      "type": "技能书",
+      "price": 80,
+      "description": "学习治愈技能",
+      "icon": "heal_skill.png",
+      "weight": 35
+    },
+    {
+      "id": "201",
+      "name": "力量护符",
+      "type": "宝物",
+      "price": 200,
+      "description": "增加力量属性",
+      "icon": "amulet_str.png",
+      "weight": 15
+    },
+    {
+      "id": "202",
+      "name": "敏捷披风",
+      "type": "宝物",
+      "price": 180,
+      "description": "增加敏捷属性",
+      "icon": "cloak_agi.png",
+      "weight": 15
+    },
+    {
+      "id": "203",
+      "name": "智慧之戒",
+      "type": "宝物",
+      "price": 220,
+      "description": "增加智力属性",
+      "icon": "ring_int.png",
+      "weight": 10
+    },
+    {
+      "id": "204",
+      "name": "生命水晶",
+      "type": "宝物",
+      "price": 300,
+      "description": "提升最大生命值",
+      "icon": "life_crystal.png",
+      "weight": 8
+    },
+    {
+      "id": "301",
+      "name": "生命药水",
+      "type": "消耗品",
+      "price": 30,
+      "description": "恢复少量生命值",
+      "icon": "potion_hp_small.png",
+      "weight": 50
+    },
+    {
+      "id": "302",
+      "name": "魔力药水",
+      "type": "消耗品",
+      "price": 30,
+      "description": "恢复少量魔法值",
+      "icon": "potion_mp_small.png",
+      "weight": 50
+    },
+    {
+      "id": "303",
+      "name": "大生命药水",
+      "type": "消耗品",
+      "price": 80,
+      "description": "恢复大量生命值",
+      "icon": "potion_hp_large.png",
+      "weight": 30
+    },
+    {
+      "id": "304",
+      "name": "大魔力药水",
+      "type": "消耗品",
+      "price": 80,
+      "description": "恢复大量魔法值",
+      "icon": "potion_mp_large.png",
+      "weight": 30
+    },
+    {
+      "id": "305",
+      "name": "铁壁药剂",
+      "type": "消耗品",
+      "price": 50,
+      "description": "暂时提升防御",
+      "icon": "defense_potion.png",
+      "weight": 25
+    },
+    {
+      "id": "306",
+      "name": "疾风药剂",
+      "type": "消耗品",
+      "price": 50,
+      "description": "暂时提升敏捷",
+      "icon": "speed_potion.png",
+      "weight": 25
+    },
+    {
+      "id": "307",
+      "name": "力量药剂",
+      "type": "消耗品",
+      "price": 50,
+      "description": "暂时提升力量",
+      "icon": "strength_potion.png",
+      "weight": 25
+    }
+  ]
+}

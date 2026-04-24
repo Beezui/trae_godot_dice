@@ -98,50 +98,7 @@ func load_level_scene(p_node: LevelNode, p_level_data: LevelData) -> bool:
 	if npc_ids.size() > 0 and npc_spawner:
 		_spawn_npcs(npc_ids)
 
-	# 5. 生成角色骰子和技能骰子
-	_spawn_character_dice()
-
 	return true
-
-
-## 生成角色骰子和技能骰子
-func _spawn_character_dice():
-	print("【核心关卡节点】开始生成角色骰子...")
-
-	# 使用 DestinyDiceManager 生成角色骰子
-	var destiny_dice_manager = DestinyDiceManager.get_instance()
-	if not destiny_dice_manager:
-		push_error("【核心关卡节点】DestinyDiceManager 不存在")
-		return
-
-	if not current_scene:
-		push_error("【核心关卡节点】当前场景未加载")
-		return
-
-	# 获取当前场景的 GameManager（用于创建骰子）
-	var game_manager = current_scene.get_node("GameManager")
-	if not game_manager:
-		push_error("【核心关卡节点】未找到 GameManager")
-		return
-
-	# 初始化命运骰子管理器
-	if current_node and level_data:
-		var success = destiny_dice_manager.initialize(current_node, level_data)
-		if success:
-			# 创建角色骰子实例
-			destiny_dice_manager.create_destiny_dice(game_manager)
-
-			# 设置骰子位置（使用投掷区域标准位置）
-			var dice_array = destiny_dice_manager.destiny_dice_instances
-			if dice_array.size() > 0:
-				var initial_z = 4.75  # 投掷区域 z 坐标
-				for dice in dice_array:
-					if dice and is_instance_valid(dice):
-						dice.position = Vector3(0, 4, initial_z)
-
-			print("【核心关卡节点】角色骰子生成成功，数量：%d" % dice_array.size())
-		else:
-			push_error("【核心关卡节点】命运骰子初始化失败")
 
 
 ## 清理当前场景
