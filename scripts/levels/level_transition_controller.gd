@@ -165,6 +165,9 @@ func execute_transition():
 
 	print("[LevelTransitionController] 开始关卡转换：", current_node.id, " -> ", target_node.id)
 
+	# 0. 清理 Sandbox 中的角色骰子
+	_cleanup_sandbox()
+
 	# 1. 更新当前节点
 	current_node = target_node
 
@@ -228,3 +231,18 @@ func can_throw_again() -> bool:
 	if not current_node:
 		return false
 	return current_node.connections.size() > 0
+
+
+## 清理 Sandbox 中的角色骰子（场景转换时调用）
+func _cleanup_sandbox():
+	var root = Engine.get_main_loop().root
+	# 遍历根节点的子节点查找 Sandbox
+	for i in range(root.get_child_count()):
+		var child = root.get_child(i)
+		if child.has_node("Sandbox"):
+			var sandbox = child.get_node("Sandbox")
+			var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+			if enter_manager and enter_manager.has_method("cleanup_all_characters"):
+				enter_manager.cleanup_all_characters(sandbox)
+				print("[LevelTransitionController] Sandbox 角色骰子已清理")
+			return

@@ -33,17 +33,6 @@ func _setup_ui():
 	grow_horizontal = 2  # GROW_BOTH_ENDS
 	grow_vertical = 2  # GROW_BOTH_ENDS
 
-	# 设置背景颜色
-	var bg_color = Color(0.15, 0.15, 0.2, 1.0)
-	var bg_rect = ColorRect.new()
-	bg_rect.name = "Background"
-	bg_rect.anchors_preset = Control.PRESET_FULL_RECT
-	bg_rect.grow_horizontal = 2  # GROW_BOTH_ENDS
-	bg_rect.grow_vertical = 2  # GROW_BOTH_ENDS
-	bg_rect.color = bg_color
-	add_child(bg_rect)
-	bg_rect.move_child(bg_rect, 0)  # 移到最底层
-
 	# 设置标题
 	if title_label:
 		title_label.text = "选择你的角色"
@@ -111,74 +100,24 @@ func _create_character_cards():
 
 ## 创建单个角色卡片
 func _create_character_card(hero: Dictionary) -> PanelContainer:
-	var card = PanelContainer.new()
+	var card_scene = load("res://scenes/ui/character_card.tscn")
+	if not card_scene:
+		push_error("【角色选择】无法加载角色卡片预制")
+		return null
+
+	var card = card_scene.instantiate() as PanelContainer
+	if not card:
+		push_error("【角色选择】无法实例化角色卡片")
+		return null
+
 	card.name = "CharacterCard_" + str(hero.get("id", "unknown"))
-	card.custom_minimum_size = Vector2(200, 280)
 
-	# 设置卡片样式
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.25, 0.25, 0.3, 1)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
-	card.add_theme_stylebox_override("panel", style)
-
-	# 创建垂直布局
-	var vbox = VBoxContainer.new()
-	vbox.name = "VBoxContainer"
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	card.add_child(vbox)
-
-	# 头像区域
-	var portrait_panel = Panel.new()
-	portrait_panel.name = "PortraitPanel"
-	portrait_panel.custom_minimum_size = Vector2(150, 150)
-	vbox.add_child(portrait_panel)
-
-	var portrait_label = Label.new()
-	portrait_label.name = "PortraitLabel"
-	portrait_label.text = "头像"
-	portrait_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	portrait_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	portrait_label.add_theme_font_size_override("font_size", 24)
-	portrait_panel.add_child(portrait_label)
-
-	# 角色名称
-	var name_label = Label.new()
-	name_label.name = "NameLabel"
-	name_label.text = hero.get("name", "未知角色")
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 20)
-	vbox.add_child(name_label)
-
-	# 属性显示
-	var stats_grid = GridContainer.new()
-	stats_grid.name = "StatsGrid"
-	stats_grid.columns = 2
-	vbox.add_child(stats_grid)
-
-	# HP
-	var hp_label = Label.new()
-	hp_label.text = "HP: " + str(hero.get("attr_hp", "100"))
-	stats_grid.add_child(hp_label)
-
-	# MP
-	var mp_label = Label.new()
-	mp_label.text = "MP: " + str(hero.get("attr_mp", "50"))
-	stats_grid.add_child(mp_label)
-
-	# 选择指示器
-	var select_indicator = Label.new()
-	select_indicator.name = "SelectIndicator"
-	select_indicator.text = "未选择"
-	select_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	select_indicator.add_theme_font_size_override("font_size", 14)
-	select_indicator.modulate = Color(0.7, 0.7, 0.7)
-	vbox.add_child(select_indicator)
+	# 填充数据
+	if card.has_method("setup"):
+		card.setup(hero)
 
 	# 点击事件
-	card.gui_input.connect(_on_card_gui_input.bind(card, hero, select_indicator))
+	card.gui_input.connect(_on_card_gui_input.bind(card, hero))
 
 	# 存储英雄数据
 	card.set_meta("hero_data", hero)
@@ -188,30 +127,21 @@ func _create_character_card(hero: Dictionary) -> PanelContainer:
 
 
 ## 卡片点击事件
-func _on_card_gui_input(event: InputEvent, card: PanelContainer, hero: Dictionary, indicator: Label):
+func _on_card_gui_input(event: InputEvent, card: PanelContainer, hero: Dictionary):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_toggle_card_selection(card, indicator)
+		_toggle_card_selection(card)
 
 
 ## 切换卡片选择状态
-func _toggle_card_selection(card: PanelContainer, indicator: Label):
+func _toggle_card_selection(card: PanelContainer):
 	var is_selected = card.get_meta("is_selected")
 	var hero_id = card.get_meta("hero_data").get("id", "")
 
 	if is_selected:
 		# 取消选择
 		card.set_meta("is_selected", false)
-		indicator.text = "未选择"
-		indicator.modulate = Color(0.7, 0.7, 0.7)
-
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.25, 0.25, 0.3, 1)
-		style.corner_radius_top_left = 10
-		style.corner_radius_top_right = 10
-		style.corner_radius_bottom_left = 10
-		style.corner_radius_bottom_right = 10
-		card.add_theme_stylebox_override("panel", style)
-
+		if card.has_method("set_selected"):
+			card.set_selected(false)
 		selected_hero_id = ""
 	else:
 		# 单选：先取消之前选择的卡片
@@ -220,19 +150,8 @@ func _toggle_card_selection(card: PanelContainer, indicator: Label):
 
 		# 选择新卡片
 		card.set_meta("is_selected", true)
-		indicator.text = "已选择"
-		indicator.modulate = Color(0.3, 1.0, 0.5)
-
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.3, 0.5, 0.3, 1)
-		style.corner_radius_top_left = 10
-		style.corner_radius_top_right = 10
-		style.corner_radius_bottom_left = 10
-		style.corner_radius_bottom_right = 10
-		style.border_color = Color(0.5, 1.0, 0.5)
-		style.set_border_width_all(2)
-		card.add_theme_stylebox_override("panel", style)
-
+		if card.has_method("set_selected"):
+			card.set_selected(true)
 		selected_hero_id = hero_id
 
 	print("【角色选择】当前选择：", selected_hero_id)
@@ -245,19 +164,8 @@ func _clear_previous_selection():
 			var card_hero_id = card.get_meta("hero_data").get("id", "")
 			if card_hero_id == selected_hero_id:
 				card.set_meta("is_selected", false)
-
-				var indicator = card.get_node("VBoxContainer/SelectIndicator")
-				if indicator:
-					indicator.text = "未选择"
-					indicator.modulate = Color(0.7, 0.7, 0.7)
-
-				var style = StyleBoxFlat.new()
-				style.bg_color = Color(0.25, 0.25, 0.3, 1)
-				style.corner_radius_top_left = 10
-				style.corner_radius_top_right = 10
-				style.corner_radius_bottom_left = 10
-				style.corner_radius_bottom_right = 10
-				card.add_theme_stylebox_override("panel", style)
+				if card.has_method("set_selected"):
+					card.set_selected(false)
 				break
 
 

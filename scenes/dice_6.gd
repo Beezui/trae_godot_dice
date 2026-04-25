@@ -20,9 +20,9 @@ var result_control_timer: Timer
 var has_valid_result: bool = false  # 标记骰子是否有有效结果
 var result_check_timer: Timer  # 用于定期检查骰子状态
 var stable_check_count: int = 0  # 稳定检查计数
-const REQUIRED_STABLE_CHECKS: int = 10  # 需要连续稳定检查次数（每 0.1 秒一次，共 1 秒）
+const REQUIRED_STABLE_CHECKS: int = 5  # 需要连续稳定检查次数（每 0.1 秒一次，共 0.5 秒）
 var final_wait_timer: Timer  # 最终等待计时器（余韵时间）
-const FINAL_WAIT_TIME: float = 1.5  # 完全稳定后的等待时间（秒）- 余韵
+const FINAL_WAIT_TIME: float = 0.5  # 完全稳定后的等待时间（秒）- 余韵
 var is_in_final_wait: bool = false  # 是否在余韵等待中
 
 # 角色骰子相关
@@ -317,11 +317,13 @@ func lock_character_dice():
 	# 设置睡眠状态，防止物理引擎继续计算
 	sleeping = true
 
-	# 设置碰撞层，避免与其他骰子碰撞
-	collision_layer = 0
-	collision_mask = 0
+	# 保持碰撞层设置，允许与其他骰子碰撞
+	# 通过增大质量和阻尼让角色骰子在碰撞时受到的影响更小
+	mass = 100.0
+	linear_damp = 10.0
+	angular_damp = 10.0
 
-	print("【角色骰子】已锁定位置，不受外力影响")
+	print("【角色骰子】已锁定位置，保持碰撞但减小影响")
 
 
 func create_health_bar():
@@ -353,6 +355,43 @@ func create_health_bar():
 
 	print("【骰子】2D 血条已创建，路径：", health_bar.get_path())
 	print("【骰子】血条父节点：", parent.name)
+
+
+## 清理骰子（停止 timer、断开信号，防止清理后残留回调创建血条）
+func cleanup_dice():
+	is_rolling = false
+	skip_skill_trigger = true
+
+	# 停止所有计时器
+	if roll_timer and roll_timer.is_inside_tree():
+		roll_timer.stop()
+		if roll_timer.timeout.is_connected(_on_roll_timer_timeout):
+			roll_timer.timeout.disconnect(_on_roll_timer_timeout)
+
+	if final_wait_timer and final_wait_timer.is_inside_tree():
+		final_wait_timer.stop()
+		if final_wait_timer.timeout.is_connected(_on_final_wait_timeout):
+			final_wait_timer.timeout.disconnect(_on_final_wait_timeout)
+
+	if result_check_timer and result_check_timer.is_inside_tree():
+		result_check_timer.stop()
+		if result_check_timer.timeout.is_connected(_on_result_check_timeout):
+			result_check_timer.timeout.disconnect(_on_result_check_timeout)
+
+	if result_control_timer and result_control_timer.is_inside_tree():
+		result_control_timer.stop()
+		if result_control_timer.timeout.is_connected(_on_result_control_timeout):
+			result_control_timer.timeout.disconnect(_on_result_control_timeout)
+
+	# 断开碰撞信号
+	if body_entered.is_connected(_on_body_entered):
+		body_entered.disconnect(_on_body_entered)
+	if body_exited.is_connected(_on_body_exited):
+		body_exited.disconnect(_on_body_exited)
+
+	# 清除血条引用（防止 recreate）
+	health_bar = null
+	character = null
 
 
 func get_character() -> RefCounted:
@@ -566,17 +605,11 @@ func set_dice_scale(scale: Vector3):
 	注意：直接缩放 RigidBody3D 根节点，这样网格和碰撞体会同步缩放
 	:param scale: 缩放比例向量
 	"""
-	# 直接缩放 RigidBody3D 根节点
+	# 直接缩放 RigidBody3D 根节点，碰撞体和网格会跟随缩放
 	self.scale = scale
 	print("【骰子】根节点缩放已设置为：", scale)
 
-	# 同步调整碰撞体大小（确保碰撞体形状匹配缩放后的骰子）
-	var collision_shape = get_node_or_null("CollisionShape3D")
-	if collision_shape and collision_shape.shape:
-		# BoxShape3D 的 size 是半尺寸，需要乘以 2
-		var base_size = Vector3(1, 1, 1)  # 基础碰撞体大小（对应 scale=1 时的尺寸）
-		collision_shape.shape.size = base_size * scale
-		print("【骰子】碰撞体已同步调整：", collision_shape.shape.size)
+	# 碰撞体和网格会自动跟随父节点缩放，不需要手动调整 shape.size
 
 	# 也设置网格的缩放（双重保障）
 	var mesh = get_node_or_null("MeshInstance3D")

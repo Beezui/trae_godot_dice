@@ -62,12 +62,12 @@ func _preload_common_textures():
 func _preload_destiny_dice_textures():
 	print("【贴图管理器】预加载命运骰子贴图...")
 	var destiny_textures = [
-		"res://textures/destiny/destiny_type_1.png",  # 战斗
-		"res://textures/destiny/destiny_type_2.png",  # 奇遇
-		"res://textures/destiny/destiny_type_3.png",  # 交易
-		"res://textures/destiny/destiny_type_4.png",  # 奖励
-		"res://textures/destiny/destiny_type_5.png",  # 精英战斗
-		"res://textures/destiny/destiny_boss.png"     # Boss 专属
+		"res://textures/destiny/combat.png",      # 战斗 (type 1)
+		"res://textures/destiny/encounter.png",   # 奇遇 (type 2)
+		"res://textures/destiny/trade.png",       # 交易 (type 3)
+		"res://textures/destiny/reward.png",      # 奖励 (type 4)
+		"res://textures/destiny/elite.png",       # 精英战斗 (type 5)
+		"res://textures/destiny/boss.png"         # Boss 专属
 	]
 
 	for path in destiny_textures:
@@ -105,48 +105,75 @@ func create_discount_face_texture(
 	control.size = viewport.size
 	viewport.add_child(control)
 
-	# 半透明背景 ColorRect
+	# 清爽浅色背景
 	var bg = ColorRect.new()
-	bg.color = Color(0.15, 0.15, 0.25, 0.9)
+	bg.color = Color(0.96, 0.94, 0.90, 0.97)
 	bg.anchors_preset = Control.PRESET_FULL_RECT
 	bg.size = viewport.size
 	control.add_child(bg)
 
-	# 百分比文字标签
-	var label = Label.new()
-	label.name = "DiscountText"
-	label.text = percentage_text
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.anchors_preset = Control.PRESET_FULL_RECT
-	label.size = viewport.size
-	# 根据文字长度自适应字号
-	var text_length = percentage_text.length()
-	var font_size = 288
-	if text_length <= 3:
-		font_size = 288
-	elif text_length <= 5:
-		font_size = 240
-	elif text_length <= 7:
-		font_size = 192
-	else:
-		font_size = 144
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", Color.YELLOW)
-	control.add_child(label)
+	# 文字渐变配色（浅粉橙→红→深红）
+	var gradient_colors: Array[Color] = [
+		Color("#FFB3A6"),  # 浅粉橙
+		Color("#FF6E5E"),  # 红
+		Color("#CC4A3A"),  # 深红
+	]
 
-	# 描边层
-	var outline_label = Label.new()
-	outline_label.name = "DiscountOutline"
-	outline_label.text = percentage_text
-	outline_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	outline_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	outline_label.anchors_preset = Control.PRESET_FULL_RECT
-	outline_label.size = viewport.size
-	outline_label.add_theme_font_size_override("font_size", int(font_size * 1.15))
-	outline_label.add_theme_color_override("font_color", Color(0.8, 0.6, 0.0))
-	control.add_child(outline_label)
-	control.add_child(label)
+	# 字号设置
+	var font_size = 220
+	var text_length = percentage_text.length()
+	if text_length <= 2:
+		font_size = 240
+	elif text_length <= 3:
+		font_size = 220
+	elif text_length <= 4:
+		font_size = 190
+	else:
+		font_size = 160
+
+	# 获取默认字体用于测量
+	var font = ThemeDB.fallback_font
+
+	# 测量每个字符的宽度以计算总宽度和居中位置
+	var total_text_width = 0.0
+	var char_widths: Array[float] = []
+	for i in range(text_length):
+		var char_w = font.get_string_size(percentage_text[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		char_widths.append(char_w)
+		total_text_width += char_w
+
+	# 计算起始 X/Y 位置（居中，使用 get_string_size 获取覆盖字号后的实际尺寸）
+	var start_x = (viewport.size.x - total_text_width) / 2.0
+	var text_height = font.get_string_size(percentage_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).y
+	var start_y = (viewport.size.y - text_height) / 2.0
+
+	var current_x = start_x
+
+	# 为每个字符创建独立 Label，应用渐变色，使用显式定位
+	for i in range(text_length):
+		var char: String = percentage_text[i]
+		var t = float(i) / max(text_length - 1, 1)
+		var color_index = t * (gradient_colors.size() - 1)
+		var ci = int(color_index)
+		var cf = color_index - ci
+		var ch_color = gradient_colors[ci].lerp(gradient_colors[min(ci + 1, gradient_colors.size() - 1)], cf)
+
+		var main_label = Label.new()
+		main_label.text = char
+		main_label.add_theme_font_size_override("font_size", font_size)
+		main_label.add_theme_color_override("font_color", ch_color)
+		main_label.add_theme_constant_override("outline_size", 2)
+		main_label.add_theme_color_override("font_outline_color", Color(0.18, 0.35, 0.55, 0.7))
+		main_label.add_theme_color_override("font_shadow_color", Color(0.15, 0.25, 0.4, 0.4))
+		main_label.add_theme_constant_override("shadow_offset_x", 2)
+		main_label.add_theme_constant_override("shadow_offset_y", 2)
+		main_label.add_theme_constant_override("shadow_outline_size", 1)
+		# 使用 anchors_preset 确保位置不被布局系统干扰
+		main_label.anchors_preset = Control.PRESET_TOP_LEFT
+		main_label.position = Vector2(current_x, start_y)
+		main_label.size = Vector2(char_widths[i], text_height)
+		current_x += char_widths[i]
+		control.add_child(main_label)
 
 	# 添加到场景树以触发渲染
 	if mesh_instance and mesh_instance.get_parent():
@@ -809,8 +836,18 @@ func _apply_discount_dice_textures(mesh_instance: MeshInstance3D, config: Dictio
 ## 获取命运骰子贴图路径
 func _get_destiny_texture_path(texture_value: String) -> String:
 	if texture_value.begins_with("destiny_type_"):
-		# 类型贴图：destiny_type_1 -> res://textures/destiny/destiny_type_1.png
-		return "res://textures/destiny/" + texture_value + ".png"
+		# 类型贴图：destiny_type_1 -> combat.png 等
+		var type_id = int(texture_value.substr(11))
+		var texture_name = ""
+		match type_id:
+			1: texture_name = "combat"
+			2: texture_name = "encounter"
+			3: texture_name = "trade"
+			4: texture_name = "reward"
+			5: texture_name = "elite"
+			99: texture_name = "boss"
+			_: texture_name = "combat"
+		return "res://textures/destiny/" + texture_name + ".png"
 	elif texture_value.begins_with("boss_"):
 		# Boss 贴图：boss_1001 -> res://textures/destiny/boss_1001.png
 		# 注意：Boss 贴图可能需要特殊处理，这里使用通用 Boss 贴图或节点 ID

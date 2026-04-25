@@ -23,17 +23,6 @@ func _setup_ui():
 	grow_horizontal = 2  # GROW_BOTH_ENDS
 	grow_vertical = 2  # GROW_BOTH_ENDS
 
-	# 设置背景颜色（深色渐变）
-	var bg_color = Color(0.1, 0.1, 0.15, 1.0)
-	var bg_rect = ColorRect.new()
-	bg_rect.name = "Background"
-	bg_rect.anchors_preset = Control.PRESET_FULL_RECT
-	bg_rect.grow_horizontal = 2  # GROW_BOTH_ENDS
-	bg_rect.grow_vertical = 2  # GROW_BOTH_ENDS
-	bg_rect.color = bg_color
-	add_child(bg_rect)
-	bg_rect.move_child(bg_rect, 0)
-
 	# 设置标题
 	if title_label:
 		title_label.text = "晋升吧骰子"

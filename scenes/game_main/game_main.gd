@@ -176,6 +176,48 @@ func _setup_sandbox():
 	print("【沙盘】创建完成，尺寸：", sandbox_width, " x ", sandbox_height)
 
 
+## 清理 Sandbox 中的角色骰子（贸易/战斗结束后调用）
+func _cleanup_sandbox_characters():
+	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+	if enter_manager and enter_manager.has_method("cleanup_all_characters"):
+		enter_manager.cleanup_all_characters(sandbox)
+		print("【清理】Sandbox 角色骰子已清理")
+	else:
+		push_warning("【清理】CharacterEnterManager 不可用，尝试手动清理")
+		_cleanup_sandbox_manual()
+
+
+## 手动清理 Sandbox（CharacterEnterManager 不可用时）
+func _cleanup_sandbox_manual():
+	var dice_to_remove = []
+	var hb_to_remove = []
+	var hb_script = null
+	if ResourceLoader.exists("res://scripts/ui/dice_health_bar_2d.gd"):
+		hb_script = load("res://scripts/ui/dice_health_bar_2d.gd")
+	for child in sandbox.get_children():
+		if not is_instance_valid(child):
+			continue
+		# 识别血条节点（通过脚本匹配）
+		if hb_script and child.get_script() == hb_script:
+			hb_to_remove.append(child)
+			continue
+		if child is RigidBody3D:
+			var dtype = child.get("dice_type")
+			if str(dtype) == "character":
+				for sub_child in child.get_children():
+					if sub_child is Timer:
+						sub_child.stop()
+						for conn in sub_child.timeout.get_connections():
+							sub_child.timeout.disconnect(conn.callable)
+				child.set("is_rolling", false)
+				dice_to_remove.append(child)
+	for hb in hb_to_remove:
+		hb.queue_free()
+	for dice in dice_to_remove:
+		dice.queue_free()
+	print("【清理】手动清理了 ", dice_to_remove.size(), " 个角色骰子，", hb_to_remove.size(), " 个血条")
+
+
 ## 创建围墙
 func _create_walls(sandbox_width: float, sandbox_height: float):
 	# 北墙
@@ -283,6 +325,9 @@ func _setup_start_node():
 ## 玩家入场
 func _spawn_player():
 	print("【角色】玩家入场...")
+
+	# 安全清理：确保 Sandbox 没有残留骰子
+	_cleanup_sandbox_characters()
 
 	# 使用 CharacterManager 创建玩家角色
 	var characters: Array[BaseCharacter] = []
@@ -540,8 +585,10 @@ func _start_trade(node: LevelNode):
 	ShopManager.set_discount(discount_result)
 	ShopManager.open_shop()
 
-	# 9. 等待玩家点击前进（ShopManager._on_advance_pressed 会触发命运骰子）
+	# 9. 等待玩家点击前进（ShopManager 发射 on_trade_completed 信号）
 	print("【贸易】等待玩家完成交易...")
+	await ShopManager.on_trade_completed
+	print("【贸易】交易结束，继续命运骰子流程")
 
 
 ## 等待折扣骰子结果
@@ -664,6 +711,7 @@ func _start_discount_throw():
 	_discount_dice.freeze = false
 	_discount_dice.gravity_scale = 0.0
 	_discount_dice.sleeping = false
+	_discount_dice.is_rolling = true
 
 	if DiceThrowController:
 		DiceThrowController.start_charge([_discount_dice])
@@ -699,14 +747,16 @@ func _execute_discount_throw():
 	ShopManager.on_discount_dice_stopped.emit(result)
 
 
-## 获取折扣骰子结果
+## 获取折扣骰子结果（使用统一检测器）
 func _get_discount_dice_result() -> int:
 	if not _discount_dice or not is_instance_valid(_discount_dice):
 		return 0
 
 	var discount_values = [0, 10, 10, 15, 20, 50]
-	if _discount_dice.has_method("get_dice_value"):
-		var face_index = _discount_dice.get_dice_value() - 1
+	# 使用统一检测器计算朝上的面
+	if DiceResultDetector:
+		var face_value = DiceResultDetector.check_dice_value(_discount_dice)
+		var face_index = face_value - 1
 		if face_index >= 0 and face_index < 6:
 			return discount_values[face_index]
 	return 0

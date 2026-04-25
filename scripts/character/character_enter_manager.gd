@@ -95,8 +95,13 @@ func _character_enter(character, sandbox: Node, x_position: float, side: String)
 	dice.gravity_scale = 1.0
 	_unlock_dice(dice)
 	
-	# 4. 投掷骰子
-	var throw_direction = Vector3(0, throw_config["throw_direction_y"], -1 if side == "player" else 1).normalized()
+	# 4. 投掷骰子（水平方向随机偏转，整体朝向对面半场）
+	var horizontal_bias = randf_range(-0.4, 0.4)
+	var throw_direction = Vector3(
+		horizontal_bias,
+		throw_config["throw_direction_y"],
+		-1.0 if side == "player" else 1.0
+	).normalized()
 	var force = throw_direction * throw_config["throw_force"]
 
 	var angular_force = Vector3(
@@ -277,8 +282,10 @@ func _lock_dice(dice: RigidBody3D):
 		dice.linear_velocity = Vector3.ZERO
 		dice.angular_velocity = Vector3.ZERO
 		dice.sleeping = true
-		dice.collision_layer = 0
-		dice.collision_mask = 0
+		# 保持碰撞，通过高质量和阻尼减少碰撞影响
+		dice.mass = 100.0
+		dice.linear_damp = 10.0
+		dice.angular_damp = 10.0
 	
 	print("【CharacterEnterManager】角色骰子已锁定")
 
@@ -295,3 +302,104 @@ func configure_throw(config: Dictionary):
 ## @return Dictionary 配置字典
 func get_throw_config() -> Dictionary:
 	return throw_config.duplicate()
+
+
+## 清理 Sandbox 中的角色骰子
+## @param sandbox Sandbox 节点
+## @param dice_type 骰子类型（"character"、"skill"、"attribute"、"discount"，清空则清理所有）
+## @param side 阵营（"player"、"enemy"，清空则清理所有阵营）
+## 清理 Sandbox 中的角色骰子
+func cleanup_sandbox(sandbox: Node, dice_type: String = "", side: String = ""):
+	if not sandbox or not is_instance_valid(sandbox):
+		return
+
+	var dice_to_clean = []
+	var health_bars_to_clean = []
+
+	# 先列出所有 Sandbox 子节点（调试用）
+	print("【CharacterEnterManager】Sandbox 子节点列表（", sandbox.get_children().size(), " 个）:")
+	for child in sandbox.get_children():
+		var dtype = ""
+		if child is RigidBody3D:
+			dtype = str(child.get("dice_type")) if child.get("dice_type") != null else "null"
+		print("  - ", child.name, " (", child.get_class(), ", dice_type=", dtype, ")")
+
+	# 加载血条脚本用于识别
+	var hb_script = null
+	if ResourceLoader.exists("res://scripts/ui/dice_health_bar_2d.gd"):
+		hb_script = load("res://scripts/ui/dice_health_bar_2d.gd")
+
+	# 收集所有骰子和血条
+	for child in sandbox.get_children():
+		if not is_instance_valid(child):
+			continue
+
+		# 识别血条节点（通过脚本匹配，比节点名更可靠）
+		if hb_script and child.get_script() == hb_script:
+			health_bars_to_clean.append(child)
+			continue
+
+		# 识别骰子：RigidBody3D + 有 dice_type @export 变量
+		if child is RigidBody3D:
+			var dtype = child.get("dice_type")
+			var dtype_str = str(dtype) if dtype != null else ""
+			if dice_type.is_empty() or dtype_str == dice_type:
+				if side.is_empty() or _get_property_safe(child, "character_side", "") == side:
+					dice_to_clean.append(child)
+
+	# 清理骰子（先停止 timer）
+	for dice in dice_to_clean:
+		if is_instance_valid(dice):
+			_stop_dice_timers(dice)
+			dice.queue_free()
+
+	# 清理所有血条
+	for hb in health_bars_to_clean:
+		if is_instance_valid(hb):
+			hb.queue_free()
+
+	print("【CharacterEnterManager】Sandbox 清理完成，清理了 ", dice_to_clean.size(), " 个骰子，", health_bars_to_clean.size(), " 个血条")
+
+
+## 停止骰子所有 timer（防止清理后残留回调创建血条）
+func _stop_dice_timers(dice):
+	if not dice:
+		return
+	# 停止所有子计时器并断开信号
+	for child in dice.get_children():
+		if child is Timer:
+			child.stop()
+			# 断开 timer 的所有信号连接
+			for conn in child.timeout.get_connections():
+				child.timeout.disconnect(conn.callable)
+	# 标记为不投掷状态
+	dice.set("is_rolling", false)
+	dice.set("skip_skill_trigger", true)
+
+
+## 清理所有角色骰子（玩家和敌人）
+func cleanup_all_characters(sandbox: Node):
+	cleanup_sandbox(sandbox, "character", "")
+
+
+## 清理特定阵营的角色骰子
+func cleanup_side_characters(sandbox: Node, side: String):
+	cleanup_sandbox(sandbox, "character", side)
+
+
+## 安全获取节点属性值（兼容所有 Godot 对象）
+func _get_property_safe(obj: Object, property_name: String, default_value):
+	# 优先尝试方法调用（如 get_dice_type()）
+	var method_name = "get_" + property_name
+	if obj.has_method(method_name):
+		return obj.call(method_name)
+	# 回退：直接通过 get() 获取 @export 变量
+	return obj.get(property_name) if _has_property(obj, property_name) else default_value
+
+
+## 检查 Godot 对象是否存在指定属性
+func _has_property(obj: Object, property_name: String) -> bool:
+	for prop in obj.get_property_list():
+		if prop.name == property_name:
+			return true
+	return false

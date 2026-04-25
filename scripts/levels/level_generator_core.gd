@@ -5,6 +5,7 @@ extends RefCounted
 
 var boss_config: Array = []  # Boss 配置列表
 var scenes_config: Array = []  # 场景配置列表
+var node_type_weights: Array = []  # 节点类型权重配置
 var config: Dictionary = {}   # 生成配置
 
 # 每个阶段的目标层级数
@@ -59,6 +60,28 @@ func load_configs() -> Error:
 	data = json.get_data()
 	if data is Dictionary and data.has("scenes"):
 		scenes_config = data["scenes"]
+
+	# 加载 node_type_weights.json
+	var weights_file = FileAccess.open("res://table/node_type_weights.json", FileAccess.READ)
+	if weights_file:
+		var weights_text = weights_file.get_as_text()
+		weights_file.close()
+		var weights_json = JSON.new()
+		if weights_json.parse(weights_text) == OK:
+			var weights_data = weights_json.get_data()
+			if weights_data is Dictionary and weights_data.has("node_type_weights"):
+				node_type_weights = weights_data["node_type_weights"]
+				print("[LevelGeneratorCore] 节点类型权重配置已加载：", node_type_weights.size(), " 个类型")
+		else:
+			push_error("[LevelGeneratorCore] 解析 node_type_weights.json 失败")
+	else:
+		push_warning("[LevelGeneratorCore] 无法打开 node_type_weights.json，使用默认权重")
+		node_type_weights = [
+			{"type": 1, "name": "战斗", "weight": 45.0},
+			{"type": 2, "name": "奇遇", "weight": 30.0},
+			{"type": 3, "name": "交易", "weight": 15.0},
+			{"type": 4, "name": "奖励", "weight": 10.0},
+		]
 
 	return OK
 
@@ -214,21 +237,26 @@ func _get_node_type_for_node_id(node_id: int) -> int:
 	# 使用质数乘法打散种子，避免连续 ID 产生相似结果
 	seed((node_id * 2654435761) % 4294967295)
 
-	# 基础概率分布（可根据设计调整）：
-	# 战斗：45%  (主要玩法)
-	# 奇遇：30%  (剧情/事件)
-	# 交易：15%  (商店/补给)
-	# 奖励：10%  (奖励/宝藏)
-	var rand = randf()
+	# 从配置文件读取权重
+	if node_type_weights.size() == 0:
+		return 1  # 默认返回战斗
 
-	if rand < 0.45:
-		return 1  # 战斗
-	elif rand < 0.75:
-		return 2  # 奇遇
-	elif rand < 0.90:
-		return 3  # 交易
-	else:
-		return 4  # 奖励
+	var total_weight = 0.0
+	for wt in node_type_weights:
+		total_weight += wt.get("weight", 0.0)
+
+	if total_weight <= 0:
+		return 1
+
+	var rand_val = randf() * total_weight
+	var cumulative = 0.0
+	for wt in node_type_weights:
+		cumulative += wt.get("weight", 0.0)
+		if rand_val <= cumulative:
+			return wt["type"]
+
+	# 兜底返回最后一个
+	return node_type_weights[-1]["type"]
 
 
 ## 确保层内节点类型多样性（避免同一层所有节点类型完全相同）
@@ -685,4 +713,5 @@ func get_boss_config() -> Array:
 func clear() -> void:
 	boss_config.clear()
 	scenes_config.clear()
+	node_type_weights.clear()
 	config.clear()
