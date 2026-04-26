@@ -8,12 +8,12 @@
     {
       "type": 2,
       "name": "奇遇",
-      "weight": 30.0
+      "weight": 90.0
     },
     {
       "type": 3,
       "name": "交易",
-      "weight": 60.0
+      "weight": 0.0
     },
     {
       "type": 4,
