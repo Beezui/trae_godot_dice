@@ -46,6 +46,12 @@ var is_adventure_charging: bool = false
 var adventure_dice_result_ready: bool = false
 var adventure_dice_result_value: int = 0
 
+# 奖励阶段状态
+var is_reward_phase: bool = false
+var is_reward_charging: bool = false
+var reward_dice_result_ready: bool = false
+var reward_dice_result_value: int = 0
+
 
 func _ready():
 	print("=== 游戏主入口场景初始化 ===")
@@ -460,6 +466,16 @@ func _input(event):
 			is_adventure_charging = false
 		return  # 奇遇阶段不处理命运骰子投掷
 
+	# 奖励阶段：空格键投掷奖励骰子
+	if is_reward_phase and event is InputEventKey and event.keycode == KEY_SPACE:
+		if event.pressed and not is_reward_charging:
+			_start_reward_dice_throw()
+			is_reward_charging = true
+		elif not event.pressed and is_reward_charging:
+			_execute_reward_dice_throw()
+			is_reward_charging = false
+		return  # 奖励阶段不处理命运骰子投掷
+
 	# 空格键投掷命运骰子
 	if event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
 		if is_dice_available and not is_charging:
@@ -517,8 +533,9 @@ func _on_transition_completed(target_node: LevelNode):
 	if map_overlay and map_overlay.has_method("update_current_node"):
 		map_overlay.update_current_node(target_node)
 
-	# 清理上一关卡的奇遇面板
+	# 清理上一关卡的奇遇面板和奖励面板
 	_cleanup_adventure_board()
+	_cleanup_reward_board()
 
 	# 根据节点类型触发不同后续动作
 	match target_node.type:
@@ -532,8 +549,8 @@ func _on_transition_completed(target_node: LevelNode):
 			print("【交易】检测到交易节点，启动贸易流程")
 			await _start_trade(target_node)
 		LevelNodeType.Type.REWARD:  # 奖励
-			print("【奖励】检测到奖励节点，等待后续实现")
-			# TODO: 奖励系统
+			print("【奖励】检测到奖励节点，启动奖励流程")
+			await _start_reward(target_node)
 		_:
 			print("【未知】未知节点类型：", target_node.type)
 
@@ -1052,3 +1069,261 @@ func _cleanup_adventure_dice():
 	if _adventure_dice and is_instance_valid(_adventure_dice):
 		_adventure_dice.queue_free()
 	_adventure_dice = null
+
+
+# ==================== 奖励流程 ====================
+
+## 奖励骰子实例
+var _reward_dice: RigidBody3D = null
+var _reward_board: Node3D = null
+
+
+## 启动奖励流程
+func _start_reward(node: LevelNode):
+	print("【奖励】开始奖励流程，节点：", node.name)
+
+	is_reward_phase = true
+
+	# 1. 清理 Sandbox 中的残留骰子
+	_cleanup_sandbox_characters()
+
+	# 2. 玩家入场
+	await _reward_player_enter(node)
+
+	# 3. 获取奖励事件配置（从节点数据中获取事件 ID）
+	var event_id = _get_reward_event_id(node)
+	print("【奖励】事件 ID: ", event_id)
+
+	if event_id.is_empty():
+		push_error("【奖励】无法获取事件 ID")
+		is_reward_phase = false
+		return
+
+	# 4. 加载奖励数据
+	var success = RewardManager.start_reward(event_id)
+	if not success:
+		push_error("【奖励】加载奖励数据失败")
+		is_reward_phase = false
+		return
+
+	# 5. 显示奖励界面
+	_show_reward_ui(event_id)
+
+	# 6. 等待玩家阅读（延迟 2 秒）
+	await get_tree().create_timer(2.0).timeout
+
+	# 7. 生成奖励骰子（面板保持可见，不隐藏）
+	_generate_reward_dice()
+
+	# 8. 等待玩家投掷奖励骰子（通过 _input 处理）
+	print("【奖励】等待玩家投掷奖励骰子...")
+	var dice_result = await _wait_for_reward_dice_result()
+	print("【奖励】骰子结果：", dice_result)
+
+	# 9. 根据骰子结果获取选项
+	var result = RewardManager.get_result_from_face(dice_result)
+	if result.is_empty():
+		push_error("【奖励】无法获取结果")
+		is_reward_phase = false
+		return
+
+	print("【奖励】选中选项：", result.get("name", ""), ", 效果：", result.get("des", ""))
+
+	# 10. 执行效果
+	var effect_result = RewardManager.execute_effect(result.get("id", ""))
+	if effect_result.get("success", false):
+		print("【奖励】效果执行成功：", effect_result.get("des", ""))
+	else:
+		push_warning("【奖励】效果执行可能有问题")
+
+	# 11. 显示效果描述（短暂停留）
+	await get_tree().create_timer(1.5).timeout
+
+	# 12. 清理
+	_cleanup_reward_dice()
+	is_reward_phase = false
+	RewardManager.end_reward()
+
+	print("【奖励】奖励流程结束，继续命运骰子流程")
+
+
+## 获取奖励事件 ID
+func _get_reward_event_id(node: LevelNode) -> String:
+	# 优先从节点数据中获取 event_id
+	if node.data.has("event_id"):
+		return str(node.data["event_id"])
+
+	# 备用：根据节点 ID 映射到默认事件 ID
+	var node_id = node.id
+	var event_count = RewardManager.reward_events.size()
+	if event_count > 0:
+		var default_index = (int(node_id) % event_count) + 1
+		return str(default_index)
+
+	push_error("【奖励】没有可用的奖励事件")
+	return ""
+
+
+## 奖励 - 玩家入场
+func _reward_player_enter(node: LevelNode):
+	print("【奖励】玩家入场...")
+
+	var characters: Array[BaseCharacter] = []
+	for hero_id in player_party:
+		var character = CharacterManager.create_character(hero_id, "player")
+		if character:
+			characters.append(character)
+
+	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+	if enter_manager:
+		var results = await enter_manager.player_batch_enter(characters, sandbox)
+		print("【奖励】玩家入场完成")
+
+
+## 显示奖励界面
+func _show_reward_ui(event_id: String):
+	# 获取奖励数据
+	var event_data = RewardManager.get_reward_event(event_id)
+	var results = RewardManager.get_reward_results(event_id)
+
+	# 创建 3D 地面面板
+	_reward_board = Node3D.new()
+	_reward_board.name = "RewardBoard"
+	_reward_board.position = Vector3(-5, 0.2, -1.5)
+	var board_script = load("res://scripts/ui/reward_board.gd")
+	if board_script:
+		_reward_board.set_script(board_script)
+	else:
+		push_error("【奖励】无法加载 reward_board.gd")
+		return
+	sandbox.add_child(_reward_board)
+
+	# 显示面板（数据在 _ready 中用于构建 UI）
+	_reward_board.show_board(event_data, results)
+
+
+## 隐藏奖励3D面板
+func _hide_reward_ui():
+	if _reward_board and is_instance_valid(_reward_board) and _reward_board.has_method("hide_board"):
+		await _reward_board.hide_board()
+
+
+## 清理奖励3D面板
+func _cleanup_reward_board():
+	if _reward_board and is_instance_valid(_reward_board):
+		_reward_board.queue_free()
+	_reward_board = null
+
+
+## 生成奖励骰子
+func _generate_reward_dice():
+	print("【奖励】生成奖励骰子...")
+
+	var dice_scene = load("res://scenes/dice_6.tscn")
+	if not dice_scene:
+		push_error("【奖励】无法加载骰子场景")
+		return
+
+	var dice = dice_scene.instantiate()
+	dice.name = "RewardDice"
+	dice.dice_type = "normal"
+	dice.position = Vector3(0.0, 4.0, 6.0)
+
+	# 获取奖励骰子面配置（根据选项数量）
+	var result_count = RewardManager.current_results.size()
+	var dice_config = RewardManager.get_reward_dice_config(result_count)
+	var values = dice_config["values"] as Array
+	var textures = dice_config["textures"] as Array
+
+	# 创建贴图配置
+	var texture_config = {}
+	var value_config = {}
+	for i in range(6):
+		value_config[i] = values[i] if i < values.size() else 1
+		texture_config[i] = str(textures[i]) if i < textures.size() else "1"
+
+	if dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(texture_config, value_config)
+
+	# 设置为悬浮状态
+	dice.freeze = true
+	dice.gravity_scale = 0.0
+	dice.linear_velocity = Vector3.ZERO
+	dice.angular_velocity = Vector3.ZERO
+	dice.sleeping = true
+
+	sandbox.add_child(dice)
+	_reward_dice = dice
+
+	print("【奖励】奖励骰子已生成，等待玩家投掷")
+
+
+## 投掷奖励骰子（蓄力）
+func _start_reward_dice_throw():
+	if not _reward_dice or not is_instance_valid(_reward_dice):
+		return
+
+	# 解除悬浮，开始蓄力
+	_reward_dice.freeze = false
+	_reward_dice.gravity_scale = 0.0
+	_reward_dice.sleeping = false
+	_reward_dice.is_rolling = true
+
+	if DiceThrowController:
+		DiceThrowController.start_charge([_reward_dice])
+
+
+## 投掷奖励骰子（松开蓄力）
+func _execute_reward_dice_throw():
+	if not _reward_dice or not is_instance_valid(_reward_dice):
+		return
+
+	if DiceThrowController:
+		DiceThrowController.end_charge()
+
+	# 等待骰子停止
+	print("【奖励】等待奖励骰子停止...")
+	if DiceResultDetector and _reward_dice:
+		var is_stable = await DiceResultDetector.wait_for_dice_stable([_reward_dice], 5.0)
+		if not is_stable:
+			print("【奖励】等待奖励骰子稳定超时")
+
+	# 获取结果
+	var result = _get_reward_dice_result()
+	print("【奖励】骰子结果：", result)
+
+	# 通知等待方
+	reward_dice_result_ready = true
+	reward_dice_result_value = result
+
+
+## 等待奖励骰子结果
+func _wait_for_reward_dice_result() -> int:
+	reward_dice_result_ready = false
+	reward_dice_result_value = 0
+
+	# 等待骰子停止
+	while not reward_dice_result_ready:
+		await get_tree().create_timer(0.2).timeout
+
+	return reward_dice_result_value
+
+
+## 获取奖励骰子结果
+func _get_reward_dice_result() -> int:
+	if not _reward_dice or not is_instance_valid(_reward_dice):
+		return 1
+
+	# 使用统一检测器计算朝上的面
+	if DiceResultDetector:
+		var face_value = DiceResultDetector.check_dice_value(_reward_dice)
+		return face_value
+
+	return 1
+
+
+## 清理奖励骰子
+func _cleanup_reward_dice():
+	if _reward_dice and is_instance_valid(_reward_dice):
+		_reward_dice.queue_free()
+	_reward_dice = null
