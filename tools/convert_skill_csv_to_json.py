@@ -1149,6 +1149,212 @@ def convert_items_csv_to_json(csv_path, json_path):
     return True
 
 
+def convert_adventure_events_csv_to_json(csv_path, json_path):
+    """将 adventure_events.csv 转换为 JSON 格式"""
+
+    print("=" * 50)
+    print("Adventure Events CSV to JSON Converter")
+    print("=" * 50)
+    print()
+
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+
+    adventure_events = []
+
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+
+        print(f"Processing line {i+1}...")
+
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+
+        if len(values) < 4:
+            print(f"  ✗ Warning: Insufficient columns (got {len(values)}, need 4), skipping")
+            continue
+
+        event_id = values[0].strip()
+        name = values[1].strip()
+        des = values[2].strip()
+        results_str = values[3].strip()
+
+        if not event_id or not name:
+            print(f"  ✗ Warning: Empty ID or name, skipping")
+            continue
+
+        # 解析 results 字段（分号分隔的数组）
+        results = [r.strip() for r in results_str.split(';') if r.strip()] if results_str else []
+
+        print(f"  Event ID: {event_id}")
+        print(f"  Name: {name}")
+        print(f"  Description: {des}")
+        print(f"  Results: {results}")
+
+        event = {
+            'id': event_id,
+            'name': name,
+            'des': des,
+            'results': results
+        }
+
+        adventure_events.append(event)
+        print(f"  ✓ Added adventure event: {event_id}")
+
+    output = {
+        'adventure_events': adventure_events
+    }
+
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    print()
+    print("=" * 50)
+    print("✓ Adventure Events conversion completed successfully!")
+    print(f"  Total adventure events: {len(adventure_events)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+
+    return True
+
+
+def convert_adventure_results_csv_to_json(csv_path, json_path):
+    """将 adventure_results.csv 转换为 JSON 格式"""
+
+    print("=" * 50)
+    print("Adventure Results CSV to JSON Converter")
+    print("=" * 50)
+    print()
+
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+
+    adventure_results = []
+
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+
+        print(f"Processing line {i+1}...")
+
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+
+        if len(values) < 4:
+            print(f"  ✗ Warning: Insufficient columns (got {len(values)}, need 4), skipping")
+            continue
+
+        result_id = values[0].strip()
+        name = values[1].strip()
+        des = values[2].strip()
+        effect = values[3].strip()
+
+        if not result_id or not name:
+            print(f"  ✗ Warning: Empty ID or name, skipping")
+            continue
+
+        # 解析参数 p1-p4
+        params = {}
+        for j in range(4):
+            idx = 4 + j
+            if idx < len(values):
+                val = values[idx].strip()
+                if val:
+                    params[f'p{j+1}'] = val
+
+        print(f"  Result ID: {result_id}")
+        print(f"  Name: {name}")
+        print(f"  Description: {des}")
+        print(f"  Effect: {effect}")
+        print(f"  Parameters: {params}")
+
+        result = {
+            'id': result_id,
+            'name': name,
+            'des': des,
+            'effect': effect,
+            'params': params
+        }
+
+        adventure_results.append(result)
+        print(f"  ✓ Added adventure result: {result_id}")
+
+    output = {
+        'adventure_results': adventure_results
+    }
+
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    print()
+    print("=" * 50)
+    print("✓ Adventure Results conversion completed successfully!")
+    print(f"  Total adventure results: {len(adventure_results)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+
+    return True
+
+
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -1266,6 +1472,32 @@ if __name__ == '__main__':
             json_file = sys.argv[3]
 
         success = convert_items_csv_to_json(csv_file, json_file)
+
+        if not success:
+            sys.exit(1)
+    elif len(sys.argv) > 1 and sys.argv[1] == '--adventure-events':
+        csv_file = os.path.join(script_dir, '..', 'table', 'adventure_events.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'adventure_events.json')
+
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+
+        success = convert_adventure_events_csv_to_json(csv_file, json_file)
+
+        if not success:
+            sys.exit(1)
+    elif len(sys.argv) > 1 and sys.argv[1] == '--adventure-results':
+        csv_file = os.path.join(script_dir, '..', 'table', 'adventure_results.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'adventure_results.json')
+
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+
+        success = convert_adventure_results_csv_to_json(csv_file, json_file)
 
         if not success:
             sys.exit(1)

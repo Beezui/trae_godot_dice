@@ -237,6 +237,8 @@ func apply_textures_to_dice(dice: RigidBody3D, config: Dictionary):
 	var is_destiny_dice = false
 	# 判断是否是折扣骰子配置
 	var is_discount_dice = false
+	# 判断是否是奇遇骰子配置
+	var is_adventure_dice = false
 	if config.size() > 0:
 		var first_key = config.keys()[0]
 		var first_value = config[first_key]
@@ -248,8 +250,14 @@ func apply_textures_to_dice(dice: RigidBody3D, config: Dictionary):
 		if typeof(first_value) == TYPE_STRING and first_value.begins_with("discount_"):
 			is_discount_dice = true
 
+		# 判断是否是奇遇骰子配置（adventure_ 前缀）
+		if typeof(first_value) == TYPE_STRING and first_value.begins_with("adventure_"):
+			is_adventure_dice = true
+
 	if is_discount_dice:
 		_apply_discount_dice_textures(mesh_instance, config)
+	elif is_adventure_dice:
+		_apply_adventure_dice_textures(mesh_instance, config)
 	elif is_attr_dice:
 		# 属性骰子：动态生成带数值的贴图
 		_apply_attr_dice_textures(mesh_instance, config)
@@ -831,6 +839,140 @@ func _apply_discount_dice_textures(mesh_instance: MeshInstance3D, config: Dictio
 		materials.append(material)
 
 	_apply_materials_to_mesh(mesh_instance, materials)
+
+
+## 应用奇遇骰子贴图（选项编号文字）
+func _apply_adventure_dice_textures(mesh_instance: MeshInstance3D, config: Dictionary):
+	print("【贴图管理器】应用奇遇骰子贴图")
+
+	# 从 config 读取每个面的选项编号（adventure_1 -> "1"）
+	# 注意：config 使用整数键（texture_config[i] = ...），兼容字符串键
+	var face_texts: Array = []
+	for i in range(6):
+		var value = config.get(i, config.get(str(i), ""))
+		if typeof(value) == TYPE_STRING and value.begins_with("adventure_"):
+			var num = value.substr(10)  # 移除 "adventure_" 前缀
+			face_texts.append(num)
+		else:
+			face_texts.append(str(i + 1))
+
+	# 获取骰面尺寸
+	var face_size = Vector2i(512, 512)
+	if mesh_instance.mesh:
+		var aabb = mesh_instance.mesh.get_aabb()
+		face_size = Vector2i(int(aabb.size.x), int(aabb.size.y))
+
+	# 奇遇配色：金色渐变 + 深色背景
+	var bg_color = Color(0.12, 0.1, 0.18, 0.95)
+	var text_color_start = Color(1.0, 0.85, 0.4)   # 亮金色
+	var text_color_end = Color(0.8, 0.55, 0.2)     # 深金色
+	var outline_color = Color(0.15, 0.1, 0.05, 0.9)
+
+	# 为每个面创建动态纹理
+	var materials = []
+	for i in range(6):
+		var option_text = face_texts[i] if i < face_texts.size() else "?"
+		var dynamic_texture = create_adventure_face_texture(i, option_text, bg_color, text_color_start, text_color_end, outline_color, face_size, mesh_instance)
+
+		var material = StandardMaterial3D.new()
+		material.roughness = 0.8
+		material.metallic = 0.1
+
+		if dynamic_texture:
+			material.albedo_texture = dynamic_texture
+			print("【贴图管理器】奇遇骰子面 ", i, " 生成动态贴图：", option_text)
+		else:
+			material.albedo_color = Color(0.5, 0.4, 0.1)
+			print("【贴图管理器】奇遇骰子面 ", i, " 贴图创建失败，使用默认颜色")
+
+		materials.append(material)
+
+	_apply_materials_to_mesh(mesh_instance, materials)
+
+
+## 创建奇遇骰子面纹理（选项编号）
+func create_adventure_face_texture(
+	face_index: int,
+	option_text: String,
+	bg_color: Color,
+	color_start: Color,
+	color_end: Color,
+	outline_color: Color,
+	face_size: Vector2i,
+	mesh_instance: MeshInstance3D = null
+) -> Texture2D:
+	# 创建 SubViewport（渲染目标）
+	var viewport = SubViewport.new()
+	viewport.name = "AdventureFace_%d" % face_index
+	viewport.size = Vector2i(max(face_size.x, 512), max(face_size.y, 512))
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	viewport.transparent_bg = true
+
+	# 根 Control
+	var control = Control.new()
+	control.anchors_preset = Control.PRESET_FULL_RECT
+	control.size = viewport.size
+	viewport.add_child(control)
+
+	# 深色半透明背景
+	var bg = ColorRect.new()
+	bg.color = bg_color
+	bg.anchors_preset = Control.PRESET_FULL_RECT
+	bg.size = viewport.size
+	control.add_child(bg)
+
+	# 根据文字长度设置字号
+	var font_size = 200
+	var text_length = option_text.length()
+	if text_length <= 1:
+		font_size = 240
+	elif text_length <= 2:
+		font_size = 200
+	else:
+		font_size = 160
+
+	# 获取默认字体用于测量
+	var font = ThemeDB.fallback_font
+
+	# 计算文字居中位置
+	var text_size = font.get_string_size(option_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	var start_x = (viewport.size.x - text_size.x) / 2.0
+	var start_y = (viewport.size.y - text_size.y) / 2.0
+
+	# 为每个字符创建独立 Label，应用渐变色彩，使用显式定位
+	var current_x = start_x
+	for i in range(text_length):
+		var char: String = option_text[i]
+		var char_w = font.get_string_size(char, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		var t = float(i) / max(text_length - 1, 1)
+		var char_color = color_start.lerp(color_end, t)
+
+		var main_label = Label.new()
+		main_label.text = char
+		main_label.add_theme_font_size_override("font_size", font_size)
+		main_label.add_theme_color_override("font_color", char_color)
+		main_label.add_theme_constant_override("outline_size", 3)
+		main_label.add_theme_color_override("font_outline_color", outline_color)
+		main_label.add_theme_color_override("font_shadow_color", Color(0.1, 0.05, 0.0, 0.5))
+		main_label.add_theme_constant_override("shadow_offset_x", 2)
+		main_label.add_theme_constant_override("shadow_offset_y", 2)
+		main_label.anchors_preset = Control.PRESET_TOP_LEFT
+		main_label.position = Vector2(current_x, start_y)
+		main_label.size = Vector2(char_w, text_size.y)
+		current_x += char_w
+		control.add_child(main_label)
+
+	# 添加到场景树以触发渲染
+	if mesh_instance and mesh_instance.get_parent():
+		mesh_instance.get_parent().add_child(viewport)
+		viewport.set_meta("auto_cleanup", true)
+	else:
+		var root = get_tree().current_scene
+		if root:
+			root.add_child(viewport)
+			viewport.set_meta("auto_cleanup", true)
+
+	return viewport.get_texture()
 
 
 ## 获取命运骰子贴图路径

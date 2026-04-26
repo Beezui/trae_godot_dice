@@ -40,6 +40,12 @@ var is_dice_available: bool = false
 var is_trade_phase: bool = false
 var is_discount_charging: bool = false
 
+# 奇遇阶段状态
+var is_adventure_phase: bool = false
+var is_adventure_charging: bool = false
+var adventure_dice_result_ready: bool = false
+var adventure_dice_result_value: int = 0
+
 
 func _ready():
 	print("=== 游戏主入口场景初始化 ===")
@@ -444,6 +450,16 @@ func _input(event):
 			is_discount_charging = false
 		return  # 贸易阶段不处理命运骰子投掷
 
+	# 奇遇阶段：空格键投掷奇遇骰子
+	if is_adventure_phase and event is InputEventKey and event.keycode == KEY_SPACE:
+		if event.pressed and not is_adventure_charging:
+			_start_adventure_dice_throw()
+			is_adventure_charging = true
+		elif not event.pressed and is_adventure_charging:
+			_execute_adventure_dice_throw()
+			is_adventure_charging = false
+		return  # 奇遇阶段不处理命运骰子投掷
+
 	# 空格键投掷命运骰子
 	if event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
 		if is_dice_available and not is_charging:
@@ -501,14 +517,17 @@ func _on_transition_completed(target_node: LevelNode):
 	if map_overlay and map_overlay.has_method("update_current_node"):
 		map_overlay.update_current_node(target_node)
 
+	# 清理上一关卡的奇遇面板
+	_cleanup_adventure_board()
+
 	# 根据节点类型触发不同后续动作
 	match target_node.type:
 		LevelNodeType.Type.COMBAT, 5:  # 战斗 / 精英战斗
 			print("【战斗】检测到战斗节点，启动 BattleManager")
 			await _start_battle(target_node)
 		LevelNodeType.Type.ADVENTURE:  # 奇遇
-			print("【奇遇】检测到奇遇节点，等待后续实现")
-			# TODO: 奇遇事件系统
+			print("【奇遇】检测到奇遇节点，启动奇遇流程")
+			await _start_adventure(target_node)
 		LevelNodeType.Type.TRADE:  # 交易
 			print("【交易】检测到交易节点，启动贸易流程")
 			await _start_trade(target_node)
@@ -773,3 +792,263 @@ func _toggle_map():
 	if map_overlay:
 		map_overlay.visible = not map_overlay.visible
 		print("【地图】", "显示" if map_overlay.visible else "隐藏")
+
+
+# ==================== 奇遇流程 ====================
+
+## 奇遇骰子实例
+var _adventure_dice: RigidBody3D = null
+var _adventure_board: Node3D = null
+
+
+## 启动奇遇流程
+func _start_adventure(node: LevelNode):
+	print("【奇遇】开始奇遇流程，节点：", node.name)
+
+	is_adventure_phase = true
+
+	# 1. 清理 Sandbox 中的残留骰子
+	_cleanup_sandbox_characters()
+
+	# 2. 玩家入场
+	await _adventure_player_enter(node)
+
+	# 3. 获取奇遇事件配置（从节点数据中获取事件 ID）
+	var event_id = _get_adventure_event_id(node)
+	print("【奇遇】事件 ID: ", event_id)
+
+	if event_id.is_empty():
+		push_error("【奇遇】无法获取事件 ID")
+		is_adventure_phase = false
+		return
+
+	# 4. 加载奇遇数据
+	var success = AdventureManager.start_adventure(event_id)
+	if not success:
+		push_error("【奇遇】加载奇遇数据失败")
+		is_adventure_phase = false
+		return
+
+	# 5. 显示奇遇界面
+	_show_adventure_ui(event_id)
+
+	# 6. 等待玩家阅读（延迟 2 秒）
+	await get_tree().create_timer(2.0).timeout
+
+	# 7. 生成奇遇骰子（面板保持可见，不隐藏）
+	_generate_adventure_dice()
+
+	# 10. 等待玩家投掷奇遇骰子（通过 _input 处理）
+	print("【奇遇】等待玩家投掷奇遇骰子...")
+	var dice_result = await _wait_for_adventure_dice_result()
+	print("【奇遇】骰子结果：", dice_result)
+
+	# 11. 根据骰子结果获取选项
+	var result = AdventureManager.get_result_from_face(dice_result)
+	if result.is_empty():
+		push_error("【奇遇】无法获取结果")
+		is_adventure_phase = false
+		return
+
+	print("【奇遇】选中选项：", result.get("name", ""), ", 效果：", result.get("des", ""))
+
+	# 12. 执行效果
+	var effect_result = AdventureManager.execute_effect(result.get("id", ""))
+	if effect_result.get("success", false):
+		print("【奇遇】效果执行成功：", effect_result.get("des", ""))
+	else:
+		push_warning("【奇遇】效果执行可能有问题")
+
+	# 13. 显示效果描述（短暂停留）
+	await get_tree().create_timer(1.5).timeout
+
+	# 14. 清理
+	_cleanup_adventure_dice()
+	is_adventure_phase = false
+	AdventureManager.end_adventure()
+
+	print("【奇遇】奇遇流程结束，继续命运骰子流程")
+
+
+## 获取奇遇事件 ID
+func _get_adventure_event_id(node: LevelNode) -> String:
+	# 优先从节点数据中获取 event_id
+	if node.data.has("event_id"):
+		return str(node.data["event_id"])
+
+	# 备用：根据节点 ID 映射到默认事件 ID
+	# TODO: 后续可以通过配置表映射
+	var node_id = node.id
+	# 简单的默认映射：循环使用现有事件
+	var event_count = AdventureManager.adventure_events.size()
+	if event_count > 0:
+		var default_index = (int(node_id) % event_count) + 1
+		return str(default_index)
+
+	push_error("【奇遇】没有可用的奇遇事件")
+	return ""
+
+
+## 奇遇 - 玩家入场
+func _adventure_player_enter(node: LevelNode):
+	print("【奇遇】玩家入场...")
+
+	var characters: Array[BaseCharacter] = []
+	for hero_id in player_party:
+		var character = CharacterManager.create_character(hero_id, "player")
+		if character:
+			characters.append(character)
+
+	var enter_manager = Engine.get_main_loop().root.get_node_or_null("CharacterEnterManager")
+	if enter_manager:
+		var results = await enter_manager.player_batch_enter(characters, sandbox)
+		print("【奇遇】玩家入场完成")
+
+
+## 显示奇遇界面
+func _show_adventure_ui(event_id: String):
+	# 获取奇遇数据
+	var event_data = AdventureManager.get_adventure_event(event_id)
+	var results = AdventureManager.get_adventure_results(event_id)
+
+	# 创建 3D 地面面板（先附加脚本和数据，再进入场景树）
+	_adventure_board = Node3D.new()
+	_adventure_board.name = "AdventureBoard"
+	_adventure_board.position = Vector3(-5, 0.2, -1.5)
+	var board_script = load("res://scripts/ui/adventure_board.gd")
+	if board_script:
+		_adventure_board.set_script(board_script)
+	else:
+		push_error("【奇遇】无法加载 adventure_board.gd")
+		return
+	sandbox.add_child(_adventure_board)
+
+	# 显示面板（数据在 _ready 中用于构建 UI）
+	_adventure_board.show_board(event_data, results)
+
+
+## 隐藏奇遇3D面板
+func _hide_adventure_ui():
+	if _adventure_board and is_instance_valid(_adventure_board) and _adventure_board.has_method("hide_board"):
+		await _adventure_board.hide_board()
+
+
+## 清理奇遇3D面板
+func _cleanup_adventure_board():
+	if _adventure_board and is_instance_valid(_adventure_board):
+		_adventure_board.queue_free()
+	_adventure_board = null
+
+
+## 生成奇遇骰子
+func _generate_adventure_dice():
+	print("【奇遇】生成奇遇骰子...")
+
+	var dice_scene = load("res://scenes/dice_6.tscn")
+	if not dice_scene:
+		push_error("【奇遇】无法加载骰子场景")
+		return
+
+	var dice = dice_scene.instantiate()
+	dice.name = "AdventureDice"
+	dice.dice_type = "normal"
+	dice.position = Vector3(0.0, 4.0, 6.0)
+
+	# 获取奇遇骰子面配置（根据选项数量）
+	var result_count = AdventureManager.current_results.size()
+	var dice_config = AdventureManager.get_adventure_dice_config(result_count)
+	var values = dice_config["values"] as Array
+	var textures = dice_config["textures"] as Array
+
+	# 创建贴图配置（使用 DiceTextureManager 的动态数字文字）
+	var texture_config = {}
+	var value_config = {}
+	for i in range(6):
+		value_config[i] = values[i] if i < values.size() else 1
+		texture_config[i] = str(textures[i]) if i < textures.size() else "1"
+
+	if dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(texture_config, value_config)
+
+	# 设置为悬浮状态
+	dice.freeze = true
+	dice.gravity_scale = 0.0
+	dice.linear_velocity = Vector3.ZERO
+	dice.angular_velocity = Vector3.ZERO
+	dice.sleeping = true
+
+	sandbox.add_child(dice)
+	_adventure_dice = dice
+
+	print("【奇遇】奇遇骰子已生成，等待玩家投掷")
+
+
+## 投掷奇遇骰子（蓄力）
+func _start_adventure_dice_throw():
+	if not _adventure_dice or not is_instance_valid(_adventure_dice):
+		return
+
+	# 解除悬浮，开始蓄力
+	_adventure_dice.freeze = false
+	_adventure_dice.gravity_scale = 0.0
+	_adventure_dice.sleeping = false
+	_adventure_dice.is_rolling = true
+
+	if DiceThrowController:
+		DiceThrowController.start_charge([_adventure_dice])
+
+
+## 投掷奇遇骰子（松开蓄力）
+func _execute_adventure_dice_throw():
+	if not _adventure_dice or not is_instance_valid(_adventure_dice):
+		return
+
+	if DiceThrowController:
+		DiceThrowController.end_charge()
+
+	# 等待骰子停止
+	print("【奇遇】等待奇遇骰子停止...")
+	if DiceResultDetector and _adventure_dice:
+		var is_stable = await DiceResultDetector.wait_for_dice_stable([_adventure_dice], 5.0)
+		if not is_stable:
+			print("【奇遇】等待奇遇骰子稳定超时")
+
+	# 获取结果
+	var result = _get_adventure_dice_result()
+	print("【奇遇】骰子结果：", result)
+
+	# 通知等待方
+	adventure_dice_result_ready = true
+	adventure_dice_result_value = result
+
+
+## 等待奇遇骰子结果
+func _wait_for_adventure_dice_result() -> int:
+	adventure_dice_result_ready = false
+	adventure_dice_result_value = 0
+
+	# 等待骰子停止
+	while not adventure_dice_result_ready:
+		await get_tree().create_timer(0.2).timeout
+
+	return adventure_dice_result_value
+
+
+## 获取奇遇骰子结果
+func _get_adventure_dice_result() -> int:
+	if not _adventure_dice or not is_instance_valid(_adventure_dice):
+		return 1
+
+	# 使用统一检测器计算朝上的面
+	if DiceResultDetector:
+		var face_value = DiceResultDetector.check_dice_value(_adventure_dice)
+		return face_value
+
+	return 1
+
+
+## 清理奇遇骰子
+func _cleanup_adventure_dice():
+	if _adventure_dice and is_instance_valid(_adventure_dice):
+		_adventure_dice.queue_free()
+	_adventure_dice = null

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bob7ickr83tih"
+
+[deps]
+
+files=["res://table/adventure_results.name.translation", "res://table/adventure_results.des.translation", "res://table/adventure_results.effect.translation", "res://table/adventure_results.p1.translation", "res://table/adventure_results.p2.translation", "res://table/adventure_results.en.translation", "res://table/adventure_results.en.translation"]
+
+source_file="res://table/adventure_results.csv"
+dest_files=["res://table/adventure_results.name.translation", "res://table/adventure_results.des.translation", "res://table/adventure_results.effect.translation", "res://table/adventure_results.p1.translation", "res://table/adventure_results.p2.translation", "res://table/adventure_results.en.translation", "res://table/adventure_results.en.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
