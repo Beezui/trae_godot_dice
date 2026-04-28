@@ -223,6 +223,107 @@ func _build_skill_value_config() -> Dictionary:
 	return value_config
 
 
+## 从玩家数据创建技能骰子（支持动态技能分配和被动效果）
+## @param instance_id 骰子实例 ID（来自 PlayerData）
+## @param parent 父节点
+## @param position 位置
+## @param add_to_scene 是否添加到场景
+## @return RigidBody3D 技能骰子实例
+func create_skill_dice_from_player_data(instance_id: int, parent: Node, position: Vector3 = Vector3.ZERO, add_to_scene: bool = true) -> RigidBody3D:
+	if not PlayerData:
+		push_error("【DiceManager】PlayerData 不可用")
+		return null
+
+	var instance = PlayerData.get_dice_instance(instance_id)
+	if instance.is_empty():
+		push_error("【DiceManager】骰子实例不存在：", instance_id)
+		return null
+
+	var template_id = instance.get("template_id", "")
+	if template_id.is_empty():
+		push_error("【DiceManager】骰子实例无模板 ID：", instance_id)
+		return null
+
+	# 从空白骰子模板获取配置
+	var dice_config = dice_csv_reader.get_blank_dice_config(template_id)
+	if dice_config.is_empty():
+		push_error("【DiceManager】空白骰子模板不存在：", template_id)
+		return null
+
+	# 加载骰子场景
+	var dice_scene = load(DICE_6_SCENE_PATH)
+	if not dice_scene:
+		push_error("【DiceManager】无法加载骰子场景")
+		return null
+
+	var dice = dice_scene.instantiate()
+	if not dice:
+		push_error("【DiceManager】无法实例化骰子场景")
+		return null
+
+	# 设置骰子类型
+	dice.dice_type = "skill"
+
+	# 存储实例 ID 和模板信息
+	dice.set_meta("skill_dice_instance_id", instance_id)
+	dice.set_meta("skill_dice_template_id", template_id)
+
+	# 从 PlayerData 读取技能分配（faces 数组）
+	var faces = instance.get("faces", ["0", "0", "0", "0", "0", "0"])
+	var texture_config = _build_skill_texture_config_from_faces(faces)
+	var value_config = _build_skill_value_config()
+
+	if dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(texture_config, value_config)
+
+	# 存储被动效果信息（供 trigger_skill 使用）
+	dice.set_meta("effect_type", instance.get("effect_type", ""))
+	dice.set_meta("effect_p1", instance.get("p1", "0"))
+	dice.set_meta("effect_p2", instance.get("p2", "0"))
+	dice.set_meta("effect_p3", instance.get("p3", "0"))
+	dice.set_meta("effect_p4", instance.get("p4", "0"))
+
+	# 设置位置并添加到场景
+	dice.position = position
+	if add_to_scene and parent:
+		parent.add_child(dice)
+		print("【DiceManager】技能骰子（实例 ", instance_id, "）已添加到场景")
+	else:
+		print("【DiceManager】技能骰子（实例 ", instance_id, "）已创建（未添加到场景）")
+
+	# 初始状态设置为悬浮
+	if dice.has_method("set_freeze"):
+		dice.set_freeze(true)
+	elif "freeze" in dice:
+		dice.freeze = true
+
+	dice.gravity_scale = 0.0
+	dice.linear_velocity = Vector3.ZERO
+	dice.angular_velocity = Vector3.ZERO
+
+	return dice
+
+
+## 从 faces 数组构建贴图配置
+func _build_skill_texture_config_from_faces(faces: Array) -> Dictionary:
+	var texture_config = {}
+	for i in range(6):
+		if i < faces.size():
+			var skill_id = str(faces[i])
+			if skill_id != "0" and not skill_id.is_empty():
+				var skill_data = skill_reader.get_skill(skill_id)
+				if skill_data and skill_data.has("icon"):
+					texture_config[i] = "res://textures/skill/skill_" + skill_data["icon"] + ".png"
+				else:
+					texture_config[i] = ""
+			else:
+				# 空面使用空白骰子贴图（或默认贴图）
+				texture_config[i] = ""
+		else:
+			texture_config[i] = ""
+	return texture_config
+
+
 ## 批量创建技能骰子
 ## @param skill_dice_ids 技能骰子 ID 数组
 ## @param parent 父节点

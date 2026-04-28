@@ -262,10 +262,26 @@ func _on_roll_timer_timeout():
 ## 结果控制超时
 func _on_result_control_timeout():
 	if controlled_result != -1:
-		var target_rotation = get_target_rotation(controlled_result)
-		rotation = target_rotation
+		# 使用明确的欧拉角旋转，确保 6 个面都能正确朝上
+		# 面法线: 面0=(0,0,-1)前 面1=(0,0,1)后 面2=(-1,0,0)左 面3=(1,0,0)右 面4=(0,1,0)顶 面5=(0,-1,0)底
+		match controlled_result:
+			1:
+				transform.basis = Basis.from_euler(Vector3(deg_to_rad(90), 0, 0))
+			2:
+				transform.basis = Basis.from_euler(Vector3(deg_to_rad(-90), 0, 0))
+			3:
+				transform.basis = Basis.from_euler(Vector3(0, 0, deg_to_rad(-90)))
+			4:
+				transform.basis = Basis.from_euler(Vector3(0, 0, deg_to_rad(90)))
+			5:
+				transform.basis = Basis()
+			6:
+				transform.basis = Basis.from_euler(Vector3(deg_to_rad(180), 0, 0))
 		linear_velocity = Vector3.ZERO
 		angular_velocity = Vector3.ZERO
+		dice_value = controlled_result
+		has_valid_result = true
+		print("BaseDice 控制结果：", dice_value)
 		controlled_result = -1
 
 
@@ -292,18 +308,6 @@ func _apply_preventive_measure():
 		linear_velocity = linear_force
 		angular_velocity = angular_force
 		roll_timer.start()
-
-
-## 获取目标旋转
-func get_target_rotation(value: int) -> Quaternion:
-	match value:
-		1: return Quaternion()
-		2: return Quaternion(Vector3(0, 1, 0), deg_to_rad(90))
-		3: return Quaternion(Vector3(0, 0, 1), deg_to_rad(-90))
-		4: return Quaternion(Vector3(0, 0, 1), deg_to_rad(90))
-		5: return Quaternion(Vector3(0, 1, 0), deg_to_rad(-90))
-		6: return Quaternion(Vector3(0, 1, 0), deg_to_rad(180))
-		_: return Quaternion()
 
 
 ## 检查骰子值

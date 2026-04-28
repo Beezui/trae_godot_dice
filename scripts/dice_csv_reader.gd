@@ -5,11 +5,13 @@ var item_dices_data = {}
 var potion_dices_data = {}
 var skill_dices_data = {}
 var attr_dices_data = {}
+var blank_dices_data = {}
 
 func _init():
 	load_num_dices()
 	load_skill_dices()
 	load_attr_dices()
+	load_blank_dices()
 
 func load_num_dices():
 	# 优先加载 JSON 格式
@@ -214,6 +216,51 @@ func get_attr_dice_config(hero_id: String) -> Dictionary:
 func get_all_hero_ids() -> Array:
 	return attr_dices_data.keys()
 
+
+# ============================================================================
+# 空白骰子模板
+# ============================================================================
+
+func load_blank_dices():
+	var json_path = "res://table/BlankDices.json"
+	var file = FileAccess.open(json_path, FileAccess.READ)
+
+	if file:
+		print("【空白骰子】加载 BlankDices.json，路径：", json_path)
+		var json_text = file.get_as_text()
+		file.close()
+
+		var json = JSON.new()
+		var parse_result = json.parse(json_text)
+
+		if parse_result != OK:
+			push_error("Error parsing BlankDices.json: " + json.get_error_message())
+			return
+
+		var data = json.get_data()
+		if not data is Dictionary or not data.has("blank_dices"):
+			push_error("BlankDices.json missing 'blank_dices' array")
+			return
+
+		var blank_dices_array = data["blank_dices"]
+		for dice_data in blank_dices_array:
+			if dice_data is Dictionary and dice_data.has("id"):
+				var dice_id = str(dice_data["id"])
+				blank_dices_data[dice_id] = dice_data
+				print("【空白骰子】加载模板 ID=", dice_id, " 名称=", dice_data.get("name", ""))
+
+		print("【空白骰子】BlankDices.json 加载完成，模板数=", blank_dices_data.size())
+	else:
+		push_error("【空白骰子】BlankDices.json 文件不存在或无法读取")
+
+
+func get_blank_dice_config(dice_id: String) -> Dictionary:
+	return blank_dices_data.get(dice_id, {})
+
+
+func get_all_blank_dice_ids() -> Array:
+	return blank_dices_data.keys()
+
 func parse_csv_line(line: String) -> Array:
 	var result = []
 	var current_field = ""
@@ -240,5 +287,6 @@ func parse_csv_line(line: String) -> Array:
 func reload():
 	num_dices_data.clear()
 	skill_dices_data.clear()
+	blank_dices_data.clear()
 	load_num_dices()
 	load_skill_dices()

@@ -414,10 +414,27 @@ func update_hp_text(current_hp: int, max_hp: int):
 func _on_result_control_timeout():
 	# 控制骰子结果
 	if controlled_result != -1:
-		# 计算目标旋转
-		var target_rotation = get_target_rotation(controlled_result)
-		# 平滑过渡到目标旋转
-		rotation = target_rotation
+		# 使用明确的欧拉角旋转，确保 6 个面都能正确朝上
+		# 面法线: 面0=(0,0,-1)前 面1=(0,0,1)后 面2=(-1,0,0)左 面3=(1,0,0)右 面4=(0,1,0)顶 面5=(0,-1,0)底
+		match controlled_result:
+			1:
+				# 前面(0,0,-1)朝上 → 绕 X 轴 +90°
+				transform.basis = Basis.from_euler(Vector3(deg_to_rad(90), 0, 0))
+			2:
+				# 后面(0,0,1)朝上 → 绕 X 轴 -90°
+				transform.basis = Basis.from_euler(Vector3(deg_to_rad(-90), 0, 0))
+			3:
+				# 左面(-1,0,0)朝上 → 绕 Z 轴 -90°
+				transform.basis = Basis.from_euler(Vector3(0, 0, deg_to_rad(-90)))
+			4:
+				# 右面(1,0,0)朝上 → 绕 Z 轴 +90°
+				transform.basis = Basis.from_euler(Vector3(0, 0, deg_to_rad(90)))
+			5:
+				# 顶面(0,1,0)朝上 → 默认
+				transform.basis = Basis()
+			6:
+				# 底面(0,-1,0)朝上 → 绕 X 轴 ±180°
+				transform.basis = Basis.from_euler(Vector3(deg_to_rad(180), 0, 0))
 		# 确保骰子稳定
 		linear_velocity = Vector3.ZERO
 		angular_velocity = Vector3.ZERO
@@ -462,30 +479,6 @@ func _apply_preventive_measure():
 		
 		# 重启滚动计时器
 		roll_timer.start()
-
-func get_target_rotation(value: int) -> Quaternion:
-	# 根据骰子值计算目标旋转
-	match value:
-		1:
-			# 1点朝上
-			return Quaternion()
-		2:
-			# 2点朝上
-			return Quaternion(Vector3(0, 1, 0), deg_to_rad(90))
-		3:
-			# 3点朝上
-			return Quaternion(Vector3(0, 0, 1), deg_to_rad(-90))
-		4:
-			# 4点朝上
-			return Quaternion(Vector3(0, 0, 1), deg_to_rad(90))
-		5:
-			# 5点朝上
-			return Quaternion(Vector3(0, 1, 0), deg_to_rad(-90))
-		6:
-			# 6点朝上
-			return Quaternion(Vector3(0, 1, 0), deg_to_rad(180))
-		_:
-			return Quaternion()
 
 func check_dice_value():
 	# 如果有控制结果，直接使用控制值
@@ -534,7 +527,7 @@ func check_dice_value():
 		var values = [1, 2, 3, 4, 5, 6]
 		dice_value = values[closest_index]
 	has_valid_result = true
-	print("Dice rolled: ", dice_value)
+	print("Dice rolled: face_index=", closest_index, " value=", dice_value, " max_dot=", max_dot)
 	trigger_skill()
 	
 	# 不需要预防措施，因为我们总能找到一个面朝上

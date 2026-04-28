@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/dice_controlled_test.gd" id="1_test"]
+[ext_resource type="PackedScene" path="res://scenes/dice_6.tscn" id="2_jh1g7"]
+[ext_resource type="Script" path="res://scenes/dice_manager.gd" id="3_dicemanager"]
+
+[node name="DiceControlledTest" type="Node3D"]
+script = ExtResource("1_test")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 60, 0)
+current = true
+fov = 15.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7071, 0.5, 0.5, 0, 0.7071, -0.7071, -0.7071, 0.5, 0.5, 10, 10, 10)
+
+[node name="Sandbox" type="StaticBody3D" parent="."]
+
+[node name="Ground" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+
+[node name="WallNorth" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, -6.75)
+
+[node name="WallSouth" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 6.75)
+
+[node name="WallEast" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -4, 0)
+
+[node name="WallWest" type="CollisionShape3D" parent="Sandbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, -4, 0)
+
+[node name="DiceManager" type="Node3D" parent="."]
+script = ExtResource("3_dicemanager")
+dice_count = 2
+dice_scene = ExtResource("2_jh1g7")
+
+[node name="ChargeLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+text = "蓄力：0%"
+font_size = 24
+
+[node name="ResultLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
+text = "按 1-6 设置结果"
+font_size = 24

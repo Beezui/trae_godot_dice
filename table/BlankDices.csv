@@ -1,0 +1,7 @@
+id,name,description,effect_type,p1,p2,p3,p4,texture,icon
+6001,基础骰,无特殊效果的空白骰子,,0,0,0,0,blank_dice_base,icon_blank
+6002,回响骰,技能触发时可能额外释放 [p1] 次,double_cast,1,0,0,0,blank_dice_echo,icon_echo
+6003,连击骰,技能伤害基于相邻面技能数量加成（每个 +[p1] 伤害）,combo_bonus,50,0,0,0,blank_dice_combo,icon_combo
+6004,暴击骰,技能触发时有 [p1]% 概率造成双倍效果,critical,20,0,0,0,blank_dice_crit,icon_crit
+6005,元素骰,技能附带 [p1] 点额外属性伤害,elemental_damage,25,0,0,0,blank_dice_element,icon_element
+6006,吸血骰,技能造成伤害的 [p1]% 转化为自身治疗,lifesteal,30,0,0,0,blank_dice_vampire,icon_vampire

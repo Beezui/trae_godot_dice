@@ -1561,6 +1561,114 @@ def convert_reward_results_csv_to_json(csv_path, json_path):
     return True
 
 
+def convert_blank_dices_csv_to_json(csv_path, json_path):
+    """将 BlankDices.csv 转换为 JSON 格式（空白骰子模板配置）"""
+
+    print("=" * 50)
+    print("Blank Dices CSV to JSON Converter")
+    print("=" * 50)
+    print()
+
+    encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig']
+    content = None
+    used_encoding = None
+
+    for encoding in encodings:
+        try:
+            with open(csv_path, 'r', encoding=encoding) as f:
+                content = f.read()
+                used_encoding = encoding
+                print(f"✓ Successfully read CSV with encoding: {encoding}")
+                break
+        except Exception as e:
+            continue
+
+    if not content:
+        print("✗ Error: Cannot read CSV file with any encoding")
+        return False
+
+    lines = content.strip().split('\n')
+    if len(lines) < 2:
+        print("✗ Error: CSV file has no data rows")
+        return False
+
+    header = [h.strip() for h in lines[0].split(',')]
+    print(f"CSV Header: {header}")
+    print()
+
+    blank_dices = []
+
+    for i in range(1, len(lines)):
+        line = lines[i].strip()
+        if not line:
+            continue
+
+        print(f"Processing line {i+1}...")
+
+        try:
+            reader = csv.reader([line])
+            values = next(reader)
+        except Exception as e:
+            print(f"  ✗ Error parsing line: {e}")
+            continue
+
+        if len(values) < 10:
+            print(f"  ✗ Warning: Insufficient columns (got {len(values)}, need 10), skipping")
+            continue
+
+        dice_id = values[0].strip()
+        name = values[1].strip()
+        description = values[2].strip()
+        effect_type = values[3].strip()
+        p1 = values[4].strip()
+        p2 = values[5].strip()
+        p3 = values[6].strip()
+        p4 = values[7].strip()
+        texture = values[8].strip()
+        icon = values[9].strip()
+
+        if not dice_id or not name:
+            print(f"  ✗ Warning: Empty ID or name, skipping")
+            continue
+
+        print(f"  Dice ID: {dice_id}")
+        print(f"  Name: {name}")
+        print(f"  Effect: {effect_type}")
+        print(f"  Params: p1={p1}, p2={p2}, p3={p3}, p4={p4}")
+
+        blank_dice = {
+            'id': dice_id,
+            'name': name,
+            'description': description,
+            'effect_type': effect_type,
+            'p1': p1,
+            'p2': p2,
+            'p3': p3,
+            'p4': p4,
+            'texture': texture,
+            'icon': icon
+        }
+
+        blank_dices.append(blank_dice)
+        print(f"  ✓ Added blank dice: {dice_id}")
+
+    output = {
+        'blank_dices': blank_dices
+    }
+
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    print()
+    print("=" * 50)
+    print("✓ Blank Dices conversion completed successfully!")
+    print(f"  Total blank dices: {len(blank_dices)}")
+    print(f"  Output file: {json_path}")
+    print("=" * 50)
+
+    return True
+
+
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -1730,6 +1838,19 @@ if __name__ == '__main__':
             json_file = sys.argv[3]
 
         success = convert_reward_results_csv_to_json(csv_file, json_file)
+
+        if not success:
+            sys.exit(1)
+    elif len(sys.argv) > 1 and sys.argv[1] == '--blank-dices':
+        csv_file = os.path.join(script_dir, '..', 'table', 'BlankDices.csv')
+        json_file = os.path.join(script_dir, '..', 'table', 'BlankDices.json')
+
+        if len(sys.argv) > 2:
+            csv_file = sys.argv[2]
+        if len(sys.argv) > 3:
+            json_file = sys.argv[3]
+
+        success = convert_blank_dices_csv_to_json(csv_file, json_file)
 
         if not success:
             sys.exit(1)

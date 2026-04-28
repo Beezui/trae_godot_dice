@@ -1,0 +1,76 @@
+{
+  "blank_dices": [
+    {
+      "id": "6001",
+      "name": "基础骰",
+      "description": "无特殊效果的空白骰子",
+      "effect_type": "",
+      "p1": "0",
+      "p2": "0",
+      "p3": "0",
+      "p4": "0",
+      "texture": "blank_dice_base",
+      "icon": "icon_blank"
+    },
+    {
+      "id": "6002",
+      "name": "回响骰",
+      "description": "技能触发时可能额外释放 [p1] 次",
+      "effect_type": "double_cast",
+      "p1": "1",
+      "p2": "0",
+      "p3": "0",
+      "p4": "0",
+      "texture": "blank_dice_echo",
+      "icon": "icon_echo"
+    },
+    {
+      "id": "6003",
+      "name": "连击骰",
+      "description": "技能伤害基于相邻面技能数量加成（每个 +[p1] 伤害）",
+      "effect_type": "combo_bonus",
+      "p1": "50",
+      "p2": "0",
+      "p3": "0",
+      "p4": "0",
+      "texture": "blank_dice_combo",
+      "icon": "icon_combo"
+    },
+    {
+      "id": "6004",
+      "name": "暴击骰",
+      "description": "技能触发时有 [p1]% 概率造成双倍效果",
+      "effect_type": "critical",
+      "p1": "20",
+      "p2": "0",
+      "p3": "0",
+      "p4": "0",
+      "texture": "blank_dice_crit",
+      "icon": "icon_crit"
+    },
+    {
+      "id": "6005",
+      "name": "元素骰",
+      "description": "技能附带 [p1] 点额外属性伤害",
+      "effect_type": "elemental_damage",
+      "p1": "25",
+      "p2": "0",
+      "p3": "0",
+      "p4": "0",
+      "texture": "blank_dice_element",
+      "icon": "icon_element"
+    },
+    {
+      "id": "6006",
+      "name": "吸血骰",
+      "description": "技能造成伤害的 [p1]% 转化为自身治疗",
+      "effect_type": "lifesteal",
+      "p1": "30",
+      "p2": "0",
+      "p3": "0",
+      "p4": "0",
+      "texture": "blank_dice_vampire",
+      "icon": "icon_vampire"
+    }
+  ]
+}
