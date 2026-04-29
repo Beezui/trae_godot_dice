@@ -31,8 +31,23 @@ func _ready():
 	_print("PlayerData 玩家数据系统已就绪")
 
 
-func _print(msg: String):
-	print("[PlayerData] ", msg)
+@warning_ignore("shadowed_global_identifier")
+func _print(arg1, arg2=null, arg3=null, arg4=null, arg5=null, arg6=null, arg7=null, arg8=null):
+	var args = [arg1]
+	for a in [arg2, arg3, arg4, arg5, arg6, arg7, arg8]:
+		if a != null:
+			args.append(a)
+	var prefix = "[PlayerData] "
+	args[0] = prefix + str(args[0])
+	match args.size():
+		1: print(args[0])
+		2: print(args[0], args[1])
+		3: print(args[0], args[1], args[2])
+		4: print(args[0], args[1], args[2], args[3])
+		5: print(args[0], args[1], args[2], args[3], args[4])
+		6: print(args[0], args[1], args[2], args[3], args[4], args[5])
+		7: print(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+		8: print(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
 
 
 # ============================================================================

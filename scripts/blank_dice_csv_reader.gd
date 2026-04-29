@@ -57,7 +57,7 @@ func load_blank_dices_from_csv():
 	print("【空白骰子】CSV 表头：", header)
 
 	while not file.eof_reached():
-		var line = file.get_line().strip()
+		var line = file.get_line().strip_edges()
 		if line.is_empty():
 			continue
 
@@ -65,18 +65,18 @@ func load_blank_dices_from_csv():
 		if values.size() < 10:
 			continue
 
-		var dice_id = values[0].strip()
+		var dice_id = values[0].strip_edges()
 		var dice = {
 			"id": dice_id,
-			"name": values[1].strip(),
-			"description": values[2].strip(),
-			"effect_type": values[3].strip(),
-			"p1": values[4].strip(),
-			"p2": values[5].strip(),
-			"p3": values[6].strip(),
-			"p4": values[7].strip(),
-			"texture": values[8].strip(),
-			"icon": values[9].strip()
+			"name": values[1].strip_edges(),
+			"description": values[2].strip_edges(),
+			"effect_type": values[3].strip_edges(),
+			"p1": values[4].strip_edges(),
+			"p2": values[5].strip_edges(),
+			"p3": values[6].strip_edges(),
+			"p4": values[7].strip_edges(),
+			"texture": values[8].strip_edges(),
+			"icon": values[9].strip_edges()
 		}
 		blank_dices_data[dice_id] = dice
 		print("【空白骰子】从 CSV 加载模板 ID=", dice_id)
