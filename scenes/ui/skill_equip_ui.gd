@@ -7,6 +7,7 @@ signal on_equip_confirmed  # 确认分配
 signal on_ui_closed        # 关闭 UI
 
 # UI 组件引用
+@onready var debug_label = $DebugLabel
 @onready var dice_list_container = $MainHBox/LeftPanel/ScrollContainer/DiceListContainer
 @onready var dice_info_label = $MainHBox/CenterPanel/DiceInfoLabel
 @onready var effect_label = $MainHBox/CenterPanel/EffectLabel
@@ -26,11 +27,14 @@ var selected_face_index: int = -1   # 当前选中的骰子面 (0-5)
 var dice_list_buttons = {}     # { instance_id: Button }
 var face_buttons = {}          # { face_index: Button }
 var skill_buttons = {}         # { skill_id: Button }
-var blank_dice_cache = {}      # 空白骰子模板缓存
 
 
 func _ready():
 	_setup_ui()
+	# 延迟到下一帧再加载数据，确保 Autoload 的 _ready() 已执行完毕
+	await get_tree().process_frame
+	# 再延迟一帧确保 UI 布局已完成
+	await get_tree().process_frame
 	_load_data()
 
 
@@ -42,6 +46,9 @@ func _setup_ui():
 	# ESC 关闭
 	hint_label.text = "点击骰子选择 → 点击面 → 点击技能分配 | ESC 关闭"
 
+	# 初始化调试标签
+	debug_label.text = "[DEBUG] 等待数据加载..."
+
 
 ## 加载数据并刷新 UI
 func _load_data():
@@ -49,8 +56,11 @@ func _load_data():
 		push_error("【技能穿戴】PlayerData 不可用")
 		return
 
-	# 加载空白骰子模板缓存
-	_load_blank_dice_cache()
+	# 强制确保 DiceListContainer 有最小尺寸
+	var scroll_parent = dice_list_container.get_parent()
+	if scroll_parent and scroll_parent is ScrollContainer:
+		var parent_size = scroll_parent.size
+		dice_list_container.custom_minimum_size = Vector2(max(parent_size.x, 200), max(parent_size.y, 300))
 
 	# 刷新骰子列表
 	_refresh_dice_list()
@@ -61,57 +71,105 @@ func _load_data():
 		_show_skill_placeholder()
 
 
-## 加载空白骰子模板到缓存
-func _load_blank_dice_cache():
-	var reader = preload("res://scripts/blank_dice_csv_reader.gd").new()
-	var ids = reader.get_all_blank_dice_ids()
-	for id in ids:
-		blank_dice_cache[id] = reader.get_blank_dice_config(id)
-
-
 ## 刷新骰子列表
 func _refresh_dice_list():
+	if not PlayerData:
+		push_error("【技能穿戴】PlayerData 不可用")
+		debug_label.text = "[DEBUG] PlayerData 不可用!"
+		return
+
+	# 获取数据
+	var all_ids = PlayerData.get_all_dice_instance_ids()
+	if all_ids.is_empty():
+		debug_label.text = "[DEBUG] 骰子数据为空"
+		return
+
+	# 直接打印容器信息到控制台
+	print("【技能穿戴】容器信息:")
+	print("  DiceListContainer 对象: ", dice_list_container)
+	print("  父节点: ", dice_list_container.get_parent())
+	print("  容器尺寸: ", dice_list_container.size)
+	print("  容器位置: ", dice_list_container.position)
+	print("  自定义最小尺寸: ", dice_list_container.custom_minimum_size)
+	print("  子节点数量: ", dice_list_container.get_child_count())
+
+	# 在 UI 根节点直接添加一个测试按钮（绕过容器）
+	var root_test = Button.new()
+	root_test.name = "__test_btn__"
+	root_test.text = "=== 根节点测试按钮 ==="
+	root_test.position = Vector2(10, 80)
+	root_test.size = Vector2(300, 50)
+	add_child(root_test)
+
 	# 清理旧按钮
 	for button in dice_list_buttons.values():
 		if button and is_instance_valid(button):
 			button.queue_free()
 	dice_list_buttons.clear()
 
-	var instance_ids = PlayerData.get_all_dice_instance_ids()
-	if instance_ids.is_empty():
-		var label = Label.new()
-		label.text = "暂无骰子"
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-		dice_list_container.add_child(label)
-		return
+	# 强制容器尺寸
+	var scroll_parent = dice_list_container.get_parent()
+	if scroll_parent is ScrollContainer:
+		var sp_size = scroll_parent.size
+		dice_list_container.custom_minimum_size = Vector2(max(sp_size.x, 250), max(sp_size.y, 400))
 
-	for instance_id in instance_ids:
+	# 添加测试 Label
+	var test_label = Label.new()
+	test_label.name = "__test_label__"
+	test_label.text = "=== 测试文字: 如果看到这个说明容器可渲染 ==="
+	test_label.add_theme_color_override("font_color", Color(1, 0.9, 0, 1))
+	test_label.add_theme_font_size_override("font_size", 18)
+	test_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	test_label.custom_minimum_size = Vector2(0, 30)
+	test_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dice_list_container.add_child(test_label)
+
+	# 创建骰子按钮
+	for instance_id in all_ids:
 		var instance = PlayerData.get_dice_instance(instance_id)
-		var button = _create_dice_list_button(instance_id, instance)
+		var button = Button.new()
+		button.text = "%s (ID: %d)" % [instance.get("name", "未知骰子"), instance_id]
+		button.custom_minimum_size = Vector2(0, 45)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.size_flags_vertical = Control.SIZE_FILL
+		button.pressed.connect(_on_dice_selected.bind(instance_id))
 		dice_list_container.add_child(button)
+		dice_list_buttons[instance_id] = button
+
+	# 打印最终状态
+	print("【技能穿戴】添加后:")
+	print("  子节点数量: ", dice_list_container.get_child_count())
+	print("  容器尺寸: ", dice_list_container.size)
+	print("  自定义最小尺寸: ", dice_list_container.custom_minimum_size)
+
+	# 更新调试标签
+	debug_label.text = "[DEBUG] 骰子:%d 个 | 容器:%.0fx%.0f | 子节点:%d | 根测试按钮已添加" % [all_ids.size(), dice_list_container.size.x, dice_list_container.size.y, dice_list_container.get_child_count()]
 
 
-## 创建骰子列表按钮
+## 创建骰子列表按钮（纯文本）
 func _create_dice_list_button(instance_id: int, instance: Dictionary) -> Button:
 	var button = Button.new()
-	button.text = instance.get("name", "未知骰子")
-	button.custom_minimum_size = Vector2(0, 40)
-	button.tooltip_text = instance.get("description", "")
-
-	# 标记技能已配置数量
-	var faces = instance.get("faces", [])
-	var skill_count = 0
-	for face in faces:
-		if str(face) != "0":
-			skill_count += 1
-	button.text += " (%d/6)" % skill_count
+	button.custom_minimum_size = Vector2(200, 50)
+	button.size_flags_horizontal = Control.SIZE_FILL
+	button.size_flags_vertical = Control.SIZE_FILL
+	button.text_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	# 高亮选中
 	if instance_id == selected_instance_id:
 		var style = StyleBoxFlat.new()
 		style.bg_color = Color(0.3, 0.5, 0.8, 0.4)
-		button.add_theme_stylebox_override("normal", style)
+		button.add_theme_stylebox_override("focus", style)
+
+	# 构建按钮文本
+	var name = instance.get("name", "未知骰子")
+	var faces = instance.get("faces", [])
+	var skill_count = 0
+	for face in faces:
+		if str(face) != "0":
+			skill_count += 1
+
+	button.text = "%s（技能: %d/6）" % [name, skill_count]
+	button.tooltip_text = "实例 ID: %d\n%s" % [instance_id, instance.get("description", "")]
 
 	button.pressed.connect(_on_dice_selected.bind(instance_id))
 	dice_list_buttons[instance_id] = button

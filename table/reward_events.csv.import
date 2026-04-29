@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://upvu0n0p1j7c"
+
+[deps]
+
+files=["res://table/reward_events.name.translation", "res://table/reward_events.des.translation", "res://table/reward_events.results.translation"]
+
+source_file="res://table/reward_events.csv"
+dest_files=["res://table/reward_events.name.translation", "res://table/reward_events.des.translation", "res://table/reward_events.results.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dp6eiiyr4dmx3"
+
+[deps]
+
+files=["res://table/BlankDices.name.translation", "res://table/BlankDices.description.translation", "res://table/BlankDices.effect.translation", "res://table/BlankDices.p1.translation", "res://table/BlankDices.p2.translation", "res://table/BlankDices.p3.translation", "res://table/BlankDices.p4.translation", "res://table/BlankDices.texture.translation", "res://table/BlankDices.icon.translation"]
+
+source_file="res://table/BlankDices.csv"
+dest_files=["res://table/BlankDices.name.translation", "res://table/BlankDices.description.translation", "res://table/BlankDices.effect.translation", "res://table/BlankDices.p1.translation", "res://table/BlankDices.p2.translation", "res://table/BlankDices.p3.translation", "res://table/BlankDices.p4.translation", "res://table/BlankDices.texture.translation", "res://table/BlankDices.icon.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

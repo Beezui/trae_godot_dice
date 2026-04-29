@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://3uewsyiist6x"
+
+[deps]
+
+files=["res://table/reward_results.name.translation", "res://table/reward_results.des.translation", "res://table/reward_results.effect.translation", "res://table/reward_results.p1.translation", "res://table/reward_results.p2.translation", "res://table/reward_results.en.translation", "res://table/reward_results.en.translation"]
+
+source_file="res://table/reward_results.csv"
+dest_files=["res://table/reward_results.name.translation", "res://table/reward_results.des.translation", "res://table/reward_results.effect.translation", "res://table/reward_results.p1.translation", "res://table/reward_results.p2.translation", "res://table/reward_results.en.translation", "res://table/reward_results.en.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

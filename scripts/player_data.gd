@@ -1,3 +1,4 @@
+extends Node
 ## PlayerData - 玩家数据管理（Autoload 单例）
 ## 管理玩家拥有的空白骰子实例、技能分配、金币、道具等
 ## 注意：通过 PlayerData 全局变量访问
@@ -28,7 +29,33 @@ var _next_instance_id = 10001
 # ============================================================================
 
 func _ready():
+	push_error("[PlayerData] ===== _ready() has been called! =====")
 	_print("PlayerData 玩家数据系统已就绪")
+	_init_test_data()
+
+
+## 初始化测试数据（开发阶段使用，后续会被存档加载取代）
+func _init_test_data():
+	if dice_instances.size() > 0:
+		_print("已有骰子实例，跳过测试数据初始化")
+		return
+
+	_print("【测试】开始初始化测试数据...")
+
+	# 解锁所有技能
+	var skill_reader = preload("res://scripts/skill_csv_reader.gd").new()
+	var all_skills = skill_reader.get_all_skills()
+	_print("技能数据加载：", all_skills.size(), " 个")
+	for skill_id in all_skills.keys():
+		unlocked_skills.append(str(skill_id))
+	_print("解锁技能：", unlocked_skills.size(), " 个：", unlocked_skills)
+
+	# 创建空白骰子模板实例
+	var template_ids = ["6001", "6002", "6003", "6004", "6005", "6006"]
+	for template_id in template_ids:
+		var instance_id = create_dice_instance(template_id)
+		_print("创建骰子实例：template_id=", template_id, " -> instance_id=", instance_id)
+	_print("骰子实例总数：", dice_instances.size(), "，keys=", dice_instances.keys())
 
 
 @warning_ignore("shadowed_global_identifier")
