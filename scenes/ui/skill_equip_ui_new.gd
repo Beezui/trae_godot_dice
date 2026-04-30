@@ -133,7 +133,7 @@ func _refresh_dice_list():
 func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContainer:
 	var container = VBoxContainer.new()
 	container.name = "DiceBtn_%d" % instance_id
-	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	container.size_flags_vertical = Control.SIZE_FILL
 	container.add_theme_constant_override("separation", 4)
 
@@ -148,7 +148,7 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 创建 SubViewport（渲染 3D 内容）
 	var viewport = SubViewport.new()
 	viewport.name = "DiceViewport"
-	viewport.size = Vector2(180, 180)  # 增大尺寸，容纳偏移的骰子
+	viewport.size = Vector2(240, 240)  # 视窗尺寸
 	viewport.transparent_bg = true
 	viewport.canvas_item_default_texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -160,7 +160,7 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 使用 SubViewportContainer 包裹 SubViewport
 	var sv_container = SubViewportContainer.new()
 	sv_container.name = "DiceSubViewportContainer"
-	sv_container.custom_minimum_size = Vector2(180, 180)
+	sv_container.custom_minimum_size = Vector2(240, 240)
 	sv_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	sv_container.size_flags_vertical = Control.SIZE_FILL
 	sv_container.stretch = true
@@ -220,7 +220,7 @@ func _create_dice_3d_viewport(instance_id: int, viewport: SubViewport) -> Node3D
 	var box_mesh = BoxMesh.new()
 	box_mesh.size = Vector3(1, 1, 1)
 	mesh_instance.mesh = box_mesh
-	mesh_instance.position = Vector3(6.45, 0, 0)  # 骰子向右偏移
+	mesh_instance.position = Vector3(6.05, 0, 0)  # 骰子向右偏移 0.2
 	mesh_instance.rotation = Vector3(deg_to_rad(10), deg_to_rad(-30), 0)  # 骰子向下 10°，向左 30°
 
 	# 创建材质 - 根据骰子类型设置颜色
