@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://skill_equip_ui_new"]
+[gd_scene format=3 uid="uid://clctyrvuacn0c"]
 
-[ext_resource type="Script" path="res://scenes/ui/skill_equip_ui_new.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://be5tdxg8xn7vx" path="res://scenes/ui/skill_equip_ui_new.gd" id="1_script"]
 
-[node name="SkillEquipUINew" type="Control"]
+[node name="SkillEquipUINew" type="Control" unique_id=304899141]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=64073993]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -19,165 +19,168 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.15, 0.12, 0.1, 0.95)
 
-[node name="MainContainer" type="HBoxContainer" parent="."]
+[node name="MainContainer" type="HBoxContainer" parent="." unique_id=128167125]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 15
 offset_left = 20.0
 offset_top = 20.0
 offset_right = -20.0
 offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
 
-[node name="LeftPanel" type="VBoxContainer" parent="MainContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(250, 300)
+[node name="LeftPanel" type="VBoxContainer" parent="MainContainer" unique_id=1875600336]
+custom_minimum_size = Vector2(250, 500)
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="TitleLabel" type="Label" parent="MainContainer/LeftPanel"]
-layout_mode = 2
+[node name="TitleLabel" type="Label" parent="MainContainer/LeftPanel" unique_id=1006989589]
 theme_override_font_sizes/font_size = 24
 text = "骰子列表"
 horizontal_alignment = 1
 
-[node name="DiceListContainer" type="VBoxContainer" parent="MainContainer/LeftPanel"]
-layout_mode = 2
-theme_override_constants/separation = 6
-size_flags_vertical = 4
+[node name="DiceListScroll" type="ScrollContainer" parent="MainContainer/LeftPanel" unique_id=264645242]
+custom_minimum_size = Vector2(250, 400)
+size_flags_horizontal = 4
+size_flags_vertical = 5
 
-[node name="CenterPanel" type="VBoxContainer" parent="MainContainer"]
+[node name="DiceListContainer" type="VBoxContainer" parent="MainContainer/LeftPanel/DiceListScroll" unique_id=21762632]
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 6
+
+[node name="CenterPanel" type="VBoxContainer" parent="MainContainer" unique_id=1397908733]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 10
 
-[node name="DiceInfoLabel" type="Label" parent="MainContainer/CenterPanel"]
+[node name="DiceInfoLabel" type="Label" parent="MainContainer/CenterPanel" unique_id=372428519]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "选择一个骰子"
 horizontal_alignment = 1
 
-[node name="EffectLabel" type="Label" parent="MainContainer/CenterPanel"]
+[node name="EffectLabel" type="Label" parent="MainContainer/CenterPanel" unique_id=1770272402]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 
-[node name="FaceGridContainer" type="VBoxContainer" parent="MainContainer/CenterPanel"]
+[node name="FaceGridContainer" type="VBoxContainer" parent="MainContainer/CenterPanel" unique_id=1766866796]
 layout_mode = 2
+size_flags_horizontal = 5
+size_flags_vertical = 5
 theme_override_constants/separation = 15
-size_flags_horizontal = 5
-size_flags_vertical = 5
 
-[node name="TopRow" type="HBoxContainer" parent="MainContainer/CenterPanel/FaceGridContainer"]
+[node name="TopRow" type="HBoxContainer" parent="MainContainer/CenterPanel/FaceGridContainer" unique_id=1392369700]
 layout_mode = 2
+size_flags_horizontal = 5
 theme_override_constants/separation = 15
-size_flags_horizontal = 5
 
-[node name="FaceSlot_0" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/TopRow"]
-layout_mode = 2
+[node name="FaceSlot_0" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/TopRow" unique_id=1454797779]
 custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 color = Color(0.2, 0.5, 0.2, 0.3)
 
-[node name="FaceSlot_1" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/TopRow"]
-layout_mode = 2
+[node name="FaceSlot_1" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/TopRow" unique_id=1782582522]
 custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 color = Color(0.2, 0.5, 0.2, 0.3)
 
-[node name="FaceSlot_2" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/TopRow"]
-layout_mode = 2
+[node name="FaceSlot_2" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/TopRow" unique_id=1105244402]
 custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 color = Color(0.2, 0.5, 0.2, 0.3)
 
-[node name="BottomRow" type="HBoxContainer" parent="MainContainer/CenterPanel/FaceGridContainer"]
+[node name="BottomRow" type="HBoxContainer" parent="MainContainer/CenterPanel/FaceGridContainer" unique_id=1531228868]
 layout_mode = 2
+size_flags_horizontal = 5
 theme_override_constants/separation = 15
-size_flags_horizontal = 5
 
-[node name="FaceSlot_3" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/BottomRow"]
-layout_mode = 2
+[node name="FaceSlot_3" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/BottomRow" unique_id=1625322574]
 custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 color = Color(0.2, 0.5, 0.2, 0.3)
 
-[node name="FaceSlot_4" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/BottomRow"]
-layout_mode = 2
+[node name="FaceSlot_4" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/BottomRow" unique_id=1107478801]
 custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 color = Color(0.2, 0.5, 0.2, 0.3)
 
-[node name="FaceSlot_5" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/BottomRow"]
-layout_mode = 2
+[node name="FaceSlot_5" type="ColorRect" parent="MainContainer/CenterPanel/FaceGridContainer/BottomRow" unique_id=885505864]
 custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 color = Color(0.2, 0.5, 0.2, 0.3)
 
-[node name="RightPanel" type="VBoxContainer" parent="MainContainer"]
+[node name="RightPanel" type="VBoxContainer" parent="MainContainer" unique_id=845354478]
 layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 theme_override_constants/separation = 10
 
-[node name="SkillTitleLabel" type="Label" parent="MainContainer/RightPanel"]
+[node name="SkillTitleLabel" type="Label" parent="MainContainer/RightPanel" unique_id=1810317090]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "技能列表"
 horizontal_alignment = 1
 
-[node name="SelectedFaceLabel" type="Label" parent="MainContainer/RightPanel"]
+[node name="SelectedFaceLabel" type="Label" parent="MainContainer/RightPanel" unique_id=1573592992]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "未选择面"
 horizontal_alignment = 1
 
-[node name="SkillScrollContainer" type="ScrollContainer" parent="MainContainer/RightPanel"]
+[node name="SkillScrollContainer" type="ScrollContainer" parent="MainContainer/RightPanel" unique_id=1229407616]
 layout_mode = 2
 size_flags_horizontal = 5
 size_flags_vertical = 5
 
-[node name="SkillGridContainer" type="GridContainer" parent="MainContainer/RightPanel/SkillScrollContainer"]
+[node name="SkillGridContainer" type="GridContainer" parent="MainContainer/RightPanel/SkillScrollContainer" unique_id=1473780463]
 layout_mode = 2
+size_flags_horizontal = 5
+size_flags_vertical = 5
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 columns = 3
-size_flags_horizontal = 5
-size_flags_vertical = 5
 
-[node name="BottomBar" type="HBoxContainer" parent="."]
+[node name="BottomBar" type="HBoxContainer" parent="." unique_id=94416775]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
 offset_left = 20.0
 offset_top = -60.0
 offset_right = -20.0
 offset_bottom = -20.0
+grow_horizontal = 2
 theme_override_constants/separation = 15
 
-[node name="ResetButton" type="Button" parent="BottomBar"]
+[node name="ResetButton" type="Button" parent="BottomBar" unique_id=917102380]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "重置所有"
 
-[node name="ConfirmButton" type="Button" parent="BottomBar"]
+[node name="ConfirmButton" type="Button" parent="BottomBar" unique_id=915707763]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "确认配置"
 
-[node name="HintLabel" type="Label" parent="BottomBar"]
+[node name="HintLabel" type="Label" parent="BottomBar" unique_id=1365096307]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "拖拽技能到绿色骰面 | 点击骰子查看 | ESC 关闭"

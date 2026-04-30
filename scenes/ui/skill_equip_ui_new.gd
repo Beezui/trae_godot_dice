@@ -29,21 +29,17 @@ var dice_viewports = {}    # { instance_id: SubViewport }
 
 func _ready():
 	# 节点引用
-	dice_list_container = $MainContainer/LeftPanel/DiceListContainer as VBoxContainer
+	dice_list_container = $MainContainer/LeftPanel/DiceListScroll/DiceListContainer as VBoxContainer
+	if not dice_list_container:
+		push_error("【技能穿戴 UI】dice_list_container 未找到！")
+		print_tree()
+		return
+
 	dice_info_label = $MainContainer/CenterPanel/DiceInfoLabel as Label
 	effect_label = $MainContainer/CenterPanel/EffectLabel as Label
 	skill_grid_container = $MainContainer/RightPanel/SkillScrollContainer/SkillGridContainer as GridContainer
 	selected_face_label = $MainContainer/RightPanel/SelectedFaceLabel as Label
 	face_grid_container = $MainContainer/CenterPanel/FaceGridContainer as VBoxContainer
-
-	if not face_grid_container:
-		push_error("【技能穿戴 UI】FaceGridContainer 未找到")
-		return
-
-	if not dice_list_container:
-		push_error("【技能穿戴 UI】dice_list_container 未找到！")
-		print_tree()
-		return
 
 	_init_face_slots()
 	_setup_ui()
@@ -100,11 +96,8 @@ func _load_data():
 func _refresh_dice_list():
 	if not dice_list_container:
 		push_error("【技能穿戴 UI】dice_list_container 未初始化")
-		print("【技能穿戴 UI】调试：打印节点树")
 		print_tree()
 		return
-
-	print("【技能穿戴 UI】_refresh_dice_list() 开始, dice_list_container=", dice_list_container)
 
 	# 清理旧按钮和 viewport
 	for btn in dice_buttons.values():
@@ -117,7 +110,6 @@ func _refresh_dice_list():
 	dice_viewports.clear()
 
 	var all_ids = PlayerData.get_all_dice_instance_ids()
-	print("【技能穿戴 UI】骰子实例数 = ", all_ids.size(), ", ids = ", all_ids)
 	if all_ids.is_empty():
 		dice_info_label.text = "没有骰子数据"
 		return
@@ -125,17 +117,13 @@ func _refresh_dice_list():
 	# 创建骰子按钮（带 3D 预览）
 	for instance_id in all_ids:
 		var instance = PlayerData.get_dice_instance(instance_id)
-		print("【技能穿戴 UI】创建骰子按钮：", instance.get("name", "未知"))
 		var btn = _create_dice_button(instance_id, instance)
 		dice_list_container.add_child(btn)
 		dice_buttons[instance_id] = btn
-	print("【技能穿戴 UI】DiceListContainer 子节点数 = ", dice_list_container.get_child_count())
 
 	# 默认选中第一个骰子
 	if selected_instance_id == -1 and all_ids.size() > 0:
-		var first_id = all_ids[0]
-		selected_instance_id = first_id
-		print("【技能穿戴 UI】默认选中第一个骰子：", first_id)
+		selected_instance_id = all_ids[0]
 
 	_update_dice_selection_highlight()
 	_refresh_center_panel()
@@ -149,13 +137,12 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	container.size_flags_vertical = Control.SIZE_FILL
 	container.add_theme_constant_override("separation", 4)
 
-	# 按钮标签
+	# 名称标签
 	var label = Label.new()
 	label.text = instance.get("name", "未知骰子")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 14)
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.mouse_filter = Control.MOUSE_FILTER_PASS
 	container.add_child(label)
 
 	# 创建 SubViewport（渲染 3D 内容）
@@ -167,27 +154,30 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
 
-	# 创建 3D 骰子场景（添加到 Viewport）
+	# 创建 3D 骰子场景
 	_create_dice_3d_viewport(instance_id, viewport)
 
-	# 使用 TextureRect 显示 Viewport 内容
-	var viewport_texture = TextureRect.new()
-	viewport_texture.name = "DiceViewportTexture"
-	viewport_texture.custom_minimum_size = Vector2(80, 80)
-	viewport_texture.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	viewport_texture.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	viewport_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	viewport_texture.texture = viewport.get_texture()
-	viewport_texture.mouse_filter = Control.MOUSE_FILTER_PASS
+	# 使用 SubViewportContainer 包裹 SubViewport
+	var sv_container = SubViewportContainer.new()
+	sv_container.name = "DiceSubViewportContainer"
+	sv_container.custom_minimum_size = Vector2(100, 100)
+	sv_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sv_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sv_container.stretch = true
+	sv_container.stretch_shrink = 2
+	sv_container.mouse_filter = Control.MOUSE_FILTER_STOP
+	sv_container.add_child(viewport)
 
-	# 添加 viewport 和纹理到容器
-	container.add_child(viewport)
-	container.add_child(viewport_texture)
+	container.add_child(sv_container)
 
 	dice_viewports[instance_id] = viewport
 
-	# 容器自身接收点击
+	# 容器接收点击
 	container.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_on_dice_button_pressed(instance_id)
+	)
+	sv_container.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			_on_dice_button_pressed(instance_id)
 	)
@@ -382,8 +372,6 @@ func _refresh_skill_list():
 		push_error("【技能穿戴 UI】skill_grid_container 未初始化")
 		return
 
-	print("【技能穿戴 UI】_refresh_skill_list() 开始")
-
 	# 清理旧按钮
 	for btn in skill_buttons.values():
 		if btn and is_instance_valid(btn):
@@ -391,7 +379,6 @@ func _refresh_skill_list():
 	skill_buttons.clear()
 
 	var unlocked = PlayerData.get_all_unlocked_skills()
-	print("【技能穿戴 UI】已解锁技能数 = ", unlocked.size(), ", skills = ", unlocked)
 	if unlocked.is_empty():
 		var label = Label.new()
 		label.text = "暂无已解锁技能"
@@ -403,16 +390,9 @@ func _refresh_skill_list():
 	var skill_reader = preload("res://scripts/skill_csv_reader.gd").new()
 	for skill_id in unlocked:
 		var sid = str(skill_id)
-		var skill_data = skill_reader.get_skill(sid)
-		var skill_name = skill_data.get("name", "未知技能")
-		var icon_id = skill_data.get("icon", "")
-		print("【技能穿戴 UI】创建技能按钮：ID=", sid, " 名称=", skill_name, " icon_id=", icon_id)
-
 		var btn = _create_skill_button(sid)
 		skill_grid_container.add_child(btn)
 		skill_buttons[sid] = btn
-
-	print("【技能穿戴 UI】SkillGridContainer 子节点数 = ", skill_grid_container.get_child_count())
 
 
 ## 创建技能按钮（支持拖拽）
@@ -424,13 +404,8 @@ func _create_skill_button(skill_id: String) -> TextureRect:
 
 	# 加载技能图标
 	var icon_path = _get_skill_icon_path(skill_id)
-	print("【技能穿戴 UI】技能图标路径：", icon_path)
 	if icon_path and FileAccess.file_exists(icon_path):
-		var tex = load(icon_path)
-		print("【技能穿戴 UI】技能纹理加载：", tex)
-		texture_rect.texture = tex
-	else:
-		print("【技能穿戴 UI】技能纹理加载失败：", icon_path, " 文件存在=", FileAccess.file_exists(icon_path) if icon_path else false)
+		texture_rect.texture = load(icon_path)
 
 	texture_rect.tooltip_text = "%s\n(ID: %s)\n点击或拖拽到骰面配置" % [_get_skill_name(skill_id), skill_id]
 
@@ -511,7 +486,6 @@ func _drop_data_fw(at_position: Vector2, data: Variant) -> void:
 
 	# 分配技能
 	PlayerData.assign_skill_to_face(selected_instance_id, slot_index, skill_id)
-	print("【技能穿戴】拖拽配置：实例=%d 面=%d 技能=%s" % [selected_instance_id, slot_index, skill_id])
 
 	# 刷新 UI
 	_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
@@ -522,13 +496,11 @@ func _drop_data_fw(at_position: Vector2, data: Variant) -> void:
 func _on_face_slot_gui_input(event: InputEvent, face_index: int):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if selected_instance_id == -1:
-			print("【技能穿戴】请先选择一个骰子")
 			return
 
 		# 选中面
 		selected_face_index = face_index
 		selected_face_label.text = "选中：面 %d" % (face_index + 1)
-		print("【技能穿戴】选中面：", face_index + 1)
 
 		# 刷新高亮
 		_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
@@ -538,16 +510,13 @@ func _on_face_slot_gui_input(event: InputEvent, face_index: int):
 func _on_skill_button_gui_input(event: InputEvent, skill_id: String):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if selected_instance_id == -1:
-			print("【技能穿戴】请先选择一个骰子")
 			return
 
 		if selected_face_index == -1:
-			print("【技能穿戴】请先选择一个骰子面")
 			return
 
 		# 分配技能
 		PlayerData.assign_skill_to_face(selected_instance_id, selected_face_index, skill_id)
-		print("【技能穿戴】点击配置：实例=%d 面=%d 技能=%s" % [selected_instance_id, selected_face_index, skill_id])
 
 		# 刷新 UI
 		_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
@@ -590,14 +559,12 @@ func _on_reset_pressed():
 	for i in range(6):
 		PlayerData.assign_skill_to_face(selected_instance_id, i, "0")
 
-	print("【技能穿戴】重置骰子：instance_id=", selected_instance_id)
 	_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
 	_refresh_dice_list()
 
 
 ## 确认按钮
 func _on_confirm_pressed():
-	print("【技能穿戴】确认配置")
 	on_equip_confirmed.emit()
 
 
