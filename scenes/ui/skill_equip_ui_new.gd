@@ -142,13 +142,13 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	label.text = instance.get("name", "未知骰子")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 14)
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	container.add_child(label)
 
 	# 创建 SubViewport（渲染 3D 内容）
 	var viewport = SubViewport.new()
 	viewport.name = "DiceViewport"
-	viewport.size = Vector2(120, 120)
+	viewport.size = Vector2(180, 180)  # 增大尺寸，容纳偏移的骰子
 	viewport.transparent_bg = true
 	viewport.canvas_item_default_texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -160,11 +160,10 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 使用 SubViewportContainer 包裹 SubViewport
 	var sv_container = SubViewportContainer.new()
 	sv_container.name = "DiceSubViewportContainer"
-	sv_container.custom_minimum_size = Vector2(100, 100)
-	sv_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sv_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sv_container.custom_minimum_size = Vector2(180, 180)
+	sv_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	sv_container.size_flags_vertical = Control.SIZE_FILL
 	sv_container.stretch = true
-	sv_container.stretch_shrink = 2
 	sv_container.mouse_filter = Control.MOUSE_FILTER_STOP
 	sv_container.add_child(viewport)
 
@@ -194,16 +193,16 @@ func _create_dice_3d_viewport(instance_id: int, viewport: SubViewport) -> Node3D
 	var world = World3D.new()
 	viewport.world_3d = world
 
-	# 相机 — 正视角度
+	# 相机 — 右上方向下看
 	var camera = Camera3D.new()
-	camera.position = Vector3(0, 0, 3.5)  # 正视角度，确保骰子完整可见
-	camera.rotation = Vector3.ZERO  # 使用 look_at 精确瞄准
+	camera.position = Vector3(5.95, 0.7, 2.5)  # 相机向右对齐骰子
+	camera.rotation = Vector3(-0.4, 0, 0)  # 镜头向下旋转
 	camera.fov = 45.0
 	camera.current = true
 	root.add_child(camera)
 
 	# 瞄准骰子中心
-	camera.look_at(Vector3.ZERO)
+	camera.look_at(Vector3(5.95, 0, 0))  # 瞄准点随骰子偏移
 
 	# 灯光 - 多方向光源
 	var light1 = DirectionalLight3D.new()
@@ -221,6 +220,8 @@ func _create_dice_3d_viewport(instance_id: int, viewport: SubViewport) -> Node3D
 	var box_mesh = BoxMesh.new()
 	box_mesh.size = Vector3(1, 1, 1)
 	mesh_instance.mesh = box_mesh
+	mesh_instance.position = Vector3(6.45, 0, 0)  # 骰子向右偏移
+	mesh_instance.rotation = Vector3(deg_to_rad(10), deg_to_rad(-30), 0)  # 骰子向下 10°，向左 30°
 
 	# 创建材质 - 根据骰子类型设置颜色
 	var material = StandardMaterial3D.new()
