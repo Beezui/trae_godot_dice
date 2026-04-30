@@ -194,15 +194,15 @@ func _create_dice_3d_viewport(instance_id: int, viewport: SubViewport) -> Node3D
 	var world = World3D.new()
 	viewport.world_3d = world
 
-	# 相机 — 45° 等距视角，骰子完整居中显示
+	# 相机 — 正视角度
 	var camera = Camera3D.new()
-	camera.position = Vector3(1.2, 1.2, 2.8)  # 对角线位置产生等距视角
+	camera.position = Vector3(0, 0, 3.5)  # 正视角度，确保骰子完整可见
 	camera.rotation = Vector3.ZERO  # 使用 look_at 精确瞄准
 	camera.fov = 45.0
 	camera.current = true
 	root.add_child(camera)
 
-	# 精确瞄准骰子中心
+	# 瞄准骰子中心
 	camera.look_at(Vector3.ZERO)
 
 	# 灯光 - 多方向光源
