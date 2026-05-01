@@ -270,7 +270,7 @@ func create_skill_dice_from_player_data(instance_id: int, parent: Node, position
 
 	# 从 PlayerData 读取技能分配（faces 数组）
 	var faces = instance.get("faces", ["0", "0", "0", "0", "0", "0"])
-	var texture_config = _build_skill_texture_config_from_faces(faces)
+	var texture_config = _build_skill_texture_config_from_faces(faces, template_id)
 	var value_config = _build_skill_value_config()
 
 	if dice.has_method("set_dice_face_config"):
@@ -305,8 +305,19 @@ func create_skill_dice_from_player_data(instance_id: int, parent: Node, position
 
 
 ## 从 faces 数组构建贴图配置
-func _build_skill_texture_config_from_faces(faces: Array) -> Dictionary:
+## @param faces 技能分配数组（["0", "10001", "0", ...]）
+## @param template_id 空白骰子模板 ID（用于获取空面的基础贴图）
+func _build_skill_texture_config_from_faces(faces: Array, template_id: String = "") -> Dictionary:
 	var texture_config = {}
+
+	# 获取空白骰子模板的基础贴图路径
+	var blank_texture_path = ""
+	if not template_id.is_empty():
+		var blank_config = dice_csv_reader.get_blank_dice_config(template_id)
+		if blank_config.has("texture"):
+			var texture_name = blank_config["texture"]
+			blank_texture_path = "res://textures/dice/blank_dice/" + texture_name + ".png"
+
 	for i in range(6):
 		if i < faces.size():
 			var skill_id = str(faces[i])
@@ -315,12 +326,12 @@ func _build_skill_texture_config_from_faces(faces: Array) -> Dictionary:
 				if skill_data and skill_data.has("icon"):
 					texture_config[i] = "res://textures/skill/skill_" + skill_data["icon"] + ".png"
 				else:
-					texture_config[i] = ""
+					texture_config[i] = blank_texture_path
 			else:
-				# 空面使用空白骰子贴图（或默认贴图）
-				texture_config[i] = ""
+				# 空面使用空白骰子的基础贴图
+				texture_config[i] = blank_texture_path
 		else:
-			texture_config[i] = ""
+			texture_config[i] = blank_texture_path
 	return texture_config
 
 

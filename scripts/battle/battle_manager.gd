@@ -381,7 +381,8 @@ func _generate_character_dices(character: BaseCharacter):
 	var battle_scene = _get_battle_scene()
 	var sandbox = _get_sandbox_from_scene(battle_scene)
 
-	# 1. 生成技能骰子（使用 DiceManager）
+	# 使用角色预设骰子
+	print("  - 使用角色预设骰子 ID：", character.skill_dice_ids)
 	if character.skill_dice_ids.size() > 0:
 		for skill_dice_id in character.skill_dice_ids:
 			if DiceManager:
@@ -391,19 +392,10 @@ func _generate_character_dices(character: BaseCharacter):
 					character_dices.append(dice)
 					print("  - 生成技能骰子：", skill_dice_id)
 			else:
-				# 备用方案
 				var dice = _create_skill_dice_fallback(skill_dice_id)
 				if dice:
 					skill_dices.append(dice)
 					character_dices.append(dice)
-
-	# 2. 生成物品骰子（预留）
-	# TODO: 实现物品骰子
-	# for item_dice_id in character.item_dice_ids:
-	#     var dice = _create_item_dice(item_dice_id)
-	#     if dice:
-	#         item_dices.append(dice)
-	#         character_dices.append(dice)
 
 	print("【BattleManager】", character.name, " 的骰子生成完成")
 

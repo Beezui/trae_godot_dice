@@ -195,14 +195,14 @@ func _create_dice_3d_viewport(instance_id: int, viewport: SubViewport) -> Node3D
 
 	# 相机 — 右上方向下看
 	var camera = Camera3D.new()
-	camera.position = Vector3(5.95, 0.7, 2.5)  # 相机向右对齐骰子
-	camera.rotation = Vector3(-0.4, 0, 0)  # 镜头向下旋转
+	camera.position = Vector3(5.95, 0.7, 2.5)
+	camera.rotation = Vector3(-0.4, 0, 0)
 	camera.fov = 45.0
 	camera.current = true
 	root.add_child(camera)
 
 	# 瞄准骰子中心
-	camera.look_at(Vector3(5.95, 0, 0))  # 瞄准点随骰子偏移
+	camera.look_at(Vector3(5.95, 0, 0))
 
 	# 灯光 - 多方向光源
 	var light1 = DirectionalLight3D.new()
@@ -215,41 +215,126 @@ func _create_dice_3d_viewport(instance_id: int, viewport: SubViewport) -> Node3D
 	light2.rotation = Vector3(0.3, 0.3, 0)
 	root.add_child(light2)
 
-	# 创建骰子网格（立方体）
-	var mesh_instance = MeshInstance3D.new()
-	var box_mesh = BoxMesh.new()
-	box_mesh.size = Vector3(1, 1, 1)
-	mesh_instance.mesh = box_mesh
-	mesh_instance.position = Vector3(6.05, 0, 0)  # 骰子向右偏移 0.2
-	mesh_instance.rotation = Vector3(deg_to_rad(10), deg_to_rad(-30), 0)  # 骰子向下 10°，向左 30°
+	# 创建骰子网格（6个独立表面的 ArrayMesh，与 dice_6.gd 一致）
+	var mesh = _create_dice_array_mesh()
 
-	# 创建材质 - 根据骰子类型设置颜色
-	var material = StandardMaterial3D.new()
+	# 加载空白骰子的真实贴图
+	var texture_path = ""
 	var instance_data = PlayerData.get_dice_instance(instance_id)
 	if not instance_data.is_empty():
-		# 根据骰子名称设置不同颜色
-		var dice_name = instance_data.get("name", "")
-		if "基础" in dice_name:
-			material.albedo_color = Color(0.95, 0.95, 0.95, 1.0)
-		elif "回响" in dice_name:
-			material.albedo_color = Color(0.6, 0.8, 1.0, 1.0)
-		elif "连击" in dice_name:
-			material.albedo_color = Color(1.0, 0.9, 0.6, 1.0)
-		elif "暴击" in dice_name:
-			material.albedo_color = Color(1.0, 0.6, 0.6, 1.0)
-		elif "元素" in dice_name:
-			material.albedo_color = Color(0.6, 1.0, 0.8, 1.0)
-		elif "吸血" in dice_name:
-			material.albedo_color = Color(0.9, 0.6, 0.9, 1.0)
-		else:
-			material.albedo_color = Color(0.95, 0.95, 0.9, 1.0)
-	material.roughness = 0.4
-	material.metallic = 0.2
-	mesh_instance.material_override = material
+		var template_id = instance_data.get("template_id", "")
+		if not template_id.is_empty():
+			var reader = preload("res://scripts/blank_dice_csv_reader.gd").new()
+			var config = reader.get_blank_dice_config(template_id)
+			if config.has("texture"):
+				var texture_name = config["texture"]
+				texture_path = "res://textures/dice/blank_dice/" + texture_name + ".png"
+
+	# 为每个面创建材质（6个面都用同一张贴图）
+	var materials = []
+	if texture_path and FileAccess.file_exists(texture_path):
+		var texture = load(texture_path)
+		print("【技能穿戴 UI】加载骰子贴图：", texture_path)
+		for i in range(6):
+			var material = StandardMaterial3D.new()
+			material.albedo_texture = texture
+			material.roughness = 0.8
+			material.metallic = 0.0
+			materials.append(material)
+	else:
+		# 回退：根据骰子名称设置颜色
+		var dice_color = Color(0.95, 0.95, 0.95, 1.0)  # 默认白色
+		if not instance_data.is_empty():
+			var dice_name = instance_data.get("name", "")
+			if "基础" in dice_name:
+				dice_color = Color(0.95, 0.95, 0.95, 1.0)
+			elif "回响" in dice_name:
+				dice_color = Color(0.6, 0.8, 1.0, 1.0)
+			elif "连击" in dice_name:
+				dice_color = Color(1.0, 0.9, 0.6, 1.0)
+			elif "暴击" in dice_name:
+				dice_color = Color(1.0, 0.6, 0.6, 1.0)
+			elif "元素" in dice_name:
+				dice_color = Color(0.6, 1.0, 0.8, 1.0)
+			elif "吸血" in dice_name:
+				dice_color = Color(0.9, 0.6, 0.9, 1.0)
+		for i in range(6):
+			var material = StandardMaterial3D.new()
+			material.albedo_color = dice_color
+			material.roughness = 0.8
+			material.metallic = 0.0
+			materials.append(material)
+
+	# 创建 MeshInstance3D 并应用网格和材质
+	var mesh_instance = MeshInstance3D.new()
+	mesh_instance.mesh = mesh
+	mesh_instance.position = Vector3(6.05, 0, 0)
+	mesh_instance.rotation = Vector3(deg_to_rad(10), deg_to_rad(-30), 0)
+
+	# 将材质设置到每个表面
+	for i in range(6):
+		mesh_instance.mesh.surface_set_material(i, materials[i])
 
 	root.add_child(mesh_instance)
 
 	return root
+
+
+## 创建有 6 个独立表面的骰子网格（与 dice_6.gd create_fallback_mesh 一致）
+func _create_dice_array_mesh() -> ArrayMesh:
+	var mesh = ArrayMesh.new()
+
+	var vertices = [
+		Vector3(-0.5, -0.5, -0.5),
+		Vector3(0.5, -0.5, -0.5),
+		Vector3(0.5, 0.5, -0.5),
+		Vector3(-0.5, 0.5, -0.5),
+		Vector3(-0.5, -0.5, 0.5),
+		Vector3(0.5, -0.5, 0.5),
+		Vector3(0.5, 0.5, 0.5),
+		Vector3(-0.5, 0.5, 0.5)
+	]
+
+	var faces = [
+		[0, 1, 2, 3],
+		[5, 4, 7, 6],
+		[4, 0, 3, 7],
+		[1, 5, 6, 2],
+		[3, 2, 6, 7],
+		[4, 5, 1, 0]
+	]
+
+	for i in range(6):
+		var arrays = []
+		arrays.resize(Mesh.ARRAY_MAX)
+
+		var surface_vertices = []
+		for j in faces[i]:
+			surface_vertices.append(vertices[j])
+		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array(surface_vertices)
+
+		var normals = []
+		var normal = Vector3(0, 0, 0)
+		match i:
+			0: normal = Vector3(0, 0, -1)
+			1: normal = Vector3(0, 0, 1)
+			2: normal = Vector3(-1, 0, 0)
+			3: normal = Vector3(1, 0, 0)
+			4: normal = Vector3(0, 1, 0)
+			5: normal = Vector3(0, -1, 0)
+		for j in range(4):
+			normals.append(normal)
+		arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array(normals)
+
+		var uvs = [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]
+		arrays[Mesh.ARRAY_TEX_UV] = PackedVector2Array(uvs)
+
+		var indices = [0, 1, 2, 0, 2, 3]
+		arrays[Mesh.ARRAY_INDEX] = PackedInt32Array(indices)
+
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+
+	return mesh
 
 
 ## 骰子按钮点击
