@@ -397,26 +397,27 @@ func _refresh_skill_list():
 
 
 ## 创建技能按钮（支持拖拽）
-func _create_skill_button(skill_id: String) -> TextureRect:
-	var texture_rect = TextureRect.new()
-	texture_rect.name = "SkillBtn_%s" % skill_id
-	texture_rect.custom_minimum_size = Vector2(60, 60)
-	texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+func _create_skill_button(skill_id: String) -> Button:
+	var button = Button.new()
+	button.name = "SkillBtn_%s" % skill_id
+	button.custom_minimum_size = Vector2(80, 50)
+	button.text = _get_skill_name(skill_id)
+	button.tooltip_text = "%s\n(ID: %s)\n点击或拖拽到骰面配置" % [_get_skill_name(skill_id), skill_id]
 
 	# 加载技能图标
 	var icon_path = _get_skill_icon_path(skill_id)
 	if icon_path and FileAccess.file_exists(icon_path):
-		texture_rect.texture = load(icon_path)
-
-	texture_rect.tooltip_text = "%s\n(ID: %s)\n点击或拖拽到骰面配置" % [_get_skill_name(skill_id), skill_id]
+		var tex = load(icon_path)
+		if tex:
+			button.icon = tex
 
 	# 启用拖拽
-	texture_rect.set_drag_forwarding(Callable(_can_drop_data_fw_skill), Callable(_get_drag_data_fw_skill), Callable(_drop_data_fw_skill))
+	button.set_drag_forwarding(Callable(_can_drop_data_fw_skill), Callable(_get_drag_data_fw_skill), Callable(_drop_data_fw_skill))
 
 	# 连接点击事件
-	texture_rect.gui_input.connect(_on_skill_button_gui_input.bind(skill_id))
+	button.pressed.connect(_on_skill_button_pressed.bind(skill_id))
 
-	return texture_rect
+	return button
 
 
 ## 拖拽相关函数
@@ -508,20 +509,12 @@ func _on_face_slot_gui_input(event: InputEvent, face_index: int):
 
 
 ## 技能按钮点击事件
-func _on_skill_button_gui_input(event: InputEvent, skill_id: String):
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if selected_instance_id == -1:
-			return
-
-		if selected_face_index == -1:
-			return
-
-		# 分配技能
-		PlayerData.assign_skill_to_face(selected_instance_id, selected_face_index, skill_id)
-
-		# 刷新 UI
-		_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
-		_refresh_dice_list()
+func _on_skill_button_pressed(skill_id: String):
+	if selected_instance_id == -1 or selected_face_index == -1:
+		return
+	PlayerData.assign_skill_to_face(selected_instance_id, selected_face_index, skill_id)
+	_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
+	_refresh_dice_list()
 
 
 ## 格式化效果描述

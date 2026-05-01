@@ -127,32 +127,32 @@ size_flags_vertical = 5
 color = Color(0.2, 0.5, 0.2, 0.3)
 
 [node name="RightPanel" type="VBoxContainer" parent="MainContainer" unique_id=845354478]
-layout_mode = 2
-size_flags_horizontal = 5
-size_flags_vertical = 5
+custom_minimum_size = Vector2(280, 500)
+size_flags_horizontal = 4
+size_flags_vertical = 4
 theme_override_constants/separation = 10
 
 [node name="SkillTitleLabel" type="Label" parent="MainContainer/RightPanel" unique_id=1810317090]
-layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
 theme_override_font_sizes/font_size = 20
 text = "技能列表"
 horizontal_alignment = 1
 
 [node name="SelectedFaceLabel" type="Label" parent="MainContainer/RightPanel" unique_id=1573592992]
-layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
 theme_override_font_sizes/font_size = 14
 text = "未选择面"
 horizontal_alignment = 1
 
 [node name="SkillScrollContainer" type="ScrollContainer" parent="MainContainer/RightPanel" unique_id=1229407616]
-layout_mode = 2
-size_flags_horizontal = 5
-size_flags_vertical = 5
+custom_minimum_size = Vector2(280, 300)
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
 [node name="SkillGridContainer" type="GridContainer" parent="MainContainer/RightPanel/SkillScrollContainer" unique_id=1473780463]
-layout_mode = 2
-size_flags_horizontal = 5
-size_flags_vertical = 5
+size_flags_horizontal = 4
+size_flags_vertical = 4
+custom_minimum_size = Vector2(250, 300)
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 columns = 3
