@@ -19,7 +19,8 @@ var face_slots = []
 
 # 状态
 var selected_instance_id: int = -1  # 当前选中的骰子实例 ID
-var selected_face_index: int = -1   # 当前选中的骰子面 (0-5)
+var selected_face_index: int = -1   
+# 当前选中的骰子面 (0-5)
 
 # 缓存
 var dice_buttons = {}      # { instance_id: Button }
@@ -35,11 +36,11 @@ func _ready():
 		print_tree()
 		return
 
-	dice_info_label = $MainContainer/CenterPanel/DiceInfoLabel as Label
-	effect_label = $MainContainer/CenterPanel/EffectLabel as Label
-	skill_grid_container = $MainContainer/RightPanel/SkillScrollContainer/SkillGridContainer as GridContainer
-	selected_face_label = $MainContainer/RightPanel/SelectedFaceLabel as Label
-	face_grid_container = $MainContainer/CenterPanel/FaceGridContainer as VBoxContainer
+	dice_info_label = $MainContainer/RightPanel/FaceGridContainer/DiceInfoLabel as Label
+	effect_label = $MainContainer/RightPanel/FaceGridContainer/EffectLabel as Label
+	skill_grid_container = $MainContainer/RightPanel/SkillPanel/SkillScrollContainer/SkillGridContainer as GridContainer
+	selected_face_label = $MainContainer/RightPanel/SkillPanel/SelectedFaceLabel as Label
+	face_grid_container = $MainContainer/RightPanel/FaceGridContainer as VBoxContainer
 
 	_init_face_slots()
 	_setup_ui()
@@ -148,7 +149,7 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 创建 SubViewport（渲染 3D 内容）
 	var viewport = SubViewport.new()
 	viewport.name = "DiceViewport"
-	viewport.size = Vector2(240, 240)  # 视窗尺寸
+	viewport.size = Vector2(180, 180)  # 视窗尺寸
 	viewport.transparent_bg = true
 	viewport.canvas_item_default_texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -160,7 +161,7 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 使用 SubViewportContainer 包裹 SubViewport
 	var sv_container = SubViewportContainer.new()
 	sv_container.name = "DiceSubViewportContainer"
-	sv_container.custom_minimum_size = Vector2(240, 240)
+	sv_container.custom_minimum_size = Vector2(180, 180)
 	sv_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	sv_container.size_flags_vertical = Control.SIZE_FILL
 	sv_container.stretch = true
@@ -446,10 +447,14 @@ func _set_slot_texture(slot: Control, icon_path: String):
 
 	var texture_rect = TextureRect.new()
 	texture_rect.texture = load(icon_path)
-	texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	texture_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	texture_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED  # 保持_aspect_居中
+	texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	texture_rect.size = Vector2(96, 96)  # 与插槽尺寸一致
+	texture_rect.position = Vector2.ZERO
 	slot.add_child(texture_rect)
+
+	# 调试输出：检查插槽和图标尺寸
+	print("【技能 UI】设置插槽纹理：slot size=", slot.size, " custom_min_size=", slot.custom_minimum_size, " texture size=", texture_rect.size)
 
 
 ## 刷新技能列表
@@ -485,16 +490,57 @@ func _refresh_skill_list():
 func _create_skill_button(skill_id: String) -> Button:
 	var button = Button.new()
 	button.name = "SkillBtn_%s" % skill_id
-	button.custom_minimum_size = Vector2(80, 50)
-	button.text = _get_skill_name(skill_id)
-	button.tooltip_text = "%s\n(ID: %s)\n点击或拖拽到骰面配置" % [_get_skill_name(skill_id), skill_id]
+	button.custom_minimum_size = Vector2(85, 90)
+	button.text = ""
+	button.flat = true  # 移除按钮默认背景
 
-	# 加载技能图标
+	# 布局：VBoxContainer（图标在上，名字在下）
+	var vbox = VBoxContainer.new()
+	vbox.name = "VBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.add_theme_constant_override("separation", 2)  # 减小间距
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER  # 子节点水平居中
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 不阻挡点击
+	button.add_child(vbox)
+
+	# 图标容器（固定高度 50）
+	var icon_container = Control.new()
+	icon_container.name = "IconContainer"
+	icon_container.custom_minimum_size = Vector2(60, 60)
+	icon_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon_container.size_flags_vertical = 0  # 不垂直扩展
+	icon_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 不阻挡点击
+	vbox.add_child(icon_container)
+
+	# 图标
+	var icon_tex = null
 	var icon_path = _get_skill_icon_path(skill_id)
 	if icon_path and FileAccess.file_exists(icon_path):
-		var tex = load(icon_path)
-		if tex:
-			button.icon = tex
+		icon_tex = load(icon_path)
+	if icon_tex:
+		var icon_rect = TextureRect.new()
+		icon_rect.name = "SkillIcon"
+		icon_rect.texture = icon_tex
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.size = Vector2(60, 60)
+		icon_rect.position = Vector2.ZERO
+		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 不阻挡点击
+		icon_container.add_child(icon_rect)
+
+	# 技能名
+	var name_label = Label.new()
+	name_label.name = "SkillName"
+	name_label.text = _get_skill_name(skill_id)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF  # 禁用自动换行
+	name_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 不阻挡点击
+	vbox.add_child(name_label)
+
+	button.tooltip_text = "%s\n(ID: %s)\n点击或拖拽到骰面配置" % [_get_skill_name(skill_id), skill_id]
 
 	# 启用拖拽
 	button.set_drag_forwarding(Callable(_can_drop_data_fw_skill), Callable(_get_drag_data_fw_skill), Callable(_drop_data_fw_skill))
@@ -518,10 +564,10 @@ func _get_drag_data_fw_skill(at_position: Vector2) -> Variant:
 		"preview": null
 	}
 
-	# 查找点击的技能按钮
+	# 查找点击的技能按钮（使用局部坐标）
 	for skill_id in skill_buttons:
 		var btn = skill_buttons[skill_id]
-		if btn and btn.get_global_rect().has_point(at_position + global_position):
+		if btn and btn.visible and btn.get_rect().has_point(at_position):
 			drag_data["skill_id"] = skill_id
 
 			# 创建拖拽预览（使用 Label 显示技能名称）
@@ -595,8 +641,14 @@ func _on_face_slot_gui_input(event: InputEvent, face_index: int):
 
 ## 技能按钮点击事件
 func _on_skill_button_pressed(skill_id: String):
-	if selected_instance_id == -1 or selected_face_index == -1:
+	print("【技能 UI】点击技能：", skill_id, " 选中骰子：", selected_instance_id, " 选中面：", selected_face_index)
+	if selected_instance_id == -1:
+		print("【技能 UI】未选择骰子，请先点击左侧骰子列表")
 		return
+	if selected_face_index == -1:
+		print("【技能 UI】未选择骰子面，请先点击绿色骰面")
+		return
+	print("【技能 UI】装配技能：", skill_id, " -> 面 ", selected_face_index + 1)
 	PlayerData.assign_skill_to_face(selected_instance_id, selected_face_index, skill_id)
 	_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
 	_refresh_dice_list()
