@@ -32,7 +32,7 @@ grow_vertical = 2
 theme_override_constants/separation = 15
 
 [node name="LeftPanel" type="VBoxContainer" parent="MainContainer" unique_id=1875600336]
-custom_minimum_size = Vector2(260, 500)
+custom_minimum_size = Vector2(220, 500)
 layout_mode = 2
 size_flags_horizontal = 0
 
@@ -43,16 +43,17 @@ text = "骰子列表"
 horizontal_alignment = 1
 
 [node name="DiceListScroll" type="ScrollContainer" parent="MainContainer/LeftPanel" unique_id=264645242]
-custom_minimum_size = Vector2(260, 400)
-layout_mode = 2
+custom_minimum_size = Vector2(220, 400)
+layout_mode = 1
 size_flags_horizontal = 4
 size_flags_vertical = 5
 
 [node name="DiceListContainer" type="VBoxContainer" parent="MainContainer/LeftPanel/DiceListScroll" unique_id=21762632]
 layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme_override_constants/separation = 6
+theme_override_constants/separation = 3
 
 [node name="RightPanel" type="VBoxContainer" parent="MainContainer" unique_id=845354478]
 layout_mode = 2

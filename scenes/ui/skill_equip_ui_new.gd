@@ -36,6 +36,13 @@ func _ready():
 		print_tree()
 		return
 
+	# 设置 DiceListContainer 宽度与父节点一致
+	dice_list_container.custom_minimum_size.x = $MainContainer/LeftPanel/DiceListScroll.size.x
+	dice_list_container.custom_minimum_size.y = 0  # 垂直方向不限制
+
+	# 强制设置 separation
+	dice_list_container.add_theme_constant_override("separation", 1)
+
 	dice_info_label = $MainContainer/RightPanel/FaceGridContainer/DiceInfoLabel as Label
 	effect_label = $MainContainer/RightPanel/FaceGridContainer/EffectLabel as Label
 	skill_grid_container = $MainContainer/RightPanel/SkillPanel/SkillScrollContainer/SkillGridContainer as GridContainer
@@ -134,9 +141,11 @@ func _refresh_dice_list():
 func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContainer:
 	var container = VBoxContainer.new()
 	container.name = "DiceBtn_%d" % instance_id
-	container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	container.size_flags_vertical = Control.SIZE_FILL
-	container.add_theme_constant_override("separation", 4)
+	container.add_theme_constant_override("separation", 0)  # 缩小间距
+	# 设置对齐方式为居中
+	container.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	# 名称标签
 	var label = Label.new()
@@ -144,12 +153,13 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 14)
 	label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	container.add_child(label)
 
 	# 创建 SubViewport（渲染 3D 内容）
 	var viewport = SubViewport.new()
 	viewport.name = "DiceViewport"
-	viewport.size = Vector2(180, 180)  # 视窗尺寸
+	viewport.size = Vector2(160, 100)  # 视窗尺寸（缩减高度）
 	viewport.transparent_bg = true
 	viewport.canvas_item_default_texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -161,9 +171,9 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 使用 SubViewportContainer 包裹 SubViewport
 	var sv_container = SubViewportContainer.new()
 	sv_container.name = "DiceSubViewportContainer"
-	sv_container.custom_minimum_size = Vector2(180, 180)
+	sv_container.custom_minimum_size = Vector2(160, 100)  # 与视口尺寸一致
 	sv_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	sv_container.size_flags_vertical = Control.SIZE_FILL
+	sv_container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	sv_container.stretch = true
 	sv_container.mouse_filter = Control.MOUSE_FILTER_STOP
 	sv_container.add_child(viewport)
