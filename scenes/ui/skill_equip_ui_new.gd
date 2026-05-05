@@ -29,6 +29,8 @@ var dice_viewports = {}    # { instance_id: SubViewport }
 var dice_sv_containers = {}  # { instance_id: SubViewportContainer }
 var dice_content_containers = {}  # { instance_id: VBoxContainer }
 var dice_labels = {}       # { instance_id: Label }
+var dice_mesh_instances = {}  # { instance_id: MeshInstance3D }
+var dice_base_texture_paths = {}  # { instance_id: String } 空白骰子纹理路径
 
 
 func _ready():
@@ -119,6 +121,8 @@ func _refresh_dice_list():
 			vp.queue_free()
 	dice_buttons.clear()
 	dice_viewports.clear()
+	dice_mesh_instances.clear()
+	dice_base_texture_paths.clear()
 
 	var all_ids = PlayerData.get_all_dice_instance_ids()
 	if all_ids.is_empty():
@@ -131,6 +135,10 @@ func _refresh_dice_list():
 		var btn = _create_dice_button(instance_id, instance)
 		dice_list_container.add_child(btn)
 		dice_buttons[instance_id] = btn
+
+	# 加载已装配的技能到 3D 骰子面
+	for instance_id in all_ids:
+		_refresh_dice_3d_faces(instance_id)
 
 	# 默认选中第一个骰子
 	if selected_instance_id == -1 and all_ids.size() > 0:
@@ -302,6 +310,10 @@ func _create_dice_3d_viewport(instance_id: int, viewport: SubViewport) -> Node3D
 	for i in range(6):
 		mesh_instance.mesh.surface_set_material(i, materials[i])
 
+	# 保存引用
+	dice_mesh_instances[instance_id] = mesh_instance
+	dice_base_texture_paths[instance_id] = texture_path if texture_path and FileAccess.file_exists(texture_path) else ""
+
 	root.add_child(mesh_instance)
 
 	return root
@@ -362,6 +374,48 @@ func _create_dice_array_mesh() -> ArrayMesh:
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
 	return mesh
+
+
+## 更新 3D 骰子指定面的材质纹理
+func _update_dice_face_texture(instance_id: int, face_index: int, skill_id: String):
+	var mesh_instance = dice_mesh_instances.get(instance_id)
+	if not mesh_instance or not is_instance_valid(mesh_instance):
+		return
+
+	var material = StandardMaterial3D.new()
+	material.roughness = 0.8
+	material.metallic = 0.0
+
+	if skill_id != "0" and not skill_id.is_empty():
+		# 加载技能图标纹理
+		var icon_path = _get_skill_icon_path(skill_id)
+		if icon_path and FileAccess.file_exists(icon_path):
+			var texture = load(icon_path)
+			material.albedo_texture = texture
+		else:
+			# 回退：使用半透明高亮色
+			material.albedo_color = Color(0.3, 0.8, 1.0, 0.8)
+	else:
+		# 恢复空白骰子纹理
+		var base_path = dice_base_texture_paths.get(instance_id, "")
+		if base_path and FileAccess.file_exists(base_path):
+			material.albedo_texture = load(base_path)
+		else:
+			material.albedo_color = Color(0.95, 0.95, 0.95, 1.0)
+
+	mesh_instance.mesh.surface_set_material(face_index, material)
+
+
+## 刷新指定骰子所有 3D 面的材质纹理
+func _refresh_dice_3d_faces(instance_id: int):
+	var instance = PlayerData.get_dice_instance(instance_id)
+	if instance.is_empty():
+		return
+
+	var faces = instance.get("faces", ["0", "0", "0", "0", "0", "0"])
+	for i in range(6):
+		var skill_id = faces[i] if i < faces.size() else "0"
+		_update_dice_face_texture(instance_id, i, skill_id)
 
 
 ## 骰子按钮点击
@@ -674,7 +728,7 @@ func _drop_data_fw(at_position: Vector2, data: Variant) -> void:
 
 	# 刷新 UI
 	_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
-	_refresh_dice_list()
+	_refresh_dice_3d_faces(selected_instance_id)
 
 
 ## 骰子面插槽点击事件
@@ -703,7 +757,7 @@ func _on_skill_button_pressed(skill_id: String):
 	print("【技能 UI】装配技能：", skill_id, " -> 面 ", selected_face_index + 1)
 	PlayerData.assign_skill_to_face(selected_instance_id, selected_face_index, skill_id)
 	_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
-	_refresh_dice_list()
+	_refresh_dice_3d_faces(selected_instance_id)
 
 
 ## 格式化效果描述
@@ -743,7 +797,7 @@ func _on_reset_pressed():
 		PlayerData.assign_skill_to_face(selected_instance_id, i, "0")
 
 	_refresh_face_slots(PlayerData.get_dice_instance(selected_instance_id))
-	_refresh_dice_list()
+	_refresh_dice_3d_faces(selected_instance_id)
 
 
 ## 确认按钮
