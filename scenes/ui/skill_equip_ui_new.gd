@@ -23,9 +23,11 @@ var selected_face_index: int = -1
 # 当前选中的骰子面 (0-5)
 
 # 缓存
-var dice_buttons = {}      # { instance_id: Button }
+var dice_buttons = {}      # { instance_id: VBoxContainer }
 var skill_buttons = {}     # { skill_id: Button }
 var dice_viewports = {}    # { instance_id: SubViewport }
+var dice_sv_containers = {}  # { instance_id: SubViewportContainer }
+var dice_content_containers = {}  # { instance_id: VBoxContainer }
 
 
 func _ready():
@@ -147,6 +149,12 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 设置对齐方式为居中
 	container.alignment = BoxContainer.ALIGNMENT_CENTER
 
+	# 创建内容容器（包裹 label 和 sv_container，用于缩放）
+	var content_container = VBoxContainer.new()
+	content_container.name = "ContentContainer"
+	content_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	container.add_child(content_container)
+
 	# 名称标签
 	var label = Label.new()
 	label.text = instance.get("name", "未知骰子")
@@ -154,7 +162,7 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	label.add_theme_font_size_override("font_size", 14)
 	label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	container.add_child(label)
+	content_container.add_child(label)  # 添加到 content_container
 
 	# 创建 SubViewport（渲染 3D 内容）
 	var viewport = SubViewport.new()
@@ -178,9 +186,12 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	sv_container.mouse_filter = Control.MOUSE_FILTER_STOP
 	sv_container.add_child(viewport)
 
-	container.add_child(sv_container)
+	content_container.add_child(sv_container)  # 添加到 content_container
 
+	# 保存引用
 	dice_viewports[instance_id] = viewport
+	dice_sv_containers[instance_id] = sv_container
+	dice_content_containers[instance_id] = content_container  # 保存 content_container 引用
 
 	# 容器接收点击
 	container.gui_input.connect(func(event: InputEvent):
@@ -362,23 +373,20 @@ func _on_dice_button_pressed(instance_id: int):
 
 ## 更新骰子选中高亮
 func _update_dice_selection_highlight():
-	for instance_id in dice_buttons:
-		var btn = dice_buttons[instance_id]
-		if btn and is_instance_valid(btn):
-			if instance_id == selected_instance_id:
-				# 添加顶部色条表示选中
-				if not btn.has_node("SelectedIndicator"):
-					var indicator = ColorRect.new()
-					indicator.name = "SelectedIndicator"
-					indicator.custom_minimum_size = Vector2(0, 3)
-					indicator.color = Color(1.0, 0.85, 0.3, 0.9)
-					# 插入到最前面（顶部）
-					btn.add_child(indicator)
-					btn.move_child(indicator, 0)
-			else:
-				var indicator = btn.get_node_or_null("SelectedIndicator")
-				if indicator:
-					indicator.queue_free()
+	# 缩放 content_container（包含 label 和 sv_container）
+	for instance_id in dice_content_containers:
+		var content_container = dice_content_containers[instance_id]
+		if not content_container or not is_instance_valid(content_container):
+			continue
+
+		if instance_id == selected_instance_id:
+			# 选中状态：放大 20%，设置 pivot 为中心
+			content_container.pivot_offset = content_container.size / 2.0
+			content_container.scale = Vector2(1.2, 1.2)
+		else:
+			# 未选中：恢复原始尺寸
+			content_container.pivot_offset = content_container.size / 2.0
+			content_container.scale = Vector2(1.0, 1.0)
 
 
 ## 刷新中间面板
