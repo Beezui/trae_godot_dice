@@ -28,6 +28,7 @@ var skill_buttons = {}     # { skill_id: Button }
 var dice_viewports = {}    # { instance_id: SubViewport }
 var dice_sv_containers = {}  # { instance_id: SubViewportContainer }
 var dice_content_containers = {}  # { instance_id: VBoxContainer }
+var dice_labels = {}       # { instance_id: Label }
 
 
 func _ready():
@@ -162,7 +163,11 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	label.add_theme_font_size_override("font_size", 14)
 	label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	label.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  # 缩放时保持清晰
 	content_container.add_child(label)  # 添加到 content_container
+
+	# 保存 label 引用以便后续调整字体
+	dice_labels[instance_id] = label
 
 	# 创建 SubViewport（渲染 3D 内容）
 	var viewport = SubViewport.new()
@@ -361,6 +366,10 @@ func _create_dice_array_mesh() -> ArrayMesh:
 
 ## 骰子按钮点击
 func _on_dice_button_pressed(instance_id: int):
+	# 保存当前滚动位置
+	var scroll_container = $MainContainer/LeftPanel/DiceListScroll as ScrollContainer
+	var old_scroll_pos = scroll_container.scroll_vertical
+
 	selected_instance_id = instance_id
 	selected_face_index = -1
 
@@ -370,9 +379,22 @@ func _on_dice_button_pressed(instance_id: int):
 	# 刷新中间面板
 	_refresh_center_panel()
 
+	# 延迟恢复滚动位置（等待布局完成）
+	if scroll_container:
+		scroll_container.call_deferred("set", "scroll_vertical", old_scroll_pos)
+
 
 ## 更新骰子选中高亮
 func _update_dice_selection_highlight():
+	var scroll_container = $MainContainer/LeftPanel/DiceListScroll as ScrollContainer
+	var first_instance_id = -1
+	if dice_content_containers.size() > 0:
+		first_instance_id = dice_content_containers.keys()[0]
+
+	# 计算是否需要向上偏移（选中的是第一个骰子时）
+	# 放大 50% 时，120 高度的骰子变为 180，上半部分增加 30
+	var offset_y = 30.0 if selected_instance_id == first_instance_id else 0.0
+
 	# 缩放 content_container（包含 label 和 sv_container）
 	for instance_id in dice_content_containers:
 		var content_container = dice_content_containers[instance_id]
@@ -380,13 +402,25 @@ func _update_dice_selection_highlight():
 			continue
 
 		if instance_id == selected_instance_id:
-			# 选中状态：放大 20%，设置 pivot 为中心
+			# 选中状态：放大 50%，设置 pivot 为中心
 			content_container.pivot_offset = content_container.size / 2.0
-			content_container.scale = Vector2(1.2, 1.2)
+			content_container.scale = Vector2(1.5, 1.5)
+			# 同步放大字体，避免模糊
+			var label = dice_labels.get(instance_id)
+			if label and is_instance_valid(label):
+				label.add_theme_font_size_override("font_size", 21)  # 14 * 1.5 = 21
 		else:
 			# 未选中：恢复原始尺寸
 			content_container.pivot_offset = content_container.size / 2.0
 			content_container.scale = Vector2(1.0, 1.0)
+			# 恢复字体大小
+			var label = dice_labels.get(instance_id)
+			if label and is_instance_valid(label):
+				label.add_theme_font_size_override("font_size", 14)
+
+	# 在缩放完成后调整滚动位置，补偿第一个骰子的高度增加
+	if offset_y > 0 and scroll_container:
+		scroll_container.call_deferred("set", "scroll_vertical", max(0, scroll_container.scroll_vertical - offset_y))
 
 
 ## 刷新中间面板
