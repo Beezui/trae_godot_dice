@@ -18,6 +18,16 @@ signal on_throw_ended()
 ## 物品按钮场景（预留）
 @export var item_button_scene: PackedScene
 
+## 3D 骰子缓存
+var skill_dice_viewports = {}   # { index: SubViewport }
+var skill_dice_sv_containers = {}  # { index: SubViewportContainer }
+var skill_dice_containers = {}  # { index: Control } 用于缩放（VBoxContainer）
+var skill_dice_content_containers = {}  # { index: VBoxContainer } 内容容器（用于缩放）
+var skill_dice_labels = {}  # { index: Label } 技能名称标签（用于调整字体）
+
+## 选中状态
+var selected_skill_index: int = -1  # 当前选中的技能索引
+
 ## 当前玩家角色列表
 var player_characters: Array[BaseCharacter] = []
 ## 技能骰子列表（隐藏存储，不显示在场景中）
@@ -28,8 +38,7 @@ var item_dices: Array = []
 var attribute_dices: Array = []
 
 ## UI 节点引用
-@onready var skill_container: VBoxContainer = $SkillContainer
-@onready var item_container: HBoxContainer = $ItemContainer
+@onready var skill_container: HBoxContainer = $SkillContainer
 @onready var end_turn_button: Button = $EndTurnButton
 @onready var turn_label: Label = $TurnLabel
 @onready var mp_label: Label = $MPLabel
@@ -81,6 +90,13 @@ func initialize(characters: Array[BaseCharacter], skills: Array = [], items: Arr
 	print("  - 玩家角色：", characters.size())
 	print("  - 技能骰子：", skills.size())
 	print("  - 物品骰子：", items.size())
+	for i in range(skills.size()):
+		var s = skills[i]
+		print("    [", i, "] ", "s=", s, ", null=", s == null)
+		if s:
+			print("      class=", s.get_class(), ", name=", s.name)
+			if s.has_meta("skill_dice_id"):
+				print("      meta skill_dice_id=", s.get_meta("skill_dice_id"))
 
 	_setup_ui()
 
@@ -92,9 +108,11 @@ func _setup_ui():
 	# 清空现有按钮
 	_clear_buttons()
 
-	# 创建技能按钮（列表形式，垂直排列）
+	# 创建技能按钮（3D 骰子列表形式）
+	var idx = 0
 	for skill_dice in skill_dices:
-		_create_skill_button(skill_dice)
+		_create_skill_button(skill_dice, idx)
+		idx += 1
 
 	_update_turn_label()
 	_update_mp_label()
@@ -164,101 +182,264 @@ func _clear_buttons():
 		for child in skill_container.get_children():
 			child.queue_free()
 
-	if item_container:
-		for child in item_container.get_children():
-			child.queue_free()
+	# 清理 3D 视口
+	for vp in skill_dice_viewports.values():
+		if vp and is_instance_valid(vp):
+			vp.queue_free()
+	skill_dice_viewports.clear()
+	for sv in skill_dice_sv_containers.values():
+		if sv and is_instance_valid(sv):
+			sv.queue_free()
+	skill_dice_sv_containers.clear()
+	skill_dice_containers.clear()
+	skill_dice_content_containers.clear()
+	skill_dice_labels.clear()
 
 
-## 创建技能按钮（显示技能图标）
-func _create_skill_button(skill_dice):
+## 创建技能按钮（3D 骰子预览）— 水平排列
+func _create_skill_button(skill_dice, index: int):
 	if not skill_dice:
 		print("【BattleSkillBar】技能骰子为空，跳过创建")
 		return
 
 	print("【BattleSkillBar】创建技能按钮，skill_dice=", skill_dice)
 
-	# 创建 TextureButton 显示技能图标
-	var button = TextureButton.new()
-	button.name = "SkillButton"
-	button.custom_minimum_size = Vector2(80, 80)
-	button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	# 容器（VBox：技能名 + 3D 骰子）
+	var container = VBoxContainer.new()
+	container.name = "SkillButton_%d" % index
+	container.alignment = BoxContainer.ALIGNMENT_CENTER
+	container.add_theme_constant_override("separation", 0)  # 缩小间距
+	container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
-	# 获取技能图标（缩放至合理尺寸，防止撑大 UI）
-	var skill_icon = _get_skill_icon(skill_dice)
-	if skill_icon:
-		button.texture_normal = skill_icon
-		print("【BattleSkillBar】成功加载技能图标")
-	else:
-		# 默认图标
-		button.texture_normal = _create_placeholder_texture()
-		print("【BattleSkillBar】使用占位贴图")
+	# 创建内容容器（包裹 label 和 sv_container，用于缩放）
+	var content_container = VBoxContainer.new()
+	content_container.name = "ContentContainer"
+	content_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	container.add_child(content_container)
+
+	# 获取技能名称
+	var skill_name = _get_skill_name_for_dice(skill_dice)
+	var name_label = Label.new()
+	name_label.text = skill_name
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	name_label.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  # 缩放时保持清晰
+	content_container.add_child(name_label)  # 添加到 content_container
+
+	# 保存 label 引用以便后续调整字体
+	skill_dice_labels[index] = name_label
+
+	# 获取技能图标路径
+	var icon_path = _get_skill_icon_path_for_dice(skill_dice)
+
+	# 创建 SubViewport 渲染 3D 骰子
+	var viewport = SubViewport.new()
+	viewport.name = "DiceViewport"
+	viewport.size = Vector2(480, 300)  # 高分辨率渲染
+	viewport.transparent_bg = true
+	viewport.canvas_item_default_texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
+
+	_create_dice_3d_scene(viewport, icon_path)
+
+	# SubViewportContainer 包裹
+	var sv_container = SubViewportContainer.new()
+	sv_container.name = "DiceSubViewportContainer"
+	sv_container.custom_minimum_size = Vector2(160, 100)  # UI 显示尺寸（参考技能装配 UI）
+	sv_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	sv_container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sv_container.stretch = true
+	sv_container.mouse_filter = Control.MOUSE_FILTER_STOP
+	sv_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  # 缩放时保持清晰
+	sv_container.add_child(viewport)
+
+	content_container.add_child(sv_container)  # 添加到 content_container
+
+	# 保存引用
+	skill_dice_containers[index] = container
+	skill_dice_sv_containers[index] = sv_container
+	skill_dice_viewports[index] = viewport
+	skill_dice_content_containers[index] = content_container  # 保存 content_container 引用
 
 	# 绑定点击事件
-	button.pressed.connect(_on_skill_button_pressed.bind(skill_dice))
+	container.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_on_skill_button_pressed(skill_dice, index)
+	)
+	sv_container.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_on_skill_button_pressed(skill_dice, index)
+	)
 
-	# 存储技能骰子引用到按钮元数据
-	button.set_meta("skill_dice", skill_dice)
+	# 存储技能骰子引用
+	container.set_meta("skill_dice", skill_dice)
+	container.set_meta("index", index)
 
-	skill_container.add_child(button)
+	skill_container.add_child(container)
 	print("【BattleSkillBar】创建技能按钮完成，容器子节点数=", skill_container.get_child_count())
+	print("  - skill_dice ref=", skill_dice, ", stored in container meta and skill_dices[", index, "]")
 
 
-## 获取技能图标（从技能骰子的第一个技能 ID）
-func _get_skill_icon(skill_dice) -> Texture2D:
-	# 尝试从技能骰子元数据获取技能骰子 ID
-	var skill_id = ""
+## 创建 3D 骰子场景（SubViewport 内）
+func _create_dice_3d_scene(viewport: SubViewport, icon_path: String):
+	var root = Node3D.new()
+	viewport.add_child(root)
 
-	# 首先尝试从骰子元数据获取 skill_dice_id
+	# 独立世界空间
+	var world = World3D.new()
+	viewport.world_3d = world
+
+	# 相机 — 右上方向下看（与 skill_equip_ui_new 一致）
+	var camera = Camera3D.new()
+	camera.position = Vector3(5.95, 0.7, 2.5)
+	camera.rotation = Vector3(-0.4, 0, 0)
+	camera.fov = 45.0
+	camera.current = true
+	root.add_child(camera)
+	camera.look_at(Vector3(5.95, 0, 0))
+
+	# 灯光
+	var light1 = DirectionalLight3D.new()
+	light1.position = Vector3(2, 2, 2)
+	light1.rotation = Vector3(-0.5, -0.5, 0)
+	root.add_child(light1)
+
+	var light2 = DirectionalLight3D.new()
+	light2.position = Vector3(-1, 1, -1)
+	light2.rotation = Vector3(0.3, 0.3, 0)
+	root.add_child(light2)
+
+	# 创建骰子网格
+	var mesh = _create_dice_array_mesh()
+
+	# 为每个面创建材质
+	var materials = []
+	for i in range(6):
+		var material = StandardMaterial3D.new()
+		material.roughness = 0.8
+		material.metallic = 0.0
+		if icon_path and FileAccess.file_exists(icon_path):
+			material.albedo_texture = load(icon_path)
+		else:
+			material.albedo_color = Color(0.8, 0.8, 0.8, 1.0)
+		materials.append(material)
+
+	# MeshInstance3D
+	var mesh_instance = MeshInstance3D.new()
+	mesh_instance.mesh = mesh
+	mesh_instance.position = Vector3(6.05, 0, 0)
+	mesh_instance.rotation = Vector3(deg_to_rad(10), deg_to_rad(-30), 0)
+	for i in range(6):
+		mesh_instance.mesh.surface_set_material(i, materials[i])
+
+	root.add_child(mesh_instance)
+
+
+## 创建 6 面骰子网格
+func _create_dice_array_mesh() -> ArrayMesh:
+	var mesh = ArrayMesh.new()
+
+	var vertices = [
+		Vector3(-0.5, -0.5, -0.5),
+		Vector3(0.5, -0.5, -0.5),
+		Vector3(0.5, 0.5, -0.5),
+		Vector3(-0.5, 0.5, -0.5),
+		Vector3(-0.5, -0.5, 0.5),
+		Vector3(0.5, -0.5, 0.5),
+		Vector3(0.5, 0.5, 0.5),
+		Vector3(-0.5, 0.5, 0.5)
+	]
+
+	var faces = [
+		[0, 1, 2, 3],
+		[5, 4, 7, 6],
+		[4, 0, 3, 7],
+		[1, 5, 6, 2],
+		[3, 2, 6, 7],
+		[4, 5, 1, 0]
+	]
+
+	for i in range(6):
+		var arrays = []
+		arrays.resize(Mesh.ARRAY_MAX)
+		var surface_vertices = []
+		for j in faces[i]:
+			surface_vertices.append(vertices[j])
+		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array(surface_vertices)
+
+		var normals = []
+		var normal = Vector3(0, 0, 0)
+		match i:
+			0: normal = Vector3(0, 0, -1)
+			1: normal = Vector3(0, 0, 1)
+			2: normal = Vector3(-1, 0, 0)
+			3: normal = Vector3(1, 0, 0)
+			4: normal = Vector3(0, 1, 0)
+			5: normal = Vector3(0, -1, 0)
+		for j in range(4):
+			normals.append(normal)
+		arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array(normals)
+
+		var uvs = [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]
+		arrays[Mesh.ARRAY_TEX_UV] = PackedVector2Array(uvs)
+
+		var indices = [0, 1, 2, 0, 2, 3]
+		arrays[Mesh.ARRAY_INDEX] = PackedInt32Array(indices)
+
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+
+	return mesh
+
+
+## 获取技能图标路径（从技能骰子的第一个技能 ID）
+func _get_skill_icon_path_for_dice(skill_dice) -> String:
 	var dice_id = skill_dice.get_meta("skill_dice_id") if skill_dice.has_meta("skill_dice_id") else ""
-
 	if dice_id.is_empty():
-		print("【BattleSkillBar】技能骰子没有存储 skill_dice_id 元数据")
-		return _create_placeholder_texture()
+		return ""
 
-	# 从 DiceCSVReader 读取配置
 	var reader = DiceCSVReader.new()
 	var dice_config = reader.get_skill_dice_config(dice_id)
-
-	print("【BattleSkillBar】获取技能图标，dice_id=", dice_id, ", dice_config=", dice_config)
-
 	if not dice_config.is_empty():
 		var skill_ids = dice_config.get("skill_ids", [])
-		print("【BattleSkillBar】技能 IDs=", skill_ids)
 		if skill_ids.size() > 0:
-			skill_id = skill_ids[0]
-
-	if skill_id.is_empty():
-		print("【BattleSkillBar】技能 ID 为空，dice_id=", dice_id)
-		return _create_placeholder_texture()
-
-	# 加载技能贴图
-	var texture_path = "res://textures/skill/skill_" + skill_id + ".png"
-	if ResourceLoader.exists(texture_path):
-		print("【BattleSkillBar】加载技能贴图：", texture_path)
-		var texture = load(texture_path)
-		# 如果纹理过大，缩放到合理尺寸（防止 UI 膨胀）
-		if texture and texture.get_width() > 256:
-			print("【BattleSkillBar】纹理过大（%dx%d），缩放到 64x64" % [texture.get_width(), texture.get_height()])
-			var img = texture.get_image()
-			if img:
-				img.resize(64, 64, Image.INTERPOLATE_CUBIC)
-				var new_texture = ImageTexture.create_from_image(img)
-				return new_texture
-		return texture
-	else:
-		print("【BattleSkillBar】技能贴图不存在：", texture_path)
-	return _create_placeholder_texture()
+			var skill_id = skill_ids[0]
+			var texture_path = "res://textures/skill/skill_" + skill_id + ".png"
+			if ResourceLoader.exists(texture_path):
+				return texture_path
+	return ""
 
 
-## 创建占位贴图
-func _create_placeholder_texture() -> Texture2D:
-	var placeholder = PlaceholderTexture2D.new()
-	placeholder.size = Vector2(64, 64)
-	return placeholder
+## 获取技能名称（用于显示在 3D 骰子上方）
+func _get_skill_name_for_dice(skill_dice) -> String:
+	var dice_id = skill_dice.get_meta("skill_dice_id") if skill_dice.has_meta("skill_dice_id") else ""
+	if dice_id.is_empty():
+		return "未知技能"
+
+	var reader = DiceCSVReader.new()
+	var dice_config = reader.get_skill_dice_config(dice_id)
+	if not dice_config.is_empty():
+		var skill_ids = dice_config.get("skill_ids", [])
+		if skill_ids.size() > 0:
+			var skill_reader = preload("res://scripts/skill_csv_reader.gd").new()
+			var skill_data = skill_reader.get_skill(skill_ids[0])
+			if skill_data and skill_data.has("name"):
+				return skill_data["name"]
+	return "未知技能"
 
 
-func _on_skill_button_pressed(skill_dice):
-	print("【BattleSkillBar】技能按钮被点击")
+func _on_skill_button_pressed(skill_dice, index: int):
+	print("【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===")
+	print("  - index=", index)
+	print("  - skill_dice=", skill_dice)
+	print("  - skill_dice==null: ", skill_dice == null)
+
+	if not skill_dice:
+		print("【BattleSkillBar】错误：skill_dice 为空")
+		return
 
 	# 检查是否正在释放技能期间
 	if is_releasing_skill:
@@ -266,24 +447,16 @@ func _on_skill_button_pressed(skill_dice):
 		_show_throw_hint("技能释放中...")
 		return
 
-	# 检查是否已经选择了骰子
-	if selected_skill_dice:
-		print("【BattleSkillBar】已有骰子被选择，忽略")
-		return
+	# 更新选中状态
+	selected_skill_index = index
+	_update_skill_selection_highlight()
 
-	# 检查 MP 是否足够（1 点）
-	var character = _get_character_for_skill_dice(skill_dice)
-	if character and not _can_afford_throw(character):
-		print("【BattleSkillBar】MP 不足，无法投掷")
-		_show_throw_hint("MP 不足！")
-		return
-
-	# 选择技能骰子
+	# 选择技能骰子（不立即添加到场景，只是记录选择）
 	selected_skill_dice = skill_dice
-	selected_character = character
+	selected_character = _get_character_for_skill_dice(skill_dice)
 
-	# 将技能骰子添加到场景（悬浮待投掷状态）
-	_move_skill_dice_to_scene(skill_dice)
+	# 替换场景中的技能骰子（待投掷区域的绿色骰子）
+	_replace_skill_dice_in_scene(skill_dice)
 
 	# 显示投掷提示
 	_show_throw_hint("按空格键投掷")
@@ -294,6 +467,30 @@ func _on_skill_button_pressed(skill_dice):
 	print("【BattleSkillBar】技能骰子已选择，准备投掷")
 
 
+## 更新技能选中高亮（中间放大，两侧缩小）
+func _update_skill_selection_highlight():
+	for idx in skill_dice_content_containers:
+		var content_container = skill_dice_content_containers[idx]
+		var label = skill_dice_labels.get(idx)
+		if not content_container or not is_instance_valid(content_container):
+			continue
+
+		if idx == selected_skill_index:
+			# 选中：放大 1.5 倍
+			content_container.pivot_offset = content_container.size / 2.0
+			content_container.scale = Vector2(1.5, 1.5)
+			# 同步放大字体，避免模糊
+			if label and is_instance_valid(label):
+				label.add_theme_font_size_override("font_size", 21)  # 14 * 1.5 = 21
+		else:
+			# 未选中：恢复原始尺寸
+			content_container.pivot_offset = content_container.size / 2.0
+			content_container.scale = Vector2(1.0, 1.0)
+			# 恢复字体大小
+			if label and is_instance_valid(label):
+				label.add_theme_font_size_override("font_size", 14)
+
+
 ## 检查是否有足够 MP 投掷（1 点）
 func _can_afford_throw(character: BaseCharacter) -> bool:
 	if not character:
@@ -302,36 +499,149 @@ func _can_afford_throw(character: BaseCharacter) -> bool:
 	return character.current_mp >= 1
 
 
-## 将技能骰子移动到场景（悬浮待投掷状态）
-func _move_skill_dice_to_scene(skill_dice):
-	var battle_scene = _find_battle_scene()
-	if not battle_scene:
-		print("【BattleSkillBar】找不到战斗场景")
+## 替换场景中的技能骰子（待投掷区域的绿色骰子）
+func _replace_skill_dice_in_scene(new_skill_dice):
+	print("【BattleSkillBar::_replace】=== 开始替换流程 ===")
+	print("  - new_skill_dice 对象: ", new_skill_dice)
+	print("  - new_skill_dice == null: ", new_skill_dice == null)
+
+	if not new_skill_dice:
+		print("【BattleSkillBar::_replace】错误：new_skill_dice 为空，跳过")
 		return
+
+	# 检查骰子的关键属性
+	print("  - new_skill_dice.class: ", new_skill_dice.get_class())
+	print("  - new_skill_dice.name: ", new_skill_dice.name)
+	if new_skill_dice.has_meta("skill_dice_id"):
+		print("  - new_skill_dice meta skill_dice_id: ", new_skill_dice.get_meta("skill_dice_id"))
+	else:
+		print("  - new_skill_dice 没有 skill_dice_id meta")
+	if "visible" in new_skill_dice:
+		print("  - new_skill_dice.visible (修改前): ", new_skill_dice.visible)
+	if "position" in new_skill_dice:
+		print("  - new_skill_dice.position (修改前): ", new_skill_dice.position)
+	if new_skill_dice.get_parent():
+		print("  - new_skill_dice 当前 parent: ", new_skill_dice.get_parent().name)
+	else:
+		print("  - new_skill_dice 当前无 parent")
+
+	var battle_scene = _find_battle_scene()
+	print("  - battle_scene: ", battle_scene)
+	if not battle_scene:
+		print("【BattleSkillBar::_replace】错误：找不到战斗场景")
+		return
+
+	print("  - battle_scene.name: ", battle_scene.name)
+	print("  - battle_scene 子节点列表:")
+	for i in range(battle_scene.get_child_count()):
+		var c = battle_scene.get_child(i)
+		print("    [", i, "] ", c.name, " (", c.get_class(), ")")
 
 	var container = _get_dice_container(battle_scene)
+	print("  - container (骰子容器): ", container)
 	if not container:
-		print("【BattleSkillBar】找不到骰子容器（Sandbox/GameManager）")
+		print("【BattleSkillBar::_replace】错误：找不到骰子容器（Sandbox/GameManager）")
 		return
 
-	# 设置骰子为可见
-	skill_dice.visible = true
+	print("  - container.name: ", container.name)
+	print("  - container.get_child_count(): ", container.get_child_count())
+	print("  - container 子节点详细:")
+	for i in range(container.get_child_count()):
+		var c = container.get_child(i)
+		print("    [", i, "] ", c.name, " (", c.get_class(), ")")
+		if c.has_meta("skill_dice_id"):
+			print("        meta skill_dice_id=", c.get_meta("skill_dice_id"))
+		if c is Node3D:
+			print("        position=", (c as Node3D).position)
+		if "visible" in c:
+			print("        visible=", c.visible)
 
-	# 设置位置（与属性骰子一起）
-	skill_dice.position = Vector3(-4.0, 4.0, 6.0)
+	# 查找场景中已有的技能骰子（待投掷区域）并移除（排除同一骰子的情况）
+	var existing_skill_dice = _find_skill_dice_in_scene(container)
+	if existing_skill_dice and existing_skill_dice != new_skill_dice:
+		print("【BattleSkillBar::_replace】移除场景中的旧技能骰子: ", existing_skill_dice.name)
+		if existing_skill_dice.has_method("set_freeze"):
+			existing_skill_dice.set_freeze(false)
+		container.remove_child(existing_skill_dice)
+		existing_skill_dice.queue_free()
+		print("  - 旧骰子已移除，container 现在子节点数: ", container.get_child_count())
+	else:
+		if existing_skill_dice == new_skill_dice:
+			print("【BattleSkillBar::_replace】旧骰子与新骰子是同一个，无需移除")
+
+	# 设置新骰子为可见并添加到场景
+	print("【BattleSkillBar::_replace】准备添加新骰子到场景")
+	print("  - dice=", new_skill_dice.name, ", parent=", container.name)
+
+	# 设置位置和可见性之前再打印一次
+	if "visible" in new_skill_dice:
+		print("  - 设置 visible=true 前当前值: ", new_skill_dice.visible)
+	new_skill_dice.visible = true
+	if "visible" in new_skill_dice:
+		print("  - 设置 visible=true 后当前值: ", new_skill_dice.visible)
+
+	new_skill_dice.position = Vector3(-4.0, 4.0, 6.0)
+	print("  - 设置 position=Vector3(-4.0, 4.0, 6.0) 后当前值: ", new_skill_dice.position)
 
 	# 设置为悬浮状态
-	if skill_dice.has_method("set_freeze"):
-		skill_dice.set_freeze(true)
-	elif "freeze" in skill_dice:
-		skill_dice.freeze = true
-	skill_dice.gravity_scale = 0.0
-	skill_dice.linear_velocity = Vector3.ZERO
-	skill_dice.angular_velocity = Vector3.ZERO
+	if new_skill_dice.has_method("set_freeze"):
+		new_skill_dice.set_freeze(true)
+		print("  - 已通过 set_freeze(true) 冻结")
+	elif "freeze" in new_skill_dice:
+		new_skill_dice.freeze = true
+		print("  - 已通过 .freeze=true 冻结")
+	else:
+		print("  - 警告：骰子没有 freeze 方法/属性")
+	new_skill_dice.gravity_scale = 0.0
+	new_skill_dice.linear_velocity = Vector3.ZERO
+	new_skill_dice.angular_velocity = Vector3.ZERO
+	print("  - gravity_scale=0, velocity=0, angular_velocity=0")
 
-	# 添加到场景
-	container.add_child(skill_dice)
-	print("【BattleSkillBar】技能骰子已移动到场景")
+	# 添加前确认父节点状态
+	if new_skill_dice.get_parent():
+		print("  - 警告：添加前骰子仍有 parent: ", new_skill_dice.get_parent().name)
+	else:
+		print("  - 确认：骰子当前无 parent，可以安全 add_child")
+
+	container.add_child(new_skill_dice)
+	print("【BattleSkillBar::_replace】add_child 已调用")
+
+	# 验证添加结果
+	print("  - 验证：container.get_child_count()= ", container.get_child_count())
+	var found = false
+	for i in range(container.get_child_count()):
+		var c = container.get_child(i)
+		print("    [", i, "] ", c.name, " (", c.get_class(), ") visible=", c.get("visible"), " pos=", c.get("position"))
+		if c == new_skill_dice:
+			found = true
+			print("      >>> 找到新添加的骰子！")
+			print("      >>> c.visible= ", c.get("visible"))
+			print("      >>> c.position= ", c.get("position"))
+			print("      >>> c.freeze= ", c.get("freeze"))
+			print("      >>> c.gravity_scale= ", c.get("gravity_scale"))
+
+	if found:
+		print("【BattleSkillBar::_replace】✓ 新骰子已成功添加到 container")
+	else:
+		print("【BattleSkillBar::_replace】✗ 错误：新骰子未在 container 子节点中找到！")
+
+	print("  - 验证：new_skill_dice.get_parent()= ", new_skill_dice.get_parent())
+	if new_skill_dice.get_parent() == container:
+		print("  - 确认：get_parent() 指向 container ✓")
+	else:
+		print("  - 错误：get_parent() 不指向 container ✗")
+
+	print("【BattleSkillBar::_replace】技能骰子已替换到场景")
+	print("【BattleSkillBar::_replace】=== 替换流程结束 ===")
+
+
+## 查找场景中现有的技能骰子（待投掷区域）
+func _find_skill_dice_in_scene(container: Node) -> Node:
+	# 查找第一个技能骰子（通过 meta 判断）
+	for child in container.get_children():
+		if child.has_meta("skill_dice_id"):
+			return child
+	return null
 
 
 ## 显示投掷提示
@@ -388,6 +698,13 @@ func _input(event):
 ## 开始投掷（蓄力）
 func _start_throw():
 	print("【BattleSkillBar】开始投掷...")
+
+	# 检查 MP 是否足够（1 点）
+	if selected_character and not _can_afford_throw(selected_character):
+		print("【BattleSkillBar】MP 不足，无法投掷")
+		_show_throw_hint("MP 不足！")
+		return
+
 	is_charging = true
 	is_throw_preparing = true
 
@@ -576,7 +893,7 @@ func _reset_throw_dices():
 	print("【BattleSkillBar】等待 1.0 秒余韵时间...")
 	await get_tree().create_timer(1.0).timeout
 
-	# 隐藏技能骰子（从场景移除）
+	# 隐藏技能骰子（从场景移除，但保留在 skill_dices 数组中）
 	if selected_skill_dice and is_instance_valid(selected_skill_dice):
 		selected_skill_dice.visible = false
 		# 从场景移除但保留引用
@@ -600,6 +917,7 @@ func _reset_throw_dices():
 	# 清空选择
 	selected_skill_dice = null
 	selected_character = null
+	selected_skill_index = -1
 
 	# 重置技能释放状态，允许再次投掷
 	is_releasing_skill = false
@@ -607,6 +925,9 @@ func _reset_throw_dices():
 	# 恢复技能栏
 	set_skill_bar_enabled(true)
 	_hide_throw_hint()
+
+	# 重置选中高亮
+	_update_skill_selection_highlight()
 
 	print("【BattleSkillBar】投掷完成，骰子已复位")
 
@@ -654,13 +975,15 @@ func _update_mp_label():
 
 ## 启用/禁用技能栏
 func set_skill_bar_enabled(enabled: bool):
-	for child in skill_container.get_children():
-		if child is Button:
-			child.disabled = not enabled
-
-	for child in item_container.get_children():
-		if child is Button:
-			child.disabled = not enabled
+	for idx in skill_dice_containers:
+		var sv_container = skill_dice_sv_containers[idx]
+		var container = skill_dice_containers[idx]
+		if sv_container and is_instance_valid(sv_container):
+			sv_container.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+		# 同步禁用名称标签（半透明效果）
+		var name_label = skill_dice_labels.get(idx)
+		if name_label and is_instance_valid(name_label):
+			name_label.modulate = Color(1, 1, 1, 1) if enabled else Color(1, 1, 1, 0.4)
 
 	if end_turn_button:
 		end_turn_button.disabled = not enabled

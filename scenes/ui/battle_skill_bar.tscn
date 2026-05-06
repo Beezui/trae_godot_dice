@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://bpb744c1644m2"]
+
+[ext_resource type="Script" uid="uid://b28ebeabhna7f" path="res://scripts/ui/battle_skill_bar.gd" id="1_script"]
+
+[node name="BattleSkillBar" type="Control" unique_id=105182557]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="SkillContainer" type="HBoxContainer" parent="." unique_id=1060334190]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -219.0
+offset_top = -50.0
+offset_right = 224.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 15
+
+[node name="TurnLabel" type="Label" parent="." unique_id=765068321]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -59.0
+offset_top = -639.0
+offset_right = 81.0
+offset_bottom = -609.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "回合：1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MPLabel" type="Label" parent="." unique_id=824590314]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -568.0
+offset_top = -38.0
+offset_right = -428.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "MP: 50/50"
+vertical_alignment = 1
+
+[node name="EndTurnButton" type="Button" parent="." unique_id=142745631]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -45.0
+offset_right = -10.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "结束回合"
+
+[node name="ThrowHintLabel" type="Label" parent="." unique_id=178543838]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "按空格键投掷"
+horizontal_alignment = 1
