@@ -441,11 +441,15 @@ func _create_map_overlay():
 
 ## 创建 HUD 工具栏
 func _create_hud_toolbar():
+	print("【HUD】开始创建工具栏...")
 	var hud_scene = load("res://scenes/ui/main_hud.tscn")
 	if hud_scene:
+		print("【HUD】场景加载成功")
 		hud_toolbar = hud_scene.instantiate()
 		if hud_toolbar:
+			hud_toolbar.visible = true
 			add_child(hud_toolbar)
+			print("【HUD】已添加到场景树，可见=", hud_toolbar.visible)
 			# 连接信号
 			if hud_toolbar.has_signal("on_map_toggled"):
 				hud_toolbar.on_map_toggled.connect(_toggle_map)
@@ -455,7 +459,7 @@ func _create_hud_toolbar():
 		else:
 			push_error("【HUD】工具栏实例化失败")
 	else:
-		push_error("【HUD】无法加载工具栏场景")
+		push_error("【HUD】无法加载工具栏场景，路径: res://scenes/ui/main_hud.tscn")
 
 
 ## 创建技能装配 UI

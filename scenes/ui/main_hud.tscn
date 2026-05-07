@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://b8x9m2kq7w0pn"]
 
-[ext_resource type="Script" path="res://scripts/ui/main_hud.gd"]
+[ext_resource type="Script" path="res://scripts/ui/main_hud.gd" id="1_mainhud"]
 
 [node name="MainHUD" type="Control"]
 layout_mode = 3
@@ -9,7 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource(1)
+script = ExtResource("1_mainhud")
 
 [node name="TopBarBackground" type="ColorRect" parent="."]
 layout_mode = 1
