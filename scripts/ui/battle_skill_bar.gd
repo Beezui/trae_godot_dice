@@ -90,13 +90,6 @@ func initialize(characters: Array[BaseCharacter], skills: Array = [], items: Arr
 	print("  - 玩家角色：", characters.size())
 	print("  - 技能骰子：", skills.size())
 	print("  - 物品骰子：", items.size())
-	for i in range(skills.size()):
-		var s = skills[i]
-		print("    [", i, "] ", "s=", s, ", null=", s == null)
-		if s:
-			print("      class=", s.get_class(), ", name=", s.name)
-			if s.has_meta("skill_dice_id"):
-				print("      meta skill_dice_id=", s.get_meta("skill_dice_id"))
 
 	_setup_ui()
 
@@ -281,7 +274,6 @@ func _create_skill_button(skill_dice, index: int):
 
 	skill_container.add_child(container)
 	print("【BattleSkillBar】创建技能按钮完成，容器子节点数=", skill_container.get_child_count())
-	print("  - skill_dice ref=", skill_dice, ", stored in container meta and skill_dices[", index, "]")
 
 
 ## 创建 3D 骰子场景（SubViewport 内）
@@ -432,10 +424,7 @@ func _get_skill_name_for_dice(skill_dice) -> String:
 
 
 func _on_skill_button_pressed(skill_dice, index: int):
-	print("【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===")
-	print("  - index=", index)
-	print("  - skill_dice=", skill_dice)
-	print("  - skill_dice==null: ", skill_dice == null)
+	print("【BattleSkillBar】技能按钮被点击，index=", index)
 
 	if not skill_dice:
 		print("【BattleSkillBar】错误：skill_dice 为空")
@@ -501,138 +490,44 @@ func _can_afford_throw(character: BaseCharacter) -> bool:
 
 ## 替换场景中的技能骰子（待投掷区域的绿色骰子）
 func _replace_skill_dice_in_scene(new_skill_dice):
-	print("【BattleSkillBar::_replace】=== 开始替换流程 ===")
-	print("  - new_skill_dice 对象: ", new_skill_dice)
-	print("  - new_skill_dice == null: ", new_skill_dice == null)
-
 	if not new_skill_dice:
-		print("【BattleSkillBar::_replace】错误：new_skill_dice 为空，跳过")
+		print("【BattleSkillBar】错误：new_skill_dice 为空，跳过")
 		return
-
-	# 检查骰子的关键属性
-	print("  - new_skill_dice.class: ", new_skill_dice.get_class())
-	print("  - new_skill_dice.name: ", new_skill_dice.name)
-	if new_skill_dice.has_meta("skill_dice_id"):
-		print("  - new_skill_dice meta skill_dice_id: ", new_skill_dice.get_meta("skill_dice_id"))
-	else:
-		print("  - new_skill_dice 没有 skill_dice_id meta")
-	if "visible" in new_skill_dice:
-		print("  - new_skill_dice.visible (修改前): ", new_skill_dice.visible)
-	if "position" in new_skill_dice:
-		print("  - new_skill_dice.position (修改前): ", new_skill_dice.position)
-	if new_skill_dice.get_parent():
-		print("  - new_skill_dice 当前 parent: ", new_skill_dice.get_parent().name)
-	else:
-		print("  - new_skill_dice 当前无 parent")
 
 	var battle_scene = _find_battle_scene()
-	print("  - battle_scene: ", battle_scene)
 	if not battle_scene:
-		print("【BattleSkillBar::_replace】错误：找不到战斗场景")
+		print("【BattleSkillBar】找不到战斗场景")
 		return
-
-	print("  - battle_scene.name: ", battle_scene.name)
-	print("  - battle_scene 子节点列表:")
-	for i in range(battle_scene.get_child_count()):
-		var c = battle_scene.get_child(i)
-		print("    [", i, "] ", c.name, " (", c.get_class(), ")")
 
 	var container = _get_dice_container(battle_scene)
-	print("  - container (骰子容器): ", container)
 	if not container:
-		print("【BattleSkillBar::_replace】错误：找不到骰子容器（Sandbox/GameManager）")
+		print("【BattleSkillBar】找不到骰子容器（Sandbox/GameManager）")
 		return
 
-	print("  - container.name: ", container.name)
-	print("  - container.get_child_count(): ", container.get_child_count())
-	print("  - container 子节点详细:")
-	for i in range(container.get_child_count()):
-		var c = container.get_child(i)
-		print("    [", i, "] ", c.name, " (", c.get_class(), ")")
-		if c.has_meta("skill_dice_id"):
-			print("        meta skill_dice_id=", c.get_meta("skill_dice_id"))
-		if c is Node3D:
-			print("        position=", (c as Node3D).position)
-		if "visible" in c:
-			print("        visible=", c.visible)
-
-	# 查找场景中已有的技能骰子（待投掷区域）并移除（排除同一骰子的情况）
+	# 查找场景中已有的技能骰子并移除（排除同一骰子）
 	var existing_skill_dice = _find_skill_dice_in_scene(container)
 	if existing_skill_dice and existing_skill_dice != new_skill_dice:
-		print("【BattleSkillBar::_replace】移除场景中的旧技能骰子: ", existing_skill_dice.name)
+		print("【BattleSkillBar】移除场景中的旧技能骰子: ", existing_skill_dice.name)
 		if existing_skill_dice.has_method("set_freeze"):
 			existing_skill_dice.set_freeze(false)
 		container.remove_child(existing_skill_dice)
 		existing_skill_dice.queue_free()
-		print("  - 旧骰子已移除，container 现在子节点数: ", container.get_child_count())
-	else:
-		if existing_skill_dice == new_skill_dice:
-			print("【BattleSkillBar::_replace】旧骰子与新骰子是同一个，无需移除")
 
 	# 设置新骰子为可见并添加到场景
-	print("【BattleSkillBar::_replace】准备添加新骰子到场景")
-	print("  - dice=", new_skill_dice.name, ", parent=", container.name)
-
-	# 设置位置和可见性之前再打印一次
-	if "visible" in new_skill_dice:
-		print("  - 设置 visible=true 前当前值: ", new_skill_dice.visible)
 	new_skill_dice.visible = true
-	if "visible" in new_skill_dice:
-		print("  - 设置 visible=true 后当前值: ", new_skill_dice.visible)
-
-	new_skill_dice.position = Vector3(-4.0, 4.0, 6.0)
-	print("  - 设置 position=Vector3(-4.0, 4.0, 6.0) 后当前值: ", new_skill_dice.position)
+	new_skill_dice.position = Vector3(-4.0, 6.0, 6.0)  # 与属性骰子同高度，横向排列在左侧
 
 	# 设置为悬浮状态
 	if new_skill_dice.has_method("set_freeze"):
 		new_skill_dice.set_freeze(true)
-		print("  - 已通过 set_freeze(true) 冻结")
 	elif "freeze" in new_skill_dice:
 		new_skill_dice.freeze = true
-		print("  - 已通过 .freeze=true 冻结")
-	else:
-		print("  - 警告：骰子没有 freeze 方法/属性")
 	new_skill_dice.gravity_scale = 0.0
 	new_skill_dice.linear_velocity = Vector3.ZERO
 	new_skill_dice.angular_velocity = Vector3.ZERO
-	print("  - gravity_scale=0, velocity=0, angular_velocity=0")
-
-	# 添加前确认父节点状态
-	if new_skill_dice.get_parent():
-		print("  - 警告：添加前骰子仍有 parent: ", new_skill_dice.get_parent().name)
-	else:
-		print("  - 确认：骰子当前无 parent，可以安全 add_child")
 
 	container.add_child(new_skill_dice)
-	print("【BattleSkillBar::_replace】add_child 已调用")
-
-	# 验证添加结果
-	print("  - 验证：container.get_child_count()= ", container.get_child_count())
-	var found = false
-	for i in range(container.get_child_count()):
-		var c = container.get_child(i)
-		print("    [", i, "] ", c.name, " (", c.get_class(), ") visible=", c.get("visible"), " pos=", c.get("position"))
-		if c == new_skill_dice:
-			found = true
-			print("      >>> 找到新添加的骰子！")
-			print("      >>> c.visible= ", c.get("visible"))
-			print("      >>> c.position= ", c.get("position"))
-			print("      >>> c.freeze= ", c.get("freeze"))
-			print("      >>> c.gravity_scale= ", c.get("gravity_scale"))
-
-	if found:
-		print("【BattleSkillBar::_replace】✓ 新骰子已成功添加到 container")
-	else:
-		print("【BattleSkillBar::_replace】✗ 错误：新骰子未在 container 子节点中找到！")
-
-	print("  - 验证：new_skill_dice.get_parent()= ", new_skill_dice.get_parent())
-	if new_skill_dice.get_parent() == container:
-		print("  - 确认：get_parent() 指向 container ✓")
-	else:
-		print("  - 错误：get_parent() 不指向 container ✗")
-
-	print("【BattleSkillBar::_replace】技能骰子已替换到场景")
-	print("【BattleSkillBar::_replace】=== 替换流程结束 ===")
+	print("【BattleSkillBar】技能骰子已替换到场景")
 
 
 ## 查找场景中现有的技能骰子（待投掷区域）

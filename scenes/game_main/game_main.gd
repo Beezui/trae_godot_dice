@@ -714,7 +714,7 @@ func _generate_discount_dice():
 	var dice = dice_scene.instantiate()
 	dice.name = "DiscountDice"
 	dice.dice_type = "discount"
-	dice.position = Vector3(4.0, 4.0, 6.0)
+	dice.position = Vector3(4.0, 6.0, 6.0)
 
 	# 应用折扣骰子贴图（百分比文字）
 	var discount_values = ["0%", "10%", "10%", "15%", "20%", "50%"]
@@ -969,7 +969,7 @@ func _generate_adventure_dice():
 	var dice = dice_scene.instantiate()
 	dice.name = "AdventureDice"
 	dice.dice_type = "normal"
-	dice.position = Vector3(0.0, 4.0, 6.0)
+	dice.position = Vector3(0.0, 6.0, 6.0)
 
 	# 获取奇遇骰子面配置（根据选项数量）
 	var result_count = AdventureManager.current_results.size()
@@ -1227,7 +1227,7 @@ func _generate_reward_dice():
 	var dice = dice_scene.instantiate()
 	dice.name = "RewardDice"
 	dice.dice_type = "normal"
-	dice.position = Vector3(0.0, 4.0, 6.0)
+	dice.position = Vector3(0.0, 6.0, 6.0)
 
 	# 获取奖励骰子面配置（根据选项数量）
 	var result_count = RewardManager.current_results.size()
