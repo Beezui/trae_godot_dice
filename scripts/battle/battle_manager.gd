@@ -200,7 +200,7 @@ func _character_enter_fallback(characters: Array[BaseCharacter], side: String):
 			# 敌方角色从北侧入场（与技能投掷方向一致），玩家角色从南侧入场
 			if side == "enemy":
 				# 敌方角色从北墙附近入场（Z=-6），向南投掷（Z 正方向）
-				character.character_dice.position = Vector3(x_position, 6.0, -6.0)
+				character.character_dice.position = Vector3(x_position, 8.0, -6.0)
 				character.character_dice.gravity_scale = 1.0
 
 				# 解除悬浮状态
@@ -227,7 +227,7 @@ func _character_enter_fallback(characters: Array[BaseCharacter], side: String):
 					print("【BattleManager】【备用方案】敌方角色骰子入场投掷，位置=", character.character_dice.position)
 			else:
 				# 玩家角色从南侧入场（Z=+6），向北投掷（Z 负方向）
-				character.character_dice.position = Vector3(x_position, 6.0, 6.0)
+				character.character_dice.position = Vector3(x_position, 8.0, 6.0)
 				character.character_dice.gravity_scale = 1.0
 
 				# 解除悬浮状态
@@ -386,7 +386,7 @@ func _generate_character_dices(character: BaseCharacter):
 	if character.skill_dice_ids.size() > 0:
 		for skill_dice_id in character.skill_dice_ids:
 			if DiceManager:
-				var dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, Vector3(-2.0, 6.0, 6.0))
+				var dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, Vector3(-2.0, 8.0, 6.0))
 				if dice:
 					skill_dices.append(dice)
 					character_dices.append(dice)
@@ -442,9 +442,9 @@ func _generate_attribute_dices_for_player(character: BaseCharacter, sandbox: Nod
 	# 创建三个属性骰子（str, agi, int）
 	var attr_types = ["str", "agi", "int"]
 	var positions = [
-		Vector3(-2.0, 6.0, 6.0),  # 力量骰子位置
-		Vector3(0.0, 6.0, 6.0),   # 敏捷骰子位置
-		Vector3(2.0, 6.0, 6.0)    # 智力骰子位置
+		Vector3(-2.0, 8.0, 6.0),  # 力量骰子位置
+		Vector3(0.0, 8.0, 6.0),   # 敏捷骰子位置
+		Vector3(2.0, 8.0, 6.0)    # 智力骰子位置
 	]
 
 	for i in range(3):
@@ -613,7 +613,7 @@ func _enemy_throw_dice(character: BaseCharacter, skill_dice_id: String):
 		return
 
 	# 1. 创建技能骰子（临时）- 从北墙附近进入（与玩家高度相同）
-	var skill_start_pos = Vector3(-4.0, 6.0, -6.0)  # Z=-6 靠近北墙，Y=6 与玩家相同
+	var skill_start_pos = Vector3(-4.0, 8.0, -6.0)  # Z=-6 靠近北墙，Y=8 与玩家相同
 	var skill_dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, skill_start_pos)
 	if not skill_dice:
 		print("  - 无法创建技能骰子")
@@ -629,15 +629,15 @@ func _enemy_throw_dice(character: BaseCharacter, skill_dice_id: String):
 	var attr_types = ["str", "agi", "int"]
 	# 敌方属性骰子位置：Z 轴为负值（北墙附近），比玩家位置更靠前，高度与玩家相同
 	var positions = [
-		Vector3(-2.0, 6.0, -6.0),  # 力量骰子位置
-		Vector3(0.0, 6.0, -6.0),   # 敏捷骰子位置
-		Vector3(2.0, 6.0, -6.0)    # 智力骰子位置
+		Vector3(-2.0, 8.0, -6.0),  # 力量骰子位置
+		Vector3(0.0, 8.0, -6.0),   # 敏捷骰子位置
+		Vector3(2.0, 8.0, -6.0)    # 智力骰子位置
 	]
 
 	for i in range(3):
 		var attr_type = attr_types[i]
 		var position = positions[i]
-		var dice = DiceManager.create_attribute_dice(hero_id, attr_type, sandbox, Vector3(position.x, 6.0, position.z))
+		var dice = DiceManager.create_attribute_dice(hero_id, attr_type, sandbox, Vector3(position.x, 8.0, position.z))
 		if dice:
 			attr_dices.append(dice)
 			# 设置初始位置为北墙附近，与玩家投掷高度相同
