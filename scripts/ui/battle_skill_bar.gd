@@ -23,7 +23,6 @@ var skill_dice_viewports = {}   # { index: SubViewport }
 var skill_dice_sv_containers = {}  # { index: SubViewportContainer }
 var skill_dice_containers = {}  # { index: Control } 用于缩放（VBoxContainer）
 var skill_dice_content_containers = {}  # { index: VBoxContainer } 内容容器（用于缩放）
-var skill_dice_labels = {}  # { index: Label } 技能名称标签（用于调整字体）
 
 ## 选中状态
 var selected_skill_index: int = -1  # 当前选中的技能索引
@@ -186,7 +185,6 @@ func _clear_buttons():
 	skill_dice_sv_containers.clear()
 	skill_dice_containers.clear()
 	skill_dice_content_containers.clear()
-	skill_dice_labels.clear()
 
 
 ## 创建技能按钮（3D 骰子预览）— 水平排列
@@ -197,7 +195,7 @@ func _create_skill_button(skill_dice, index: int):
 
 	print("【BattleSkillBar】创建技能按钮，skill_dice=", skill_dice)
 
-	# 容器（VBox：技能名 + 3D 骰子）
+	# 容器（VBox：3D 骰子）
 	var container = VBoxContainer.new()
 	container.name = "SkillButton_%d" % index
 	container.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -205,25 +203,11 @@ func _create_skill_button(skill_dice, index: int):
 	container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
-	# 创建内容容器（包裹 label 和 sv_container，用于缩放）
+	# 创建内容容器（包裹 sv_container，用于缩放）
 	var content_container = VBoxContainer.new()
 	content_container.name = "ContentContainer"
 	content_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	container.add_child(content_container)
-
-	# 获取技能名称
-	var skill_name = _get_skill_name_for_dice(skill_dice)
-	var name_label = Label.new()
-	name_label.text = skill_name
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	name_label.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  # 缩放时保持清晰
-	content_container.add_child(name_label)  # 添加到 content_container
-
-	# 保存 label 引用以便后续调整字体
-	skill_dice_labels[index] = name_label
 
 	# 获取技能图标路径
 	var icon_path = _get_skill_icon_path_for_dice(skill_dice)
@@ -405,24 +389,6 @@ func _get_skill_icon_path_for_dice(skill_dice) -> String:
 	return ""
 
 
-## 获取技能名称（用于显示在 3D 骰子上方）
-func _get_skill_name_for_dice(skill_dice) -> String:
-	var dice_id = skill_dice.get_meta("skill_dice_id") if skill_dice.has_meta("skill_dice_id") else ""
-	if dice_id.is_empty():
-		return "未知技能"
-
-	var reader = DiceCSVReader.new()
-	var dice_config = reader.get_skill_dice_config(dice_id)
-	if not dice_config.is_empty():
-		var skill_ids = dice_config.get("skill_ids", [])
-		if skill_ids.size() > 0:
-			var skill_reader = preload("res://scripts/skill_csv_reader.gd").new()
-			var skill_data = skill_reader.get_skill(skill_ids[0])
-			if skill_data and skill_data.has("name"):
-				return skill_data["name"]
-	return "未知技能"
-
-
 func _on_skill_button_pressed(skill_dice, index: int):
 	print("【BattleSkillBar】技能按钮被点击，index=", index)
 
@@ -460,7 +426,6 @@ func _on_skill_button_pressed(skill_dice, index: int):
 func _update_skill_selection_highlight():
 	for idx in skill_dice_content_containers:
 		var content_container = skill_dice_content_containers[idx]
-		var label = skill_dice_labels.get(idx)
 		if not content_container or not is_instance_valid(content_container):
 			continue
 
@@ -468,16 +433,10 @@ func _update_skill_selection_highlight():
 			# 选中：放大 1.5 倍
 			content_container.pivot_offset = content_container.size / 2.0
 			content_container.scale = Vector2(1.5, 1.5)
-			# 同步放大字体，避免模糊
-			if label and is_instance_valid(label):
-				label.add_theme_font_size_override("font_size", 21)  # 14 * 1.5 = 21
 		else:
 			# 未选中：恢复原始尺寸
 			content_container.pivot_offset = content_container.size / 2.0
 			content_container.scale = Vector2(1.0, 1.0)
-			# 恢复字体大小
-			if label and is_instance_valid(label):
-				label.add_theme_font_size_override("font_size", 14)
 
 
 ## 检查是否有足够 MP 投掷（1 点）
@@ -875,10 +834,6 @@ func set_skill_bar_enabled(enabled: bool):
 		var container = skill_dice_containers[idx]
 		if sv_container and is_instance_valid(sv_container):
 			sv_container.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
-		# 同步禁用名称标签（半透明效果）
-		var name_label = skill_dice_labels.get(idx)
-		if name_label and is_instance_valid(name_label):
-			name_label.modulate = Color(1, 1, 1, 1) if enabled else Color(1, 1, 1, 0.4)
 
 	if end_turn_button:
 		end_turn_button.disabled = not enabled
