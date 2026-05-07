@@ -447,9 +447,12 @@ func _create_hud_toolbar():
 		print("【HUD】场景加载成功")
 		hud_toolbar = hud_scene.instantiate()
 		if hud_toolbar:
+			# 显式设置位置和尺寸（Node3D 父节点下锚点布局不会自动计算）
+			hud_toolbar.position = Vector2.ZERO
+			hud_toolbar.size = get_viewport_rect().size
 			hud_toolbar.visible = true
 			add_child(hud_toolbar)
-			print("【HUD】已添加到场景树，可见=", hud_toolbar.visible)
+			print("【HUD】已添加到场景树，可见=", hud_toolbar.visible, " 尺寸=", hud_toolbar.size)
 			# 连接信号
 			if hud_toolbar.has_signal("on_map_toggled"):
 				hud_toolbar.on_map_toggled.connect(_toggle_map)
