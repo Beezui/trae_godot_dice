@@ -432,7 +432,7 @@ func _update_skill_selection_highlight():
 		if idx == selected_skill_index:
 			# 选中：放大 1.5 倍
 			content_container.pivot_offset = content_container.size / 2.0
-			content_container.scale = Vector2(1.5, 1.5)
+			content_container.scale = Vector2(1.25, 1.25)
 		else:
 			# 未选中：恢复原始尺寸
 			content_container.pivot_offset = content_container.size / 2.0
