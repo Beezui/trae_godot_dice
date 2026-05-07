@@ -471,6 +471,8 @@ func _create_skill_equip_ui():
 	if equip_scene:
 		skill_equip_ui = equip_scene.instantiate()
 		if skill_equip_ui:
+			skill_equip_ui.position = Vector2.ZERO
+			skill_equip_ui.size = get_viewport_rect().size
 			add_child(skill_equip_ui)
 			skill_equip_ui.visible = false
 			print("【HUD】技能装配 UI 创建成功")
