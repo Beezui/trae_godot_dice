@@ -62,6 +62,8 @@ var current_turn: int = 0
 var current_actor: BaseCharacter = null
 ## 行动点消耗倍率（可根据技能调整）
 var mp_cost_multiplier: float = 1.0
+## 是否允许技能装配（进入战斗后锁定，战斗结束后解锁）
+var can_equip_skills: bool = true
 
 ## 战斗配置
 var battle_config: Dictionary = {
@@ -91,6 +93,8 @@ func initialize_battle(level_node: LevelNode, player_party: Array[int]) -> bool:
 	print("【BattleManager】初始化战斗...")
 	print("  - 关卡节点：", level_node.name if level_node else "未知")
 	print("  - 玩家队伍：", player_party)
+
+	can_equip_skills = false  # 进入战斗后锁定技能装配
 
 	current_state = BattleState.ENTERING
 	current_phase = BattlePhase.PHASE_ENTER
@@ -974,6 +978,7 @@ func _check_battle_end() -> bool:
 ## @param winner "player" 或 "enemy"
 func _finish_battle(winner: String):
 	print("【BattleManager】战斗结束，胜利者：", winner)
+	can_equip_skills = true  # 战斗结束后解锁技能装配
 	current_state = BattleState.FINISHED
 	_change_phase(BattlePhase.PHASE_RESOLVE)
 

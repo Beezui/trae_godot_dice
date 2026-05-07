@@ -808,6 +808,9 @@ func _on_confirm_pressed():
 
 ## 打开 UI
 func open():
+	if not BattleManager.can_equip_skills:
+		print("【SkillEquipUI】战斗中无法进行技能装配")
+		return
 	visible = true
 	_load_data()
 
