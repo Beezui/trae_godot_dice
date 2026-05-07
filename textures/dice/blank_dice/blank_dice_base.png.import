@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://droxe2nicfj83"
-path="res://.godot/imported/QQ20260418-223631.png-48a5ca8e2e65c5d22866caa031d388b0.ctex"
+uid="uid://bjyejohmlywy0"
+path="res://.godot/imported/blank_dice_base.png-573f19fdd35fe44bd5143e6c4b10d55d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://截图/QQ20260418-223631.png"
-dest_files=["res://.godot/imported/QQ20260418-223631.png-48a5ca8e2e65c5d22866caa031d388b0.ctex"]
+source_file="res://textures/dice/blank_dice/blank_dice_base.png"
+dest_files=["res://.godot/imported/blank_dice_base.png-573f19fdd35fe44bd5143e6c4b10d55d.ctex"]
 
 [params]
 

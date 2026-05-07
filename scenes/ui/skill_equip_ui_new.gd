@@ -180,7 +180,7 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 创建 SubViewport（渲染 3D 内容）
 	var viewport = SubViewport.new()
 	viewport.name = "DiceViewport"
-	viewport.size = Vector2(160, 100)  # 视窗尺寸（缩减高度）
+	viewport.size = Vector2(480, 300)  # 视窗尺寸（高分辨率渲染更清晰）
 	viewport.transparent_bg = true
 	viewport.canvas_item_default_texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -192,11 +192,12 @@ func _create_dice_button(instance_id: int, instance: Dictionary) -> VBoxContaine
 	# 使用 SubViewportContainer 包裹 SubViewport
 	var sv_container = SubViewportContainer.new()
 	sv_container.name = "DiceSubViewportContainer"
-	sv_container.custom_minimum_size = Vector2(160, 100)  # 与视口尺寸一致
+	sv_container.custom_minimum_size = Vector2(160, 100)  # UI 显示尺寸
 	sv_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	sv_container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	sv_container.stretch = true
 	sv_container.mouse_filter = Control.MOUSE_FILTER_STOP
+	sv_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  # 缩放时保持清晰
 	sv_container.add_child(viewport)
 
 	content_container.add_child(sv_container)  # 添加到 content_container

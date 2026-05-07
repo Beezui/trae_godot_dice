@@ -1,171 +1,19 @@
-Godot Engine v4.6.1.stable.official.14d19694e - https://godotengine.org
-D3D12 12_0 - Forward+ - Using Device #0: AMD - AMD Radeon(TM) Graphics
 
-DiceTextureManager 初始化完成
-【贴图管理器】预加载常用贴图...
-【贴图管理器】预加载：res://textures/dice/dice_face_1.png
-【贴图管理器】预加载：res://textures/dice/dice_face_2.png
-【贴图管理器】预加载：res://textures/dice/dice_face_3.png
-【贴图管理器】预加载：res://textures/dice/dice_face_4.png
-【贴图管理器】预加载：res://textures/dice/dice_face_5.png
-【贴图管理器】预加载：res://textures/dice/dice_face_6.png
-【贴图管理器】预加载命运骰子贴图...
-【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_1.png
-【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_2.png
-【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_3.png
-【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_4.png
-【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_type_5.png
-【贴图管理器】命运骰子贴图不存在：res://textures/destiny/destiny_boss.png
-DiceThrowController 初始化完成
-DiceResultDetector 初始化完成
-【CharacterManager】角色管理器已就绪
-【CharacterManager】已加载 2 个英雄数据到缓存
-========================================
-CameraManager 初始化完成
-========================================
-【摄像机配置】
-  位置 (position): (1.3, 50.0, 14.1)
-  视野 (fov): 15.0 度
-  旋转 (rotation): (-1.308997, 0.089012, -0.085521)
-  旋转角度 (度数): x=-75.00°, y=5.10°, z=-4.90°
-========================================
-[LevelGenerator] 配置加载成功
-[LevelGeneratorRandom] 配置加载成功
-  - 随机节点配置：7 个
-[LevelGenerator] 初始化完成
-[DestinyDiceManager] 初始化完成
-[LevelTransitionController] 初始化完成
-=== 核心关卡节点初始化 ===
-【场景配置】加载完成，random_nodes: 7 条，scenes: 3 条
-【核心关卡节点】初始化完成
-【BattleManager】战斗管理器已就绪
-【BattleSkillBar】技能栏已就绪
-【BattleTestScene】测试战斗场景已就绪
-【BattleSceneBase】战斗场景已就绪
-【BattleSceneBase】摄像机已设置
-【BattleSceneBase】灯光已设置
-【BattleSceneBase】沙盘已设置
-【BattleSceneBase】战斗 UI 已设置
-【摄像机管理器】注册摄像机：Camera3D
-【摄像机管理器】已更新摄像机：Camera3D
-【BattleSceneBase】初始化战斗...
-【BattleManager】初始化战斗...
-  - 关卡节点：测试战斗
-  - 玩家队伍：[1]
-【BattleManager】已清空战斗数据
-【BaseCharacter】加载角色数据：测试角色 (ID: 1)
-【PlayerCharacter】创建玩家角色：测试角色
-【CharacterManager】创建 player 角色：测试角色 (ID: 1)
-【BattleManager】加载敌人：["2"]
-【BaseCharacter】加载角色数据：测试怪物 (ID: 2)
-【EnemyCharacter】创建敌人角色：测试怪物
-【CharacterManager】创建 enemy 角色：测试怪物 (ID: 2)
-【BattleManager】敌人已加载：测试怪物 (ID: 2)
-【BattleManager】阶段变更：PHASE_ENTER -> PHASE_ENTER
-[LevelTransitionController] 已连接命运骰子信号
-【BattleManager】开始战斗流程
-【BattleManager】阶段变更：PHASE_ENTER -> PHASE_ENTER
-【BattleSceneBase】战斗阶段变更：PHASE_ENTER -> PHASE_ENTER
-【BattleManager】进入入场阶段
-【BattleManager】阶段变更：PHASE_ENTER -> PHASE_ENTER
-【BattleSceneBase】战斗阶段变更：PHASE_ENTER -> PHASE_ENTER
-【BattleManager】敌方角色入场...
-【BattleManager】enemy角色 测试怪物 入场
-【BattleManager】角色骰子面 0 贴图：res://textures/hero/hero_2_idle.png
-【BattleManager】角色骰子面 1 贴图：res://textures/hero/hero_2_idle.png
-【BattleManager】角色骰子面 2 贴图：res://textures/hero/hero_2_idle.png
-【BattleManager】角色骰子面 3 贴图：res://textures/hero/hero_2_idle.png
-【BattleManager】角色骰子面 4 贴图：res://textures/hero/hero_2_idle.png
-【BattleManager】角色骰子面 5 贴图：res://textures/hero/hero_2_idle.png
-【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
-【骰子】dice_face_config 已赋值：{ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
-【贴图管理器】错误：MeshInstance3D 没有 mesh
-Set dice face config: { 0: "res://textures/hero/hero_2_idle.png", 1: "res://textures/hero/hero_2_idle.png", 2: "res://textures/hero/hero_2_idle.png", 3: "res://textures/hero/hero_2_idle.png", 4: "res://textures/hero/hero_2_idle.png", 5: "res://textures/hero/hero_2_idle.png" }
-Set dice value config: {  }
-【BattleManager】角色骰子已创建：测试怪物
-【BattleManager】检查 dice 实例：Dice6:<RigidBody3D#59173242445>
-【BattleManager】检查 dice 是否有 set_dice_face_config 方法：true
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【BattleManager】角色骰子已添加到场景：(-8.0, 0.5, 0.0)
-DiceThrowController: 普通投掷，力度倍数=1.00
-【BattleManager】玩家角色入场...
-【BattleManager】player角色 测试角色 入场
-【BattleManager】角色骰子面 0 贴图：res://textures/hero/hero_1_idle.png
-【BattleManager】角色骰子面 1 贴图：res://textures/hero/hero_1_idle.png
-【BattleManager】角色骰子面 2 贴图：res://textures/hero/hero_1_idle.png
-【BattleManager】角色骰子面 3 贴图：res://textures/hero/hero_1_idle.png
-【BattleManager】角色骰子面 4 贴图：res://textures/hero/hero_1_idle.png
-【BattleManager】角色骰子面 5 贴图：res://textures/hero/hero_1_idle.png
-【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
-【骰子】dice_face_config 已赋值：{ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
-【贴图管理器】错误：MeshInstance3D 没有 mesh
-Set dice face config: { 0: "res://textures/hero/hero_1_idle.png", 1: "res://textures/hero/hero_1_idle.png", 2: "res://textures/hero/hero_1_idle.png", 3: "res://textures/hero/hero_1_idle.png", 4: "res://textures/hero/hero_1_idle.png", 5: "res://textures/hero/hero_1_idle.png" }
-Set dice value config: {  }
-【BattleManager】角色骰子已创建：测试角色
-【BattleManager】检查 dice 实例：Dice6:<RigidBody3D#66823652935>
-【BattleManager】检查 dice 是否有 set_dice_face_config 方法：true
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【BattleManager】角色骰子已添加到场景：(8.0, 0.5, 0.0)
-DiceThrowController: 普通投掷，力度倍数=1.00
-Dice rolled: 4
-=== trigger_skill() 被调用 ===
-skip_skill_trigger = true
-【角色骰子】已锁定位置，不受外力影响
-【BattleManager】入场阶段完成
-【BattleManager】阶段变更：PHASE_ENTER -> PHASE_SETUP
-【BattleSceneBase】战斗阶段变更：PHASE_ENTER -> PHASE_SETUP
-【BattleManager】准备阶段：生成骰子
-【BattleManager】阶段变更：PHASE_SETUP -> PHASE_SETUP
-【BattleSceneBase】战斗阶段变更：PHASE_SETUP -> PHASE_SETUP
-【BattleManager】为 测试角色 生成骰子
-【BattleManager】创建技能骰子：4001
-【JSON】开始加载 NumDices.json，路径：res://table/NumDices.json
-【JSON】加载数字骰子配置 ID=1001
-【JSON】加载数字骰子配置 ID=1002
-【JSON】NumDices.json 加载完成，配置数=2
-【JSON】开始加载 AttrDices.json，路径：res://table/AttrDices.json
-【JSON】加载属性骰子颜色配置 attr_name=str, color=#C00000
-【JSON】加载属性骰子颜色配置 attr_name=agi, color=#A9D08E
-【JSON】加载属性骰子颜色配置 attr_name=int, color=#8EA9DB
-【JSON】AttrDices.json 加载完成，配置数=3
-【骰子】set_dice_face_config 被调用，config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】dice_face_config 已赋值：{ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】准备调用 apply_textures_from_manager
-【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
-【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
-【贴图管理器】错误：MeshInstance3D 没有 mesh
-Set dice face config: { 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
-Set dice value config: { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6 }
-【BattleManager】技能骰子创建完成：4001
-  - 生成技能骰子：4001
-【BattleManager】测试角色 的骰子生成完成
-【骰子】_ready() 开始执行
-MeshInstance3D found: MeshInstance3D
-No mesh found, creating fallback mesh
-Fallback cube mesh with 6 surfaces created
-【初始化】备用网格创建完成，等待配置加载
-【骰子】_ready() 执行完成，等待配置加载
-【BattleManager】技能骰子已添加到场景：位置=(-2.0, 4.0, 6.0)
-【BattleSkillBar】初始化...
-  - 玩家角色：1
-  - 技能骰子：1
-  - 物品骰子：0
+【空白骰子】加载 BlankDices.json，路径：res://table/BlankDices.json
+【空白骰子】加载模板 ID=6001 名称=基础骰
+【空白骰子】加载模板 ID=6002 名称=回响骰
+【空白骰子】加载模板 ID=6003 名称=连击骰
+【空白骰子】加载模板 ID=6004 名称=暴击骰
+【空白骰子】加载模板 ID=6005 名称=元素骰
+【空白骰子】加载模板 ID=6006 名称=吸血骰
+【空白骰子】BlankDices.json 加载完成，模板数=6
+【BattleSkillBar】创建技能按钮完成，容器子节点数=1
+  - skill_dice ref=Dice6:<RigidBody3D#105444804337>, stored in container meta and skill_dices[0]
+【BattleSkillBar】找到属性骰子：attr_dice, 初始位置：(-2.0, 4.0, 6.0)
+【BattleSkillBar】找到属性骰子：@RigidBody3D@38, 初始位置：(0.0, 4.0, 6.0)
+【BattleSkillBar】找到属性骰子：@RigidBody3D@54, 初始位置：(2.0, 4.0, 6.0)
+【BattleUIManager】技能栏可见：true, 尺寸：(1152.0, 648.0), 位置：(0.0, 0.0)
+【BattleUIManager】技能栏已初始化并显示
 【BattleManager】技能栏 UI 已初始化
 【BattleManager】准备阶段完成
 【BattleManager】阶段变更：PHASE_SETUP -> PHASE_BATTLE
@@ -175,9 +23,264 @@ Fallback cube mesh with 6 surfaces created
 【BattleSceneBase】战斗阶段变更：PHASE_BATTLE -> PHASE_BATTLE
 【BattleManager】第 1 回合 - 玩家回合
 【BattleSceneBase】回合开始：player
-【BattleSkillBar】回合开始：玩家回合
-【BattleManager】测试角色 恢复 10 MP
-Dice rolled: 1
-=== trigger_skill() 被调用 ===
-skip_skill_trigger = true
-【角色骰子】已锁定位置，不受外力影响
+【BattleManager】test_hero1 恢复 10 MP
+【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===
+  - index=0
+  - skill_dice=Dice6:<RigidBody3D#105444804337>
+  - skill_dice==null: false
+【BattleSkillBar::_replace】=== 开始替换流程 ===
+  - new_skill_dice 对象: Dice6:<RigidBody3D#105444804337>
+  - new_skill_dice == null: false
+  - new_skill_dice.class: RigidBody3D
+  - new_skill_dice.name: Dice6
+  - new_skill_dice meta skill_dice_id: 4001
+  - new_skill_dice.visible (修改前): false
+  - new_skill_dice.position (修改前): (0.0, 0.0, 0.0)
+  - new_skill_dice 当前无 parent
+  - battle_scene: BattleTestScene:<Node3D#58284049932>
+  - battle_scene.name: BattleTestScene
+  - battle_scene 子节点列表:
+    [0] Camera3D (Camera3D)
+    [1] DirectionalLight3D (DirectionalLight3D)
+    [2] Sandbox (Node3D)
+  - container (骰子容器): Sandbox:<Node3D#58351158803>
+  - container.name: Sandbox
+  - container.get_child_count(): 13
+  - container 子节点详细:
+    [0] Floor (MeshInstance3D)
+        position=(0.0, -0.25, 0.0)
+        visible=true
+    [1] FloorCollision (StaticBody3D)
+        position=(0.0, -0.25, 0.0)
+        visible=true
+    [2] NorthWall (MeshInstance3D)
+        position=(0.0, 1.0, -7.0)
+        visible=true
+    [3] SouthWall (MeshInstance3D)
+        position=(0.0, 1.0, 7.0)
+        visible=true
+    [4] EastWall (MeshInstance3D)
+        position=(12.25, 1.0, 0.0)
+        visible=true
+    [5] WestWall (MeshInstance3D)
+        position=(-12.25, 1.0, 0.0)
+        visible=true
+    [6] Dice6 (RigidBody3D)
+        position=(-0.823536, 0.749995, -1.7932)
+        visible=true
+    [7] HealthBar2D (Node3D)
+        position=(-0.823536, 2.699995, -1.7932)
+        visible=true
+    [8] @RigidBody3D@16 (RigidBody3D)
+        position=(4.891795, 0.749997, -1.79751)
+        visible=true
+    [9] @Node3D@21 (Node3D)
+        position=(4.891795, 2.699997, -1.79751)
+        visible=true
+    [10] attr_dice (RigidBody3D)
+        position=(-2.0, 4.0, 6.0)
+        visible=true
+    [11] @RigidBody3D@38 (RigidBody3D)
+        position=(0.0, 4.0, 6.0)
+        visible=true
+    [12] @RigidBody3D@54 (RigidBody3D)
+        position=(2.0, 4.0, 6.0)
+        visible=true
+  - existing_skill_dice (已有技能骰子): <null>
+【BattleSkillBar::_replace】准备添加新骰子到场景
+  - dice=Dice6, parent=Sandbox
+  - 设置 visible=true 前当前值: false
+  - 设置 visible=true 后当前值: true
+  - 设置 position=Vector3(-4.0, 4.0, 6.0) 后当前值: (-4.0, 4.0, 6.0)
+  - 已通过 .freeze=true 冻结
+  - gravity_scale=0, velocity=0, angular_velocity=0
+  - 确认：骰子当前无 parent，可以安全 add_child
+【骰子】_ready() 开始执行
+MeshInstance3D found: MeshInstance3D
+No mesh found, creating fallback mesh
+【备用网格】检测到已有配置，立即应用贴图
+【骰子】apply_textures_from_manager 被调用，dice_face_config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+【骰子】调用 DiceTextureManager.apply_textures_to_dice，config={ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+【贴图管理器】开始应用贴图到 @RigidBody3D@76
+【贴图管理器】应用普通骰子贴图（可能是角色骰子）
+【贴图管理器】贴图配置：{ 0: "res://textures/skill/skill_10001.png", 1: "res://textures/skill/skill_10001.png", 2: "res://textures/skill/skill_10001.png", 3: "res://textures/skill/skill_10001.png", 4: "res://textures/skill/skill_10001.png", 5: "res://textures/skill/skill_10001.png" }
+【贴图管理器】普通骰子面 0 贴图路径：res://textures/skill/skill_10001.png
+【贴图管理器】面 0 加载贴图成功：res://textures/skill/skill_10001.png
+【贴图管理器】普通骰子面 1 贴图路径：res://textures/skill/skill_10001.png
+【贴图管理器】面 1 加载贴图成功：res://textures/skill/skill_10001.png
+【贴图管理器】普通骰子面 2 贴图路径：res://textures/skill/skill_10001.png
+【贴图管理器】面 2 加载贴图成功：res://textures/skill/skill_10001.png
+【贴图管理器】普通骰子面 3 贴图路径：res://textures/skill/skill_10001.png
+【贴图管理器】面 3 加载贴图成功：res://textures/skill/skill_10001.png
+【贴图管理器】普通骰子面 4 贴图路径：res://textures/skill/skill_10001.png
+【贴图管理器】面 4 加载贴图成功：res://textures/skill/skill_10001.png
+【贴图管理器】普通骰子面 5 贴图路径：res://textures/skill/skill_10001.png
+【贴图管理器】面 5 加载贴图成功：res://textures/skill/skill_10001.png
+【贴图管理器】网格表面数：6, 需要材质数：6
+【贴图管理器】网格类型：ArrayMesh
+【贴图管理器】应用材质 0 到表面 0
+【贴图管理器】应用材质 1 到表面 1
+【贴图管理器】应用材质 2 到表面 2
+【贴图管理器】应用材质 3 到表面 3
+【贴图管理器】应用材质 4 到表面 4
+【贴图管理器】应用材质 5 到表面 5
+【贴图管理器】贴图应用完成，表面数=6
+Fallback cube mesh with 6 surfaces created
+【初始化】备用网格创建完成，等待配置加载
+【骰子】_ready() 执行完成，等待配置加载
+【BattleSkillBar::_replace】add_child 已调用
+  - 验证：container.get_child_count()= 14
+    [0] Floor (MeshInstance3D) visible=true pos=(0.0, -0.25, 0.0)
+    [1] FloorCollision (StaticBody3D) visible=true pos=(0.0, -0.25, 0.0)
+    [2] NorthWall (MeshInstance3D) visible=true pos=(0.0, 1.0, -7.0)
+    [3] SouthWall (MeshInstance3D) visible=true pos=(0.0, 1.0, 7.0)
+    [4] EastWall (MeshInstance3D) visible=true pos=(12.25, 1.0, 0.0)
+    [5] WestWall (MeshInstance3D) visible=true pos=(-12.25, 1.0, 0.0)
+    [6] Dice6 (RigidBody3D) visible=true pos=(-0.823536, 0.749995, -1.7932)
+    [7] HealthBar2D (Node3D) visible=true pos=(-0.823536, 2.699995, -1.7932)
+    [8] @RigidBody3D@16 (RigidBody3D) visible=true pos=(4.891795, 0.749997, -1.79751)
+    [9] @Node3D@21 (Node3D) visible=true pos=(4.891795, 2.699997, -1.79751)
+    [10] attr_dice (RigidBody3D) visible=true pos=(-2.0, 4.0, 6.0)
+    [11] @RigidBody3D@38 (RigidBody3D) visible=true pos=(0.0, 4.0, 6.0)
+    [12] @RigidBody3D@54 (RigidBody3D) visible=true pos=(2.0, 4.0, 6.0)
+    [13] @RigidBody3D@76 (RigidBody3D) visible=true pos=(-4.0, 4.0, 6.0)
+      >>> 找到新添加的骰子！
+      >>> c.visible= true
+      >>> c.position= (-4.0, 4.0, 6.0)
+      >>> c.freeze= true
+      >>> c.gravity_scale= 0.0
+【BattleSkillBar::_replace】✓ 新骰子已成功添加到 container
+  - 验证：new_skill_dice.get_parent()= Sandbox:<Node3D#58351158803>
+  - 确认：get_parent() 指向 container ✓
+【BattleSkillBar::_replace】技能骰子已替换到场景
+【BattleSkillBar::_replace】=== 替换流程结束 ===
+【BattleSkillBar】技能骰子已选择，准备投掷
+【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===
+  - index=0
+  - skill_dice=@RigidBody3D@76:<RigidBody3D#105444804337>
+  - skill_dice==null: false
+【BattleSkillBar::_replace】=== 开始替换流程 ===
+  - new_skill_dice 对象: @RigidBody3D@76:<RigidBody3D#105444804337>
+  - new_skill_dice == null: false
+  - new_skill_dice.class: RigidBody3D
+  - new_skill_dice.name: @RigidBody3D@76
+  - new_skill_dice meta skill_dice_id: 4001
+  - new_skill_dice.visible (修改前): true
+  - new_skill_dice.position (修改前): (-4.0, 4.0, 6.0)
+  - new_skill_dice 当前 parent: Sandbox
+  - battle_scene: BattleTestScene:<Node3D#58284049932>
+  - battle_scene.name: BattleTestScene
+  - battle_scene 子节点列表:
+    [0] Camera3D (Camera3D)
+    [1] DirectionalLight3D (DirectionalLight3D)
+    [2] Sandbox (Node3D)
+  - container (骰子容器): Sandbox:<Node3D#58351158803>
+  - container.name: Sandbox
+  - container.get_child_count(): 14
+  - container 子节点详细:
+    [0] Floor (MeshInstance3D)
+        position=(0.0, -0.25, 0.0)
+        visible=true
+    [1] FloorCollision (StaticBody3D)
+        position=(0.0, -0.25, 0.0)
+        visible=true
+    [2] NorthWall (MeshInstance3D)
+        position=(0.0, 1.0, -7.0)
+        visible=true
+    [3] SouthWall (MeshInstance3D)
+        position=(0.0, 1.0, 7.0)
+        visible=true
+    [4] EastWall (MeshInstance3D)
+        position=(12.25, 1.0, 0.0)
+        visible=true
+    [5] WestWall (MeshInstance3D)
+        position=(-12.25, 1.0, 0.0)
+        visible=true
+    [6] Dice6 (RigidBody3D)
+        position=(-0.823536, 0.749995, -1.7932)
+        visible=true
+    [7] HealthBar2D (Node3D)
+        position=(-0.823536, 2.699995, -1.7932)
+        visible=true
+    [8] @RigidBody3D@16 (RigidBody3D)
+        position=(4.891795, 0.749997, -1.79751)
+        visible=true
+    [9] @Node3D@21 (Node3D)
+        position=(4.891795, 2.699997, -1.79751)
+        visible=true
+    [10] attr_dice (RigidBody3D)
+        position=(-2.0, 4.0, 6.0)
+        visible=true
+    [11] @RigidBody3D@38 (RigidBody3D)
+        position=(0.0, 4.0, 6.0)
+        visible=true
+    [12] @RigidBody3D@54 (RigidBody3D)
+        position=(2.0, 4.0, 6.0)
+        visible=true
+    [13] @RigidBody3D@76 (RigidBody3D)
+        meta skill_dice_id=4001
+        position=(-4.0, 4.0, 6.0)
+        visible=true
+  - existing_skill_dice (已有技能骰子): @RigidBody3D@76:<RigidBody3D#105444804337>
+【BattleSkillBar::_replace】移除场景中的旧技能骰子: @RigidBody3D@76
+  - 旧骰子已移除，container 现在子节点数: 13
+【BattleSkillBar::_replace】准备添加新骰子到场景
+  - dice=@RigidBody3D@76, parent=Sandbox
+  - 设置 visible=true 前当前值: true
+  - 设置 visible=true 后当前值: true
+  - 设置 position=Vector3(-4.0, 4.0, 6.0) 后当前值: (-4.0, 4.0, 6.0)
+  - 已通过 .freeze=true 冻结
+  - gravity_scale=0, velocity=0, angular_velocity=0
+  - 确认：骰子当前无 parent，可以安全 add_child
+【BattleSkillBar::_replace】add_child 已调用
+  - 验证：container.get_child_count()= 14
+    [0] Floor (MeshInstance3D) visible=true pos=(0.0, -0.25, 0.0)
+    [1] FloorCollision (StaticBody3D) visible=true pos=(0.0, -0.25, 0.0)
+    [2] NorthWall (MeshInstance3D) visible=true pos=(0.0, 1.0, -7.0)
+    [3] SouthWall (MeshInstance3D) visible=true pos=(0.0, 1.0, 7.0)
+    [4] EastWall (MeshInstance3D) visible=true pos=(12.25, 1.0, 0.0)
+    [5] WestWall (MeshInstance3D) visible=true pos=(-12.25, 1.0, 0.0)
+    [6] Dice6 (RigidBody3D) visible=true pos=(-0.823536, 0.749995, -1.7932)
+    [7] HealthBar2D (Node3D) visible=true pos=(-0.823536, 2.699995, -1.7932)
+    [8] @RigidBody3D@16 (RigidBody3D) visible=true pos=(4.891795, 0.749997, -1.79751)
+    [9] @Node3D@21 (Node3D) visible=true pos=(4.891795, 2.699997, -1.79751)
+    [10] attr_dice (RigidBody3D) visible=true pos=(-2.0, 4.0, 6.0)
+    [11] @RigidBody3D@38 (RigidBody3D) visible=true pos=(0.0, 4.0, 6.0)
+    [12] @RigidBody3D@54 (RigidBody3D) visible=true pos=(2.0, 4.0, 6.0)
+    [13] @RigidBody3D@76 (RigidBody3D) visible=true pos=(-4.0, 4.0, 6.0)
+      >>> 找到新添加的骰子！
+      >>> c.visible= true
+      >>> c.position= (-4.0, 4.0, 6.0)
+      >>> c.freeze= true
+      >>> c.gravity_scale= 0.0
+【BattleSkillBar::_replace】✓ 新骰子已成功添加到 container
+  - 验证：new_skill_dice.get_parent()= Sandbox:<Node3D#58351158803>
+  - 确认：get_parent() 指向 container ✓
+【BattleSkillBar::_replace】技能骰子已替换到场景
+【BattleSkillBar::_replace】=== 替换流程结束 ===
+【BattleSkillBar】技能骰子已选择，准备投掷
+【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===
+  - index=0
+  - skill_dice=<null>
+  - skill_dice==null: true
+【BattleSkillBar】错误：skill_dice 为空
+【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===
+  - index=0
+  - skill_dice=<null>
+  - skill_dice==null: true
+【BattleSkillBar】错误：skill_dice 为空
+【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===
+  - index=0
+  - skill_dice=<null>
+  - skill_dice==null: true
+【BattleSkillBar】错误：skill_dice 为空
+【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===
+  - index=0
+  - skill_dice=<null>
+  - skill_dice==null: true
+【BattleSkillBar】错误：skill_dice 为空
+【BattleSkillBar::_on_pressed】=== 技能按钮被点击 ===
+  - index=0
+  - skill_dice=<null>
+  - skill_dice==null: true
+【BattleSkillBar】错误：skill_dice 为空

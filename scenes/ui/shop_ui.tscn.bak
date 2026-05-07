@@ -1,0 +1,118 @@
+[gd_scene format=3 uid="uid://blfro3xlk5pyy"]
+
+[ext_resource type="Script" uid="uid://b78k6mx5lji1t" path="res://scripts/ui/shop_ui.gd" id="1_ygcrn"]
+
+[node name="ShopUIRoot" type="Control" unique_id=393717401]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_ygcrn")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1425071696]
+layout_mode = 0
+mouse_filter = 1
+color = Color(0.1, 0.1, 0.15, 0.92)
+
+[node name="CloseButton" type="Button" parent="." unique_id=686428600]
+layout_mode = 0
+offset_left = -60.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 50.0
+text = "X"
+
+[node name="TitleLabel" type="Label" parent="." unique_id=1777205138]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 50.0
+text = "商店"
+theme_override_font_sizes/font_size = 28
+
+[node name="GoldLabel" type="Label" parent="." unique_id=373440013]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 55.0
+offset_right = -10.0
+offset_bottom = 85.0
+text = "金币: --"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 20
+
+[node name="DiscountLabel" type="Label" parent="." unique_id=104518603]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 55.0
+offset_right = 200.0
+offset_bottom = 85.0
+text = "折扣: 无"
+theme_override_font_sizes/font_size = 20
+
+[node name="GridContainer" type="Control" parent="." unique_id=54191554]
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 100.0
+offset_right = -20.0
+offset_bottom = -60.0
+
+[node name="ItemGrid" type="GridContainer" parent="GridContainer" unique_id=654645853]
+layout_mode = 0
+size_flags_horizontal = 2
+size_flags_vertical = 2
+columns = 4
+
+[node name="ThrowDiscountButton" type="Button" parent="." unique_id=65650620]
+anchors_preset = 5
+z_index = 10
+layout_mode = 0
+offset_left = 20.0
+offset_top = -50.0
+offset_right = 200.0
+offset_bottom = -15.0
+text = "投掷折扣骰子"
+
+[node name="AdvanceButton" type="Button" parent="." unique_id=629957602]
+z_index = 10
+layout_mode = 0
+offset_left = -120.0
+offset_top = -50.0
+offset_right = -20.0
+offset_bottom = -15.0
+text = "前进"
+
+[node name="Tooltip" type="Control" parent="." unique_id=2044446969]
+visible = false
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="TooltipBg" type="ColorRect" parent="Tooltip" unique_id=278229414]
+layout_mode = 0
+offset_right = 250.0
+offset_bottom = 150.0
+color = Color(0.15, 0.15, 0.2, 0.95)
+
+[node name="TooltipName" type="Label" parent="Tooltip" unique_id=1915301766]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = -10.0
+offset_bottom = 30.0
+theme_override_font_sizes/font_size = 18
+
+[node name="TooltipDesc" type="Label" parent="Tooltip" unique_id=340031681]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 35.0
+offset_right = -10.0
+offset_bottom = 90.0
+size_flags_horizontal = 2
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 14
+
+[node name="TooltipPrice" type="Label" parent="Tooltip" unique_id=1413244611]
+layout_mode = 0
+offset_left = 10.0
+offset_top = -30.0
+offset_right = -10.0
+offset_bottom = 5.0
+theme_override_font_sizes/font_size = 16

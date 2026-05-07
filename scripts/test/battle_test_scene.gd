@@ -83,14 +83,14 @@ func spawn_player_dices():
 
 ## 设置技能装配 UI
 func _setup_skill_equip_ui():
-	var ui_scene = load("res://scenes/ui/skill_equip_ui.tscn")
+	var ui_scene = load("res://scenes/ui/skill_equip_ui_new.tscn")
 	if not ui_scene:
-		push_error("【BattleTestScene】无法加载 skill_equip_ui.tscn")
+		push_error("【BattleTestScene】无法加载 skill_equip_ui_new.tscn")
 		return
 
 	skill_equip_ui = ui_scene.instantiate()
 	if not skill_equip_ui:
-		push_error("【BattleTestScene】无法实例化 skill_equip_ui")
+		push_error("【BattleTestScene】无法实例化 skill_equip_ui_new")
 		return
 
 	# 默认隐藏
@@ -103,7 +103,7 @@ func _setup_skill_equip_ui():
 		skill_equip_ui.anchors_preset = Control.PRESET_FULL_RECT
 		skill_equip_ui.anchor_right = 1.0
 		skill_equip_ui.anchor_bottom = 1.0
-		print("【BattleTestScene】技能装配 UI 已加载到 BattleUI")
+		print("【BattleTestScene】技能装配 UI 已加载到 BattleUI（新版）")
 
 	# 连接关闭信号
 	if skill_equip_ui.has_signal("on_ui_closed"):
