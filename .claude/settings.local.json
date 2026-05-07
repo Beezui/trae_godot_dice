@@ -86,7 +86,9 @@
       "Bash(sed -n '715,720p' scenes/game_main/game_main.gd)",
       "Bash(sed -n '970,975p' scenes/game_main/game_main.gd)",
       "Bash(sed -n '1228,1233p' scenes/game_main/game_main.gd)",
-      "Bash(echo \"remaining: $?\")"
+      "Bash(echo \"remaining: $?\")",
+      "Bash(sed -n '25,35p' scenes/game_main/game_main.gd)",
+      "Bash(sed -n '88,100p' scenes/game_main/game_main.gd)"
     ]
   },
   "enableAllProjectMcpServers": true,

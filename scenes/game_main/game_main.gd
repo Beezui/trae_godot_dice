@@ -25,6 +25,10 @@ var player_party: Array[int] = []  # 玩家选择的英雄 ID 列表
 
 # 地图 UI 覆盖层
 var map_overlay: Control = null
+# HUD 工具栏（地图、技能装配等按钮）
+var hud_toolbar: Control = null
+# 技能装配 UI 覆盖层
+var skill_equip_ui: Control = null
 
 # 沙盘尺寸
 var base_width: float = 24.0
@@ -84,6 +88,11 @@ func _ready():
 
 	# 8. 创建地图 UI（需要在 current_node 设置后初始化）
 	_create_map_overlay()
+	# 9. 创建 HUD 工具栏
+	_create_hud_toolbar()
+
+	# 10. 创建技能装配 UI
+	_create_skill_equip_ui()
 
 	# 9. 连接信号
 	_connect_signals()
@@ -428,6 +437,49 @@ func _create_map_overlay():
 		print("【地图 UI】创建成功")
 	else:
 		push_error("【地图 UI】脚本加载失败")
+
+
+## 创建 HUD 工具栏
+func _create_hud_toolbar():
+	var hud_scene = load("res://scenes/ui/main_hud.tscn")
+	if hud_scene:
+		hud_toolbar = hud_scene.instantiate()
+		if hud_toolbar:
+			add_child(hud_toolbar)
+			# 连接信号
+			if hud_toolbar.has_signal("on_map_toggled"):
+				hud_toolbar.on_map_toggled.connect(_toggle_map)
+			if hud_toolbar.has_signal("on_skill_equip_toggled"):
+				hud_toolbar.on_skill_equip_toggled.connect(_toggle_skill_equip_ui)
+			print("【HUD】工具栏创建成功")
+		else:
+			push_error("【HUD】工具栏实例化失败")
+	else:
+		push_error("【HUD】无法加载工具栏场景")
+
+
+## 创建技能装配 UI
+func _create_skill_equip_ui():
+	var equip_scene = load("res://scenes/ui/skill_equip_ui_new.tscn")
+	if equip_scene:
+		skill_equip_ui = equip_scene.instantiate()
+		if skill_equip_ui:
+			add_child(skill_equip_ui)
+			skill_equip_ui.visible = false
+			print("【HUD】技能装配 UI 创建成功")
+		else:
+			push_error("【HUD】技能装配 UI 实例化失败")
+	else:
+		push_error("【HUD】无法加载技能装配 UI 场景")
+
+
+## 切换技能装配 UI
+func _toggle_skill_equip_ui():
+	if skill_equip_ui:
+		if skill_equip_ui.visible:
+			skill_equip_ui.close()
+		else:
+			skill_equip_ui.open()
 
 
 ## 连接信号
