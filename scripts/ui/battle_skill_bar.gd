@@ -515,7 +515,7 @@ func _replace_skill_dice_in_scene(new_skill_dice):
 
 	# 设置新骰子为可见并添加到场景
 	new_skill_dice.visible = true
-	new_skill_dice.position = Vector3(-4.0, 8.0, 6.0)  # 与属性骰子同高度，横向排列在左侧
+	new_skill_dice.position = Vector3(-4.0, BattleManager.DICE_THROW_Y, BattleManager.PLAYER_DICE_Z)  # 与属性骰子同高度，横向排列在左侧
 
 	# 设置为悬浮状态
 	if new_skill_dice.has_method("set_freeze"):
