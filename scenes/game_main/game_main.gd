@@ -449,7 +449,7 @@ func _create_hud_toolbar():
 		if hud_toolbar:
 			# 显式设置位置和尺寸（Node3D 父节点下锚点布局不会自动计算）
 			hud_toolbar.position = Vector2.ZERO
-			hud_toolbar.size = get_viewport_rect().size
+			hud_toolbar.size = get_window().size
 			hud_toolbar.visible = true
 			add_child(hud_toolbar)
 			print("【HUD】已添加到场景树，可见=", hud_toolbar.visible, " 尺寸=", hud_toolbar.size)
@@ -472,7 +472,7 @@ func _create_skill_equip_ui():
 		skill_equip_ui = equip_scene.instantiate()
 		if skill_equip_ui:
 			skill_equip_ui.position = Vector2.ZERO
-			skill_equip_ui.size = get_viewport_rect().size
+			skill_equip_ui.size = get_window().size
 			add_child(skill_equip_ui)
 			skill_equip_ui.visible = false
 			print("【HUD】技能装配 UI 创建成功")
