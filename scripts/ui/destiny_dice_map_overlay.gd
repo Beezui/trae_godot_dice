@@ -12,6 +12,8 @@ var node_spacing_y: float = 100.0
 var layer_padding: float = 80.0
 
 # UI 组件
+var info_label: Label
+var charge_label: Label  # 蓄力标签
 var canvas: Control  # 画布（用于接收输入）
 var map_texture_rect: TextureRect  # 地图纹理显示
 
@@ -162,6 +164,26 @@ func _create_ui():
 
 	# 获取屏幕尺寸，用于居中计算
 	var screen_size = get_viewport_rect().size
+
+	# 创建信息标签
+	info_label = Label.new()
+	info_label.name = "InfoLabel"
+	info_label.position = Vector2(20, 15)
+	info_label.size = Vector2(380, 40)
+	info_label.text = "命运骰子测试 - 按 M 键切换地图"
+	info_label.add_theme_font_size_override("font_size", 14)
+	info_label.layout_mode = 0  # POSITION
+	add_child(info_label)
+
+	# 创建蓄力标签
+	charge_label = Label.new()
+	charge_label.name = "ChargeLabel"
+	charge_label.position = Vector2(20, 370)
+	charge_label.size = Vector2(380, 30)
+	charge_label.text = "蓄力：0%"
+	charge_label.add_theme_font_size_override("font_size", 16)
+	charge_label.layout_mode = 0  # POSITION
+	add_child(charge_label)
 
 	# 创建地图纹理显示（TextureRect）- 直接作为子节点，不使用中间容器
 	map_texture_rect = TextureRect.new()
@@ -380,8 +402,9 @@ func _render_map_to_texture():
 	# 使用 Image 直接绘制
 	_render_map_to_image(map_image, min_x, min_y)
 
-	# 创建纹理（ImageTexture 是 RefCounted，不能用 free()，直接赋 null 释放）
-	map_texture = null
+	# 创建纹理
+	if map_texture:
+		map_texture.free()
 	map_texture = ImageTexture.create_from_image(map_image)
 
 	# 应用到 TextureRect
@@ -467,7 +490,8 @@ func _render_map_to_image(img: Image, p_min_x: float, p_min_y: float):
 			# 绘制"当前"标记
 			_draw_current_marker_on_image(img, Vector2i(node_x, node_y - rect_size.y / 2 - 10), rect_size, font)
 		else:
-			# 普通节点：只绘制图标，不绘制边框和底色
+			# 普通节点：只绘制边框和图标，不绘制底色
+			_draw_rect_on_image(img, rect, Color.BLACK, false, 2)
 
 			# 绘制图标
 			var icon = _get_node_icon(map_node.type)
@@ -709,10 +733,15 @@ func _force_position_after_layout():
 func update_current_node(new_current_node: LevelNode):
 	current_node = new_current_node
 
+	# 更新信息标签
+	if info_label:
+		info_label.text = "当前节点：" + current_node.name + " (类型：" + current_node.get_type_name() + ")"
+
 	# 重新渲染地图（因为当前节点的高亮会变化）
 	_render_map_to_texture()
 
 
 ## 更新蓄力显示
 func update_charge(charge_ratio: float):
-	pass
+	if charge_label:
+		charge_label.text = "蓄力：%d%%" % int(charge_ratio * 100)

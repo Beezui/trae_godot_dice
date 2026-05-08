@@ -43,16 +43,19 @@ var is_dice_available: bool = false
 # 贸易阶段状态
 var is_trade_phase: bool = false
 var is_discount_charging: bool = false
+var is_discount_thrown: bool = false
 
 # 奇遇阶段状态
 var is_adventure_phase: bool = false
 var is_adventure_charging: bool = false
+var is_adventure_thrown: bool = false
 var adventure_dice_result_ready: bool = false
 var adventure_dice_result_value: int = 0
 
 # 奖励阶段状态
 var is_reward_phase: bool = false
 var is_reward_charging: bool = false
+var is_reward_thrown: bool = false
 var reward_dice_result_ready: bool = false
 var reward_dice_result_value: int = 0
 
@@ -86,14 +89,14 @@ func _ready():
 	# 7. 设置初始节点（奖励关卡）
 	_setup_start_node()
 
-	# 8. 创建地图 UI（需要在 current_node 设置后初始化）
-	_create_map_overlay()
-	# 9. 创建 HUD 工具栏
+	# 8. 创建 HUD 工具栏
 	_create_hud_toolbar()
+
+	# 9. 创建地图 UI 覆盖层（最后创建，确保在最上层）
+	_create_map_overlay()
 
 	# 10. 创建技能装配 UI
 	_create_skill_equip_ui()
-
 	# 9. 连接信号
 	_connect_signals()
 
@@ -428,6 +431,11 @@ func _create_map_overlay():
 		map_overlay = Control.new()
 		map_overlay.name = "MapOverlay"
 		map_overlay.set_script(map_overlay_script)
+		# 显式设置尺寸（Node3D 父节点下 Control 不会自动计算布局）
+		map_overlay.position = Vector2.ZERO
+		map_overlay.size = get_window().size
+		map_overlay.mouse_filter = 2  # MOUSE_FILTER_PASS：父节点不拦截，子节点可捕获
+		map_overlay.z_index = 10  # 设置较高的 z_index，确保地图 UI 在 HUD 之上
 		add_child(map_overlay)
 
 		# 初始化地图
@@ -435,11 +443,14 @@ func _create_map_overlay():
 			map_overlay.initialize(level_data, current_node)
 
 		print("【地图 UI】创建成功")
+		map_overlay.visible = false  # 默认隐藏，按 M 键显示
 	else:
 		push_error("【地图 UI】脚本加载失败")
 
 
 ## 创建 HUD 工具栏
+
+
 func _create_hud_toolbar():
 	print("【HUD】开始创建工具栏...")
 	var hud_scene = load("res://scenes/ui/main_hud.tscn")
@@ -471,8 +482,11 @@ func _create_skill_equip_ui():
 	if equip_scene:
 		skill_equip_ui = equip_scene.instantiate()
 		if skill_equip_ui:
+			# 显式设置位置、尺寸和布局模式（Node3D 父节点下 Control 不会自动计算布局）
 			skill_equip_ui.position = Vector2.ZERO
 			skill_equip_ui.size = get_window().size
+			skill_equip_ui.layout_mode = 3  # LAYOUT_MODE_FULL_RECT
+			skill_equip_ui.anchors_preset = 15  # PRESET_FULL_RECT
 			add_child(skill_equip_ui)
 			skill_equip_ui.visible = false
 			print("【HUD】技能装配 UI 创建成功")
@@ -500,6 +514,11 @@ func _connect_signals():
 		if not level_transition_controller.on_game_clear_triggered.is_connected(_on_game_clear_triggered):
 			level_transition_controller.on_game_clear_triggered.connect(_on_game_clear_triggered)
 
+	# 连接命运骰子投掷完成信号，恢复 is_dice_available 供下次投掷
+	if destiny_dice_manager:
+		if not destiny_dice_manager.on_destiny_dice_roll_completed.is_connected(_on_destiny_roll_completed):
+			destiny_dice_manager.on_destiny_dice_roll_completed.connect(_on_destiny_roll_completed)
+
 
 ## 输入处理
 func _input(event):
@@ -509,7 +528,7 @@ func _input(event):
 
 	# 贸易阶段：空格键投掷折扣骰子
 	if is_trade_phase and event is InputEventKey and event.keycode == KEY_SPACE:
-		if event.pressed and not is_discount_charging:
+		if event.pressed and not is_discount_charging and not is_discount_thrown:
 			_start_discount_throw()
 			is_discount_charging = true
 		elif not event.pressed and is_discount_charging:
@@ -519,7 +538,7 @@ func _input(event):
 
 	# 奇遇阶段：空格键投掷奇遇骰子
 	if is_adventure_phase and event is InputEventKey and event.keycode == KEY_SPACE:
-		if event.pressed and not is_adventure_charging:
+		if event.pressed and not is_adventure_charging and not is_adventure_thrown:
 			_start_adventure_dice_throw()
 			is_adventure_charging = true
 		elif not event.pressed and is_adventure_charging:
@@ -529,7 +548,7 @@ func _input(event):
 
 	# 奖励阶段：空格键投掷奖励骰子
 	if is_reward_phase and event is InputEventKey and event.keycode == KEY_SPACE:
-		if event.pressed and not is_reward_charging:
+		if event.pressed and not is_reward_charging and not is_reward_thrown:
 			_start_reward_dice_throw()
 			is_reward_charging = true
 		elif not event.pressed and is_reward_charging:
@@ -576,11 +595,18 @@ func _end_throw():
 		return
 
 	is_charging = false
+	is_dice_available = false
 
 	# 结束蓄力并投掷
 	DiceThrowController.end_charge()
 
 	print("【投掷】投掷完成，命运骰子停止后自动处理结果")
+
+
+## 命运骰子投掷完成回调（恢复投掷可用性）
+func _on_destiny_roll_completed(selected_node):
+	is_dice_available = true
+	print("【投掷】命运骰子已停止，可开始下一次投掷")
 
 
 ## 关卡转换完成回调
@@ -652,6 +678,8 @@ func _start_trade(node: LevelNode):
 	print("【贸易】开始贸易流程，节点：", node.name)
 
 	is_trade_phase = true
+	is_discount_thrown = false
+	is_discount_charging = false
 
 	# 1. 商人优先入场
 	await _trade_merchant_enter(node)
@@ -819,6 +847,8 @@ func _execute_discount_throw():
 	if not _discount_dice or not is_instance_valid(_discount_dice):
 		return
 
+	is_discount_thrown = true
+
 	if DiceThrowController:
 		DiceThrowController.end_charge()
 
@@ -884,6 +914,8 @@ func _start_adventure(node: LevelNode):
 	print("【奇遇】开始奇遇流程，节点：", node.name)
 
 	is_adventure_phase = true
+	is_adventure_thrown = false
+	is_adventure_charging = false
 
 	# 1. 清理 Sandbox 中的残留骰子
 	_cleanup_sandbox_characters()
@@ -1081,6 +1113,8 @@ func _execute_adventure_dice_throw():
 	if not _adventure_dice or not is_instance_valid(_adventure_dice):
 		return
 
+	is_adventure_thrown = true
+
 	if DiceThrowController:
 		DiceThrowController.end_charge()
 
@@ -1144,6 +1178,8 @@ func _start_reward(node: LevelNode):
 	print("【奖励】开始奖励流程，节点：", node.name)
 
 	is_reward_phase = true
+	is_reward_thrown = false
+	is_reward_charging = false
 
 	# 1. 清理 Sandbox 中的残留骰子
 	_cleanup_sandbox_characters()
@@ -1338,6 +1374,8 @@ func _start_reward_dice_throw():
 func _execute_reward_dice_throw():
 	if not _reward_dice or not is_instance_valid(_reward_dice):
 		return
+
+	is_reward_thrown = true
 
 	if DiceThrowController:
 		DiceThrowController.end_charge()
