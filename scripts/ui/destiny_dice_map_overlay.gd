@@ -402,9 +402,9 @@ func _render_map_to_texture():
 	# 使用 Image 直接绘制
 	_render_map_to_image(map_image, min_x, min_y)
 
-	# 创建纹理
+	# 创建纹理（ImageTexture 是 RefCounted 子类，由引用计数管理，无需手动 free）
 	if map_texture:
-		map_texture.free()
+		map_texture = null  # 断开引用，旧对象自动被 GC 回收
 	map_texture = ImageTexture.create_from_image(map_image)
 
 	# 应用到 TextureRect

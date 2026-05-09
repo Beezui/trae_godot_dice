@@ -414,30 +414,40 @@ func _generate_character_dices(character: BaseCharacter):
 ## @param character 角色实例
 func _generate_skill_dices_for_character(character: BaseCharacter):
 	print("【BattleManager】为 ", character.name, " 生成技能骰子（隐藏）")
-	print("  - character.skill_dice_ids: ", character.skill_dice_ids)
-
-	# 生成技能骰子但不添加到场景，仅存储在 skill_dices 数组中供 UI 使用
-	if character.skill_dice_ids.size() > 0:
-		for skill_dice_id in character.skill_dice_ids:
-			if DiceManager:
-				# 创建技能骰子但不添加到场景（add_to_scene = false）
-				var dice = DiceManager.create_skill_dice(skill_dice_id, null, Vector3.ZERO, false)
-				if dice:
-					skill_dices.append(dice)
-					# 设置为隐藏状态（visible = false）
-					dice.visible = false
-					# 设置为悬浮状态
-					if dice.has_method("set_freeze"):
-						dice.set_freeze(true)
-					elif "freeze" in dice:
-						dice.freeze = true
-					dice.gravity_scale = 0.0
-					print("  - 生成技能骰子（隐藏）：", skill_dice_id, ", dice=", dice)
+	
+	# 从 PlayerData 读取用户装配的骰子实例（优先使用玩家装配的数据）
+	if PlayerData:
+		var all_instance_ids = PlayerData.get_all_dice_instance_ids()
+		print("  - PlayerData 骰子实例数量：", all_instance_ids.size())
+		
+		if all_instance_ids.size() > 0:
+			# 使用 DiceManager.create_skill_dice_from_player_data() 创建技能骰子
+			for instance_id in all_instance_ids:
+				if DiceManager:
+					var dice = DiceManager.create_skill_dice_from_player_data(instance_id, null, Vector3.ZERO, false)
+					if dice:
+						skill_dices.append(dice)
+						# 设置为隐藏状态
+						dice.visible = false
+						# 设置为悬浮状态
+						if dice.has_method("set_freeze"):
+							dice.set_freeze(true)
+						elif "freeze" in dice:
+							dice.freeze = true
+						dice.gravity_scale = 0.0
+						print("  - 生成技能骰子（来自 PlayerData 实例 ", instance_id, "）：", dice)
+					else:
+						print("  - 错误：技能骰子创建失败（实例 ID：", instance_id, "）")
 				else:
-					print("  - 错误：技能骰子创建失败：", skill_dice_id)
-			else:
-				print("  - 错误：DiceManager 不可用")
-
+					print("  - 错误：DiceManager 不可用")
+		else:
+			# 如果 PlayerData 中没有骰子实例，回退到使用 character.skill_dice_ids（静态配置）
+			push_warning("【BattleManager】PlayerData 中无骰子实例，使用静态配置")
+			_generate_skill_dices_from_static_config(character)
+	else:
+		push_warning("【BattleManager】PlayerData 不可用，使用静态配置")
+		_generate_skill_dices_from_static_config(character)
+	
 	# 生成属性骰子（悬浮待命）
 
 
@@ -1109,6 +1119,27 @@ func get_battle_stats() -> Dictionary:
 		"skills_used": battle_data.skills_used.size(),
 	}
 
+
+## 回退方案：从静态配置生成技能骰子（兼容旧逻辑）
+## @param character 角色实例
+func _generate_skill_dices_from_static_config(character: BaseCharacter):
+	print("  - 使用静态配置生成技能骰子：", character.skill_dice_ids)
+	
+	if character.skill_dice_ids.size() > 0:
+		for skill_dice_id in character.skill_dice_ids:
+			if DiceManager:
+				var dice = DiceManager.create_skill_dice(skill_dice_id, null, Vector3.ZERO, false)
+				if dice:
+					skill_dices.append(dice)
+					dice.visible = false
+					if dice.has_method("set_freeze"):
+						dice.set_freeze(true)
+					elif "freeze" in dice:
+						dice.freeze = true
+					dice.gravity_scale = 0.0
+					print("  - 生成技能骰子（静态配置）：", skill_dice_id, ", dice=", dice)
+			else:
+				print("  - 错误：DiceManager 不可用")
 
 # ============================================================================
 # 备用方案方法（当 DiceManager 不可用时使用）

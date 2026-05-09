@@ -23,6 +23,7 @@ var skill_dice_viewports = {}   # { index: SubViewport }
 var skill_dice_sv_containers = {}  # { index: SubViewportContainer }
 var skill_dice_containers = {}  # { index: Control } 用于缩放（VBoxContainer）
 var skill_dice_content_containers = {}  # { index: VBoxContainer } 内容容器（用于缩放）
+var skill_dice_mesh_instances = {}  # { index: MeshInstance3D } 用于后续更新贴图
 
 ## 选中状态
 var selected_skill_index: int = -1  # 当前选中的技能索引
@@ -185,6 +186,7 @@ func _clear_buttons():
 	skill_dice_sv_containers.clear()
 	skill_dice_containers.clear()
 	skill_dice_content_containers.clear()
+	skill_dice_mesh_instances.clear()
 
 
 ## 创建技能按钮（3D 骰子预览）— 水平排列
@@ -209,8 +211,10 @@ func _create_skill_button(skill_dice, index: int):
 	content_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	container.add_child(content_container)
 
-	# 获取技能图标路径
-	var icon_path = _get_skill_icon_path_for_dice(skill_dice)
+	# 从 skill_dice 获取 instance_id（用于获取 PlayerData 中的装配数据）
+	var instance_id = -1
+	if skill_dice.has_meta("skill_dice_instance_id"):
+		instance_id = skill_dice.get_meta("skill_dice_instance_id")
 
 	# 创建 SubViewport 渲染 3D 骰子
 	var viewport = SubViewport.new()
@@ -221,7 +225,8 @@ func _create_skill_button(skill_dice, index: int):
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
 
-	_create_dice_3d_scene(viewport, icon_path)
+	# 创建 3D 骰子场景，传入 instance_id 以便为每个面单独设置贴图
+	var mesh_instance = _create_dice_3d_scene(viewport, instance_id)
 
 	# SubViewportContainer 包裹
 	var sv_container = SubViewportContainer.new()
@@ -241,6 +246,8 @@ func _create_skill_button(skill_dice, index: int):
 	skill_dice_sv_containers[index] = sv_container
 	skill_dice_viewports[index] = viewport
 	skill_dice_content_containers[index] = content_container  # 保存 content_container 引用
+	# 保存 mesh_instance 引用（用于后续更新贴图）
+	skill_dice_mesh_instances[index] = mesh_instance
 
 	# 绑定点击事件
 	container.gui_input.connect(func(event: InputEvent):
@@ -261,7 +268,10 @@ func _create_skill_button(skill_dice, index: int):
 
 
 ## 创建 3D 骰子场景（SubViewport 内）
-func _create_dice_3d_scene(viewport: SubViewport, icon_path: String):
+## @param viewport 渲染目标 SubViewport
+## @param instance_id 骰子实例 ID（从 PlayerData 获取装配数据）
+## @return MeshInstance3D 返回创建的网格实例（用于后续贴图更新）
+func _create_dice_3d_scene(viewport: SubViewport, instance_id: int = -1) -> MeshInstance3D:
 	var root = Node3D.new()
 	viewport.add_child(root)
 
@@ -292,16 +302,50 @@ func _create_dice_3d_scene(viewport: SubViewport, icon_path: String):
 	# 创建骰子网格
 	var mesh = _create_dice_array_mesh()
 
-	# 为每个面创建材质
+	# 获取基础贴图路径和技能装配数据
+	var base_texture_path = ""
+	var faces = ["0", "0", "0", "0", "0", "0"]  # 默认6面都是空白
+	
+	if instance_id >= 0 and PlayerData:
+		var instance_data = PlayerData.get_dice_instance(instance_id)
+		if not instance_data.is_empty():
+			# 获取模板 ID 以加载基础贴图
+			var template_id = instance_data.get("template_id", "")
+			if not template_id.is_empty():
+				var reader = preload("res://scripts/blank_dice_csv_reader.gd").new()
+				var config = reader.get_blank_dice_config(template_id)
+				if config.has("texture"):
+					var texture_name = config["texture"]
+					base_texture_path = "res://textures/dice/blank_dice/" + texture_name + ".png"
+			# 获取技能装配数据
+			faces = instance_data.get("faces", ["0", "0", "0", "0", "0", "0"])
+
+	# 为每个面创建材质（根据技能装配数据设置贴图）
 	var materials = []
 	for i in range(6):
 		var material = StandardMaterial3D.new()
 		material.roughness = 0.8
 		material.metallic = 0.0
-		if icon_path and FileAccess.file_exists(icon_path):
-			material.albedo_texture = load(icon_path)
+		
+		var skill_id = faces[i] if i < faces.size() else "0"
+		if skill_id != "0" and not skill_id.is_empty():
+			# 加载技能图标纹理
+			var icon_path = _get_skill_icon_path_from_skill_id(skill_id)
+			if icon_path and FileAccess.file_exists(icon_path):
+				material.albedo_texture = load(icon_path)
+			elif base_texture_path and FileAccess.file_exists(base_texture_path):
+				# 回退：使用基础贴图
+				material.albedo_texture = load(base_texture_path)
+			else:
+				# 回退：使用高亮色
+				material.albedo_color = Color(0.3, 0.8, 1.0, 0.8)
 		else:
-			material.albedo_color = Color(0.8, 0.8, 0.8, 1.0)
+			# 空白面：使用基础贴图
+			if base_texture_path and FileAccess.file_exists(base_texture_path):
+				material.albedo_texture = load(base_texture_path)
+			else:
+				material.albedo_color = Color(0.95, 0.95, 0.95, 1.0)
+		
 		materials.append(material)
 
 	# MeshInstance3D
@@ -313,6 +357,25 @@ func _create_dice_3d_scene(viewport: SubViewport, icon_path: String):
 		mesh_instance.mesh.surface_set_material(i, materials[i])
 
 	root.add_child(mesh_instance)
+	
+	return mesh_instance
+
+
+## 从技能 ID 获取技能图标路径
+## @param skill_id 技能 ID
+## @return String 技能图标路径
+func _get_skill_icon_path_from_skill_id(skill_id: String) -> String:
+	if skill_id.is_empty() or skill_id == "0":
+		return ""
+	
+	var reader = preload("res://scripts/skill_csv_reader.gd").new()
+	var skill_data = reader.get_skill(skill_id)
+	if skill_data and skill_data.has("icon"):
+		var icon_id = skill_data["icon"]
+		var texture_path = "res://textures/skill/skill_" + icon_id + ".png"
+		if ResourceLoader.exists(texture_path):
+			return texture_path
+	return ""
 
 
 ## 创建 6 面骰子网格
@@ -371,21 +434,45 @@ func _create_dice_array_mesh() -> ArrayMesh:
 	return mesh
 
 
-## 获取技能图标路径（从技能骰子的第一个技能 ID）
+## 获取技能图标路径（从 PlayerData 读取用户装配的技能）
+## @param skill_dice 技能骰子节点
+## @return String 技能图标路径，失败返回空字符串
 func _get_skill_icon_path_for_dice(skill_dice) -> String:
-	var dice_id = skill_dice.get_meta("skill_dice_id") if skill_dice.has_meta("skill_dice_id") else ""
-	if dice_id.is_empty():
+	if not skill_dice:
 		return ""
-
-	var reader = DiceCSVReader.new()
-	var dice_config = reader.get_skill_dice_config(dice_id)
-	if not dice_config.is_empty():
-		var skill_ids = dice_config.get("skill_ids", [])
-		if skill_ids.size() > 0:
-			var skill_id = skill_ids[0]
-			var texture_path = "res://textures/skill/skill_" + skill_id + ".png"
-			if ResourceLoader.exists(texture_path):
-				return texture_path
+	
+	# 优先从 skill_dice_instance_id 获取实例数据（PlayerData 方式创建的骰子）
+	var instance_id = -1
+	if skill_dice.has_meta("skill_dice_instance_id"):
+		instance_id = skill_dice.get_meta("skill_dice_instance_id")
+	elif skill_dice.has_meta("skill_dice_id"):
+		# 回退：从 skill_dice_id 获取（旧的静态配置方式）
+		var dice_id = skill_dice.get_meta("skill_dice_id")
+		var reader = DiceCSVReader.new()
+		var dice_config = reader.get_skill_dice_config(dice_id)
+		if not dice_config.is_empty():
+			var skill_ids = dice_config.get("skill_ids", [])
+			if skill_ids.size() > 0:
+				var skill_id = skill_ids[0]
+				var texture_path = "res://textures/skill/skill_" + skill_id + ".png"
+				if ResourceLoader.exists(texture_path):
+					return texture_path
+		return ""
+	
+	# 从 PlayerData 读取用户装配的骰子实例
+	if PlayerData:
+		var instance_data = PlayerData.get_dice_instance(instance_id)
+		if not instance_data.is_empty():
+			# 获取模板 ID 以加载基础贴图
+			var template_id = instance_data.get("template_id", "")
+			if not template_id.is_empty():
+				# 加载空白骰子的基础贴图
+				var reader = preload("res://scripts/blank_dice_csv_reader.gd").new()
+				var config = reader.get_blank_dice_config(template_id)
+				if config.has("texture"):
+					var texture_name = config["texture"]
+					return "res://textures/dice/blank_dice/" + texture_name + ".png"
+	
 	return ""
 
 
@@ -448,6 +535,7 @@ func _can_afford_throw(character: BaseCharacter) -> bool:
 
 
 ## 替换场景中的技能骰子（待投掷区域的绿色骰子）
+## 注意：不 queue_free 骰子，只从场景中移除（保留对象供后续重用）
 func _replace_skill_dice_in_scene(new_skill_dice):
 	if not new_skill_dice:
 		print("【BattleSkillBar】错误：new_skill_dice 为空，跳过")
@@ -467,14 +555,26 @@ func _replace_skill_dice_in_scene(new_skill_dice):
 	var existing_skill_dice = _find_skill_dice_in_scene(container)
 	if existing_skill_dice and existing_skill_dice != new_skill_dice:
 		print("【BattleSkillBar】移除场景中的旧技能骰子: ", existing_skill_dice.name)
+		# 不要 queue_free()！只是从场景中移除，保留对象以便后续重用
 		if existing_skill_dice.has_method("set_freeze"):
-			existing_skill_dice.set_freeze(false)
+			existing_skill_dice.set_freeze(true)  # 重新冻结
 		container.remove_child(existing_skill_dice)
-		existing_skill_dice.queue_free()
+		existing_skill_dice.visible = false
+		existing_skill_dice.gravity_scale = 0.0
+		existing_skill_dice.linear_velocity = Vector3.ZERO
+		existing_skill_dice.angular_velocity = Vector3.ZERO
 
 	# 设置新骰子为可见并添加到场景
+	# 先检查是否已经在场景中（可能之前被移除但没有被 free）
+	if new_skill_dice.get_parent() == container:
+		# 已经在场景中，只需要更新位置
+		pass
+	elif new_skill_dice.get_parent() != null:
+		# 在其他地方，先移除
+		new_skill_dice.get_parent().remove_child(new_skill_dice)
+	
 	new_skill_dice.visible = true
-	new_skill_dice.position = Vector3(-4.0, BattleManager.DICE_THROW_Y, BattleManager.PLAYER_DICE_Z)  # 与属性骰子同高度，横向排列在左侧
+	new_skill_dice.position = Vector3(-4.0, BattleManager.DICE_THROW_Y, BattleManager.PLAYER_DICE_Z)
 
 	# 设置为悬浮状态
 	if new_skill_dice.has_method("set_freeze"):
@@ -485,15 +585,20 @@ func _replace_skill_dice_in_scene(new_skill_dice):
 	new_skill_dice.linear_velocity = Vector3.ZERO
 	new_skill_dice.angular_velocity = Vector3.ZERO
 
-	container.add_child(new_skill_dice)
+	# 添加到场景（如果还没有父节点）
+	if new_skill_dice.get_parent() == null:
+		container.add_child(new_skill_dice)
+	
 	print("【BattleSkillBar】技能骰子已替换到场景")
 
 
 ## 查找场景中现有的技能骰子（待投掷区域）
+## 同时支持旧方式（skill_dice_id）和新方式（skill_dice_instance_id）创建的骰子
 func _find_skill_dice_in_scene(container: Node) -> Node:
 	# 查找第一个技能骰子（通过 meta 判断）
 	for child in container.get_children():
-		if child.has_meta("skill_dice_id"):
+		# 同时检查两种 meta 类型
+		if child.has_meta("skill_dice_id") or child.has_meta("skill_dice_instance_id"):
 			return child
 	return null
 
