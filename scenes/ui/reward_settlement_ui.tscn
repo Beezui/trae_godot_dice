@@ -1,0 +1,99 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/reward_settlement_ui.gd" id="1_reward_ui"]
+
+[node name="RewardSettlementUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_reward_ui")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.1, 0.15, 0.95)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -300.0
+offset_right = 350.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "关卡奖励"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="RewardListContainer" type="ScrollContainer" parent="Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="RewardList" type="VBoxContainer" parent="Panel/VBox/RewardListContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Separator2" type="HSeparator" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "确认领取"
+
+[node name="Tooltip" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="TooltipBg" type="ColorRect" parent="Tooltip"]
+layout_mode = 0
+offset_right = 250.0
+offset_bottom = 120.0
+color = Color(0.15, 0.15, 0.2, 0.95)
+
+[node name="TooltipName" type="Label" parent="Tooltip"]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 240.0
+offset_bottom = 35.0
+
+[node name="TooltipDesc" type="Label" parent="Tooltip"]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 10.0
+offset_top = 40.0
+offset_right = 240.0
+offset_bottom = 85.0
+size_flags_horizontal = 2
+autowrap_mode = 2
+
+[node name="TooltipPrice" type="Label" parent="Tooltip"]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 10.0
+offset_top = 90.0
+offset_right = 240.0
+offset_bottom = 115.0
