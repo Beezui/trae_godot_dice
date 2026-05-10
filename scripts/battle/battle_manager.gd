@@ -392,42 +392,62 @@ func _generate_character_dices(character: BaseCharacter):
 	var sandbox = _get_sandbox_from_scene(battle_scene)
 
 	# 使用角色预设骰子
-	print("  - 使用角色预设空白骰子：", character.blank_dice_id, " 技能：", character.skill_ids)
-	if not character.blank_dice_id.is_empty() and character.skill_ids.size() > 0:
-		var dice = DiceManager.create_skill_dice_from_blank(character.blank_dice_id, character.skill_ids, sandbox, Vector3(-2.0, DICE_THROW_Y, PLAYER_DICE_Z))
-		if dice:
-			skill_dices.append(dice)
-			character_dices.append(dice)
-			print("  - 生成技能骰子：", character.blank_dice_id)
+	print("  - 使用角色预设骰子 ID：", character.skill_dice_ids)
+	if character.skill_dice_ids.size() > 0:
+		for skill_dice_id in character.skill_dice_ids:
+			if DiceManager:
+				var dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, Vector3(-2.0, DICE_THROW_Y, PLAYER_DICE_Z))
+				if dice:
+					skill_dices.append(dice)
+					character_dices.append(dice)
+					print("  - 生成技能骰子：", skill_dice_id)
+			else:
+				var dice = _create_skill_dice_fallback(skill_dice_id)
+				if dice:
+					skill_dices.append(dice)
+					character_dices.append(dice)
 
 	print("【BattleManager】", character.name, " 的骰子生成完成")
-
 
 
 ## 为玩家角色生成技能骰子（隐藏，不添加到场景）
 ## @param character 角色实例
 func _generate_skill_dices_for_character(character: BaseCharacter):
 	print("【BattleManager】为 ", character.name, " 生成技能骰子（隐藏）")
-	print("  - character.blank_dice_id: ", character.blank_dice_id, " skill_ids: ", character.skill_ids)
-
-	# 生成技能骰子但不添加到场景，仅存储在 skill_dices 数组中供 UI 使用
-	if not character.blank_dice_id.is_empty() and character.skill_ids.size() > 0:
-		# 创建技能骰子但不添加到场景（add_to_scene = false）
-		var dice = DiceManager.create_skill_dice_from_blank(character.blank_dice_id, character.skill_ids, null, Vector3.ZERO, false)
-		if dice:
-			skill_dices.append(dice)
-			# 设置为隐藏状态（visible = false）
-			dice.visible = false
-			# 设置为悬浮状态
-			if dice.has_method("set_freeze"):
-				dice.set_freeze(true)
-			elif "freeze" in dice:
-				dice.freeze = true
-			dice.gravity_scale = 0.0
-			print("  - 生成技能骰子（隐藏）：", character.blank_dice_id, ", dice=", dice)
+	
+	# 从 PlayerData 读取用户装配的骰子实例（优先使用玩家装配的数据）
+	if PlayerData:
+		var all_instance_ids = PlayerData.get_all_dice_instance_ids()
+		print("  - PlayerData 骰子实例数量：", all_instance_ids.size())
+		
+		if all_instance_ids.size() > 0:
+			# 使用 DiceManager.create_skill_dice_from_player_data() 创建技能骰子
+			for instance_id in all_instance_ids:
+				if DiceManager:
+					var dice = DiceManager.create_skill_dice_from_player_data(instance_id, null, Vector3.ZERO, false)
+					if dice:
+						skill_dices.append(dice)
+						# 设置为隐藏状态
+						dice.visible = false
+						# 设置为悬浮状态
+						if dice.has_method("set_freeze"):
+							dice.set_freeze(true)
+						elif "freeze" in dice:
+							dice.freeze = true
+						dice.gravity_scale = 0.0
+						print("  - 生成技能骰子（来自 PlayerData 实例 ", instance_id, "）：", dice)
+					else:
+						print("  - 错误：技能骰子创建失败（实例 ID：", instance_id, "）")
+				else:
+					print("  - 错误：DiceManager 不可用")
 		else:
-			print("  - 错误：技能骰子创建失败")
-
+			# 如果 PlayerData 中没有骰子实例，回退到使用 character.skill_dice_ids（静态配置）
+			push_warning("【BattleManager】PlayerData 中无骰子实例，使用静态配置")
+			_generate_skill_dices_from_static_config(character)
+	else:
+		push_warning("【BattleManager】PlayerData 不可用，使用静态配置")
+		_generate_skill_dices_from_static_config(character)
+	
 	# 生成属性骰子（悬浮待命）
 
 
@@ -569,17 +589,17 @@ func _enemy_action(character: BaseCharacter):
 	print("【BattleManager】", character.name, " 进行行动")
 
 	# 1. 检查是否有技能骰子 ID
-	if character.skill_ids.size() == 0 or character.blank_dice_id.is_empty():
+	if character.skill_dice_ids.size() == 0:
 		print("  - 没有技能骰子，使用普通攻击")
 		await _enemy_simple_attack(character)
 		return
 
 	# 2. 随机选择一个技能骰子 ID
-	# 2. 使用角色空白骰子+技能池投掷
-	print("  - 使用空白骰子：", character.blank_dice_id, " 技能：", character.skill_ids)
+	var skill_dice_id = character.skill_dice_ids[randi() % character.skill_dice_ids.size()]
+	print("  - 选择技能骰子：", skill_dice_id)
 
 	# 3. 执行投掷（显示投掷动画）
-	await _enemy_throw_dice(character, character.blank_dice_id, character.skill_ids)
+	await _enemy_throw_dice(character, skill_dice_id)
 
 
 ## 敌方简单攻击（无技能骰子时）
@@ -602,10 +622,9 @@ func _get_first_alive_player() -> BaseCharacter:
 
 ## 敌方投掷骰子
 ## @param character 敌方角色
-## @param blank_dice_id 空白骰子 ID
-## @param skill_ids 技能 ID 列表
-func _enemy_throw_dice(character: BaseCharacter, blank_dice_id: String, skill_ids: Array):
-	print("【BattleManager】敌方投掷骰子：", blank_dice_id)
+## @param skill_dice_id 技能骰子 ID
+func _enemy_throw_dice(character: BaseCharacter, skill_dice_id: String):
+	print("【BattleManager】敌方投掷骰子：", skill_dice_id)
 
 	var battle_scene = _get_battle_scene()
 	var sandbox = _get_sandbox_from_scene(battle_scene)
@@ -615,7 +634,7 @@ func _enemy_throw_dice(character: BaseCharacter, blank_dice_id: String, skill_id
 
 	# 1. 创建技能骰子（临时）- 从北墙附近进入（与玩家高度相同）
 	var skill_start_pos = Vector3(-4.0, DICE_THROW_Y, ENEMY_DICE_Z)  # Z=-6 靠近北墙，Y 与玩家相同
-	var skill_dice = DiceManager.create_skill_dice_from_blank(blank_dice_id, skill_ids, sandbox, skill_start_pos)
+	var skill_dice = DiceManager.create_skill_dice(skill_dice_id, sandbox, skill_start_pos)
 	if not skill_dice:
 		print("  - 无法创建技能骰子")
 		return
@@ -701,7 +720,7 @@ func _enemy_throw_dice(character: BaseCharacter, blank_dice_id: String, skill_id
 
 	# 7. 释放技能
 	var skill_index = skill_result - 1
-	var skill_id = _get_skill_id_from_character(character, skill_index)
+	var skill_id = _get_skill_id_from_dice_id(skill_dice_id, skill_index)
 	if not skill_id.is_empty():
 		await _enemy_release_skill(character, skill_id, attr_results, all_dices)
 
@@ -712,10 +731,16 @@ func _enemy_throw_dice(character: BaseCharacter, blank_dice_id: String, skill_id
 			dice.queue_free()
 
 
-## 从角色 skill_ids 获取技能 ID
-func _get_skill_id_from_character(character: BaseCharacter, skill_index: int) -> String:
-	if skill_index >= 0 and skill_index < character.skill_ids.size():
-		return character.skill_ids[skill_index]
+## 从技能骰子 ID 获取技能 ID
+func _get_skill_id_from_dice_id(skill_dice_id: String, skill_index: int) -> String:
+	var reader = DiceCSVReader.new()
+	var dice_config = reader.get_skill_dice_config(skill_dice_id)
+	if dice_config.is_empty():
+		return ""
+
+	var skill_ids = dice_config.get("skill_ids", [])
+	if skill_index >= 0 and skill_index < skill_ids.size():
+		return skill_ids[skill_index]
 	return ""
 
 
@@ -879,13 +904,28 @@ func _get_skill_id_from_dice(skill_dice, character: BaseCharacter = null) -> Str
 	elif "dice_value" in skill_dice:
 		dice_value = skill_dice.dice_value
 
-	# 2. 从角色 skill_ids 直接获取（骰子点数 1-6 对应索引 0-5）
-	if character and character.skill_ids.size() > 0:
+	# 2. 从角色配置获取技能骰子 ID
+	if character and character.skill_dice_ids.size() > 0:
+		var skill_dice_id = character.skill_dice_ids[0]  # 暂时只支持一个技能骰子
+
+		# 3. 从 SkillDices.json 读取技能 ID 列表
+		var reader = DiceCSVReader.new()
+		var dice_config = reader.get_skill_dice_config(skill_dice_id)
+		var skill_ids = dice_config.get("skill_ids", [])
+
+		# 4. 根据骰子点数获取对应的技能 ID（点数 1-6 对应索引 0-5）
 		var skill_index = dice_value - 1
-		if skill_index >= 0 and skill_index < character.skill_ids.size():
-			return character.skill_ids[skill_index]
-		# 默认返回第一个技能
-		return character.skill_ids[0]
+		if skill_index >= 0 and skill_index < skill_ids.size():
+			return skill_ids[skill_index]
+
+	# 5. 默认返回第一个技能
+	if character and character.skill_dice_ids.size() > 0:
+		var skill_dice_id = character.skill_dice_ids[0]
+		var reader = DiceCSVReader.new()
+		var dice_config = reader.get_skill_dice_config(skill_dice_id)
+		var skill_ids = dice_config.get("skill_ids", [])
+		if skill_ids.size() > 0:
+			return skill_ids[0]
 
 	return ""
 
@@ -1080,6 +1120,27 @@ func get_battle_stats() -> Dictionary:
 	}
 
 
+## 回退方案：从静态配置生成技能骰子（兼容旧逻辑）
+## @param character 角色实例
+func _generate_skill_dices_from_static_config(character: BaseCharacter):
+	print("  - 使用静态配置生成技能骰子：", character.skill_dice_ids)
+	
+	if character.skill_dice_ids.size() > 0:
+		for skill_dice_id in character.skill_dice_ids:
+			if DiceManager:
+				var dice = DiceManager.create_skill_dice(skill_dice_id, null, Vector3.ZERO, false)
+				if dice:
+					skill_dices.append(dice)
+					dice.visible = false
+					if dice.has_method("set_freeze"):
+						dice.set_freeze(true)
+					elif "freeze" in dice:
+						dice.freeze = true
+					dice.gravity_scale = 0.0
+					print("  - 生成技能骰子（静态配置）：", skill_dice_id, ", dice=", dice)
+			else:
+				print("  - 错误：DiceManager 不可用")
+
 # ============================================================================
 # 备用方案方法（当 DiceManager 不可用时使用）
 # ============================================================================
@@ -1119,7 +1180,7 @@ func _create_character_dice_fallback(character: BaseCharacter, side: String, san
 
 
 ## 备用方案：创建技能骰子
-func _create_skill_dice_fallback(blank_dice_id: String, skill_ids: Array) -> RigidBody3D:
+func _create_skill_dice_fallback(skill_dice_id: String) -> RigidBody3D:
 	var dice_scene = load("res://scenes/dice_6.tscn")
 	if not dice_scene:
 		return null
@@ -1129,7 +1190,11 @@ func _create_skill_dice_fallback(blank_dice_id: String, skill_ids: Array) -> Rig
 		return null
 
 	dice.dice_type = "skill"
-	# skill_ids 直接从参数获取
+
+	# 从 SkillDices.json 读取配置
+	var reader = DiceCSVReader.new()
+	var dice_config = reader.get_skill_dice_config(skill_dice_id)
+	var skill_ids = dice_config.get("skill_ids", [])
 
 	# 构建贴图配置
 	var texture_config = {}
