@@ -377,13 +377,12 @@ func _create_skill_dices():
 			skill_dice.set_dice_type("skill")
 			print("【技能骰子】已设置 dice_type = skill")
 		
-		# 从 CSV 读取技能骰子配置 (使用 skill_dice_id = 4001)
-		var skill_config = dice_csv_reader.get_skill_dice_config("4001")
-		print("【技能骰子】skill_config = ", skill_config)
-		var skill_ids_array = skill_config.get("skill_ids", [])
-		print("【技能骰子】skill_ids_array = ", skill_ids_array)
 		
-		# 技能骰子需要从 skill.json 获取贴图
+		# 从角色获取空白骰子 ID 和技能列表（新数据格式）
+		var blank_dice_id = player_character.blank_dice_id
+		var skill_ids_array = player_character.skill_ids
+		print("【技能骰子】blank_dice_id = ", blank_dice_id)
+		print("【技能骰子】skill_ids_array = ", skill_ids_array)
 		# 构建贴图配置和值配置（转换为字典格式）
 		# 注意：value_config 必须是整数类型，因为 dice_value 是 int
 		# 技能骰子的值使用面索引 (0-5)，技能 ID 通过贴图配置关联
@@ -417,7 +416,7 @@ func _create_skill_dices():
 		# 关联技能骰子到角色
 		player_character.skill_dices.append(skill_dice)
 		
-		print("【技能骰子】技能骰子已创建，使用配置 4001，位于投掷区域")
+		print("【技能骰子】技能骰子已创建，使用配置 blank_dice_id，位于投掷区域")
 	else:
 		print("【技能骰子】不满足创建条件：player_character = ", player_character, ", skill_slot = ", player_character.skill_slot if player_character else "N/A")
 

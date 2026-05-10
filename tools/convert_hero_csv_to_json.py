@@ -62,14 +62,14 @@ def convert_hero_csv_to_json(csv_path, json_path):
             print(f"  [ERROR] Error parsing line: {e}")
             continue
 
-        if len(values) < 15:
-            print(f"  [SKIP] Warning: Insufficient columns (got {len(values)}, need 15), skipping")
+        if len(values) < 16:
+            print(f"  [SKIP] Warning: Insufficient columns (got {len(values)}, need 16), skipping")
             continue
 
         # 提取数据
         hero_id = values[0].strip()
         name = values[1].strip()
-        # 新增：角色类型和阶段
+        # 角色类型和阶段
         hero_type = int(values[2].strip()) if values[2].strip().isdigit() else 1
         stage = int(values[3].strip()) if values[3].strip().isdigit() else 1
 
@@ -83,17 +83,14 @@ def convert_hero_csv_to_json(csv_path, json_path):
         attr_agi = [s.strip() for s in values[5].strip().strip('"').split(';')] if values[5].strip() else []
         attr_int = [s.strip() for s in values[6].strip().strip('"').split(';')] if values[6].strip() else []
         attr_hp = values[7].strip()
-        # 新增：MP 属性（固定值）
         attr_mp = values[8].strip()
-        # 新增：行动点名称（如"魔法值"、"体力值"）
         mp_name = values[9].strip()
         skill_slot = values[10].strip()
-        # skill_dice_id 现在是个数组
-        skill_dice_id = [s.strip() for s in values[11].strip().strip('"').split(';')] if values[11].strip() else []
-        texture = [s.strip() for s in values[12].strip().strip('"').split(';')] if values[12].strip() else []
-        portrait = values[13].strip()
-        # hero_texture 是角色属性骰子的六个状态贴图（idle, hit, attack, anger, happy, die）
-        hero_texture = [s.strip() for s in values[14].strip().strip('"').split(';')] if values[14].strip() else []
+        blank_dice_id = values[11].strip()
+        skill_ids = [s.strip() for s in values[12].strip().strip('"').split(';')] if values[12].strip() else []
+        texture = [s.strip() for s in values[13].strip().strip('"').split(';')] if values[13].strip() else []
+        portrait = values[14].strip()
+        hero_texture = [s.strip() for s in values[15].strip().strip('"').split(';')] if values[15].strip() else []
 
         print(f"  Hero ID: {hero_id}")
         print(f"  Name: {name}")
@@ -106,7 +103,8 @@ def convert_hero_csv_to_json(csv_path, json_path):
         print(f"  MP: {attr_mp}")
         print(f"  MP Name: {mp_name}")
         print(f"  Skill Slot: {skill_slot}")
-        print(f"  Skill Dice ID: {skill_dice_id}")
+        print(f"  Blank Dice ID: {blank_dice_id}")
+        print(f"  Skill IDs: {skill_ids}")
         print(f"  Texture: {texture}")
         print(f"  Portrait: {portrait}")
         print(f"  Hero Texture: {hero_texture}")
@@ -123,7 +121,8 @@ def convert_hero_csv_to_json(csv_path, json_path):
             'attr_mp': attr_mp,
             'mp_name': mp_name,
             'skill_slot': skill_slot,
-            'skill_dice_id': skill_dice_id,
+            'blank_dice_id': blank_dice_id,
+            'skill_ids': skill_ids,
             'texture': texture,
             'portrait': portrait,
             'hero_texture': hero_texture

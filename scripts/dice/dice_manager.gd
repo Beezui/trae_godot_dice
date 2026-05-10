@@ -190,7 +190,106 @@ func create_skill_dice(skill_dice_id: String, parent: Node, position: Vector3 = 
 	return dice
 
 
-## 构建技能骰子贴图配置
+## 从空白骰子 + 技能列表创建技能骰子（新数据格式）
+## @param blank_dice_id 空白骰子 ID (如 "6001")
+## @param skill_ids 技能 ID 列表（6 个，对应 6 面）
+## @param parent 父节点
+## @param position 位置
+## @param add_to_scene 是否添加到场景
+## @return RigidBody3D 技能骰子实例
+func create_skill_dice_from_blank(blank_dice_id: String, skill_ids: Array, parent: Node, position: Vector3 = Vector3.ZERO, add_to_scene: bool = true) -> RigidBody3D:
+	if blank_dice_id.is_empty():
+		push_error("【DiceManager】空白骰子 ID 不能为空")
+		return null
+	if skill_ids.size() != 6:
+		push_error("【DiceManager】技能列表必须包含 6 个技能，当前：", skill_ids.size())
+		return null
+
+	# 从 BlankDices.json 读取空白骰子模板配置
+	var blank_config = dice_csv_reader.get_blank_dice_config(blank_dice_id)
+	if blank_config.is_empty():
+		push_error("【DiceManager】未找到空白骰子模板：", blank_dice_id)
+		return null
+
+	# 加载骰子场景
+	var dice_scene = load(DICE_6_SCENE_PATH)
+	if not dice_scene:
+		push_error("【DiceManager】无法加载骰子场景")
+		return null
+
+	var dice = dice_scene.instantiate()
+	if not dice:
+		push_error("【DiceManager】无法实例化骰子场景")
+		return null
+
+	dice.dice_type = "skill"
+
+	# 存储空白骰子信息和技能列表到元数据
+	dice.set_meta("blank_dice_id", blank_dice_id)
+	dice.set_meta("skill_ids", skill_ids)
+	dice.set_meta("effect_type", blank_config.get("effect_type", ""))
+	dice.set_meta("effect_p1", str(blank_config.get("p1", "0")))
+	dice.set_meta("effect_p2", str(blank_config.get("p2", "0")))
+	dice.set_meta("effect_p3", str(blank_config.get("p3", "0")))
+	dice.set_meta("effect_p4", str(blank_config.get("p4", "0")))
+
+	# 构建贴图配置和值配置
+	var texture_config = _build_skill_texture_config_from_list(skill_ids, blank_dice_id)
+	var value_config = _build_skill_value_config()
+
+	if dice.has_method("set_dice_face_config"):
+		dice.set_dice_face_config(texture_config, value_config)
+
+	dice.position = position
+
+	if add_to_scene and parent:
+		parent.add_child(dice)
+		print("【DiceManager】技能骰子（空白骰子 ", blank_dice_id, "）已添加到场景")
+	else:
+		print("【DiceManager】技能骰子（空白骰子 ", blank_dice_id, "）已创建（未添加到场景）")
+
+	if dice.has_method("set_freeze"):
+		dice.set_freeze(true)
+	elif "freeze" in dice:
+		dice.freeze = true
+
+	dice.gravity_scale = 0.0
+	dice.linear_velocity = Vector3.ZERO
+	dice.angular_velocity = Vector3.ZERO
+
+	return dice
+
+
+## 从技能列表构建贴图配置
+## @param skill_ids 技能 ID 列表
+## @param blank_dice_id 空白骰子 ID（用于空面贴图回退）
+## @return Dictionary 贴图配置字典
+func _build_skill_texture_config_from_list(skill_ids: Array, blank_dice_id: String = "") -> Dictionary:
+	var texture_config = {}
+
+	# 获取空白骰子模板的基础贴图路径（用于技能为空时的回退）
+	var blank_texture_path = ""
+	if not blank_dice_id.is_empty():
+		var blank_config = dice_csv_reader.get_blank_dice_config(blank_dice_id)
+		if blank_config.has("texture"):
+			var texture_name = blank_config["texture"]
+			blank_texture_path = "res://textures/dice/blank_dice/" + texture_name + ".png"
+
+	for i in range(6):
+		if i < skill_ids.size():
+			var skill_id = str(skill_ids[i])
+			if not skill_id.is_empty() and skill_id != "0":
+				var skill_data = skill_reader.get_skill(skill_id)
+				if skill_data and skill_data.has("icon"):
+					texture_config[i] = "res://textures/skill/skill_" + skill_data["icon"] + ".png"
+				else:
+					texture_config[i] = blank_texture_path
+			else:
+				texture_config[i] = blank_texture_path
+		else:
+			texture_config[i] = blank_texture_path
+
+	return texture_config
 ## @param dice_config 技能骰子配置（来自 SkillDices.json）
 ## @return Dictionary 贴图配置字典
 func _build_skill_texture_config(dice_config: Dictionary) -> Dictionary:

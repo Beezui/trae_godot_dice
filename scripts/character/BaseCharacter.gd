@@ -20,8 +20,11 @@ var mp_name: String = "MP"  # MP 显示名称
 ## 技能槽位数量
 var skill_slot: int
 
-## 技能骰子 ID 数组
-var skill_dice_ids: Array
+## 空白骰子模板 ID
+var blank_dice_id: String
+
+## 技能 ID 列表（6 面各一个技能）
+var skill_ids: Array
 
 ## 角色贴图 ID 数组
 var texture_ids: Array
@@ -97,8 +100,11 @@ func load_from_data(data: Dictionary):
 	var slot_value = data.get("skill_slot", "1")
 	skill_slot = int(slot_value) if slot_value is String else slot_value
 
-	# 解析技能骰子 ID
-	skill_dice_ids = _parse_array(data.get("skill_dice_id", []))
+	# 解析空白骰子 ID
+	blank_dice_id = str(data.get("blank_dice_id", "6001"))
+
+	# 解析技能 ID 列表
+	skill_ids = _parse_array(data.get("skill_ids", []))
 
 	# 解析贴图 ID
 	texture_ids = _parse_array(data.get("texture", []))
@@ -279,7 +285,8 @@ func get_config() -> Dictionary:
 		"current_mp": current_mp,
 		"mp_name": mp_name,
 		"skill_slot": skill_slot,
-		"skill_dice_ids": skill_dice_ids,
+		"blank_dice_id": blank_dice_id,
+			"skill_ids": skill_ids,
 		"texture_ids": texture_ids,
 		"portrait_id": portrait_id,
 		"hero_textures": hero_textures,

@@ -88,7 +88,8 @@
       "Bash(sed -n '1228,1233p' scenes/game_main/game_main.gd)",
       "Bash(echo \"remaining: $?\")",
       "Bash(sed -n '25,35p' scenes/game_main/game_main.gd)",
-      "Bash(sed -n '88,100p' scenes/game_main/game_main.gd)"
+      "Bash(sed -n '88,100p' scenes/game_main/game_main.gd)",
+      "Bash(xxd \"E:/godot/Godot_v4.6.1-stable_win64.exe/trae_godot_dice-master/scripts/character/BaseCharacter.gd\")"
     ]
   },
   "enableAllProjectMcpServers": true,
