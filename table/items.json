@@ -134,6 +134,24 @@
       "description": "暂时提升力量",
       "icon": "strength_potion.png",
       "weight": 25
+    },
+    {
+      "id": "gold",
+      "name": "金币",
+      "type": "货币",
+      "price": 0,
+      "description": "用于在商人处购买道具",
+      "icon": "gold_coin.png",
+      "weight": 0
+    },
+    {
+      "id": "relic",
+      "name": "遗物",
+      "type": "遗物",
+      "price": 0,
+      "description": "具有特殊效果的强大物品",
+      "icon": "relic.png",
+      "weight": 0
     }
   ]
 }

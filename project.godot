@@ -39,6 +39,7 @@ ShopManager="*res://scripts/shop/shop_manager.gd"
 AdventureManager="*res://scripts/levels/adventure_manager.gd"
 RewardManager="*res://scripts/levels/reward_manager.gd"
 PlayerData="*res://scripts/player_data.gd"
+BattleRewardPool="*res://scripts/battle/battle_reward_pool.gd"
 
 [editor_plugins]
 

@@ -110,6 +110,21 @@ func _create_reward_item(reward: Dictionary, item_table: Dictionary) -> Control:
 		if ResourceLoader.exists(full_path):
 			icon_rect.texture = load(full_path)
 
+	# 非物品奖励的 fallback 图标（纯色方块）
+	if icon_rect.texture == null:
+		var color = Color(0.6, 0.6, 0.6)  # 默认灰色
+		if "货币" in item_type or "gold" in item_id:
+			color = Color(1.0, 0.85, 0.3)
+		elif "属性" in item_type:
+			color = Color(0.3, 0.7, 1.0)
+		elif "效果" in item_type:
+			color = Color(0.3, 1.0, 0.5)
+		elif "损失" in item_type:
+			color = Color(1.0, 0.3, 0.3)
+		elif "遗物" in item_type:
+			color = Color(0.8, 0.3, 1.0)
+		icon_rect.texture = _create_placeholder_texture(color)
+
 	icon_control.add_child(icon_rect)
 	container.add_child(icon_control)
 
@@ -179,7 +194,11 @@ func _show_tooltip(data: Dictionary):
 	_tooltip_name.text = item_name + (" (" + item_type + ")" if item_type else "")
 	_tooltip_desc.text = item_desc
 
-	if amount > 1:
+	# 非物品奖励显示数值变化
+	if item_type in ["属性", "效果", "损失"]:
+		var sign = "+" if amount > 0 else ""
+		_tooltip_price.text = sign + str(amount)
+	elif amount > 1:
 		_tooltip_price.text = "价格: %d 金币 x%d" % [price, amount]
 	else:
 		_tooltip_price.text = "价格: %d 金币" % price
@@ -212,3 +231,10 @@ func hide_ui() -> void:
 ## 设置标题文本
 func set_title(title: String) -> void:
 	_title_label.text = title
+
+
+## 创建纯色占位图标（用于非物品奖励）
+func _create_placeholder_texture(color: Color) -> ImageTexture:
+	var image = Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	image.fill(color)
+	return ImageTexture.create_from_image(image)

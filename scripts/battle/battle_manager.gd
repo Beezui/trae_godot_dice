@@ -64,6 +64,10 @@ var current_actor: BaseCharacter = null
 var mp_cost_multiplier: float = 1.0
 ## 是否允许技能装配（进入战斗后锁定，战斗结束后解锁）
 var can_equip_skills: bool = true
+## 缓存的奖励列表（战斗结束后由 _resolve_rewards() 生成）
+var _cached_rewards: Array = []
+## 当前关卡节点引用
+var _current_level_node: LevelNode = null
 
 ## 战斗配置
 var battle_config: Dictionary = {
@@ -95,6 +99,7 @@ func initialize_battle(level_node: LevelNode, player_party: Array[int]) -> bool:
 	print("  - 玩家队伍：", player_party)
 
 	can_equip_skills = false  # 进入战斗后锁定技能装配
+	_current_level_node = level_node
 
 	current_state = BattleState.ENTERING
 	current_phase = BattlePhase.PHASE_ENTER
@@ -992,32 +997,30 @@ func _finish_battle(winner: String):
 	current_state = BattleState.FINISHED
 	_change_phase(BattlePhase.PHASE_RESOLVE)
 
-	on_battle_finished.emit(winner)
-
-	# 结算奖励
+	# 结算奖励（战斗胜利时）——在 emit 前生成数据
 	if winner == "player":
 		_resolve_rewards()
 
+	on_battle_finished.emit(winner)
 
-## 结算奖励
+
+## 结算奖励（生成数据，游戏主流程负责 UI 显示和应用）
 func _resolve_rewards():
 	print("【BattleManager】结算奖励...")
-	# TODO: 根据关卡节点配置发放奖励
-
-	# 进入转换阶段（投掷命运骰子）
-	_change_phase(BattlePhase.PHASE_TRANSITION)
-	await _transition_phase()
+	_cached_rewards = BattleRewardPool.generate_rewards(_get_current_stage())
+	print("【BattleManager】奖励数量：", _cached_rewards.size())
 
 
-## 转换阶段（投掷命运骰子）
-func _transition_phase():
-	print("【BattleManager】进入转换阶段")
-	_change_phase(BattlePhase.PHASE_TRANSITION)
+## 获取生成的奖励列表
+func get_battle_rewards() -> Array:
+	return _cached_rewards.duplicate()
 
-	# TODO: 触发命运骰子投掷
-	# 这里应该调用 DestinyDiceManager
 
-	await get_tree().create_timer(2.0).timeout
+## 获取当前阶段（用于掉落池查找）
+func _get_current_stage() -> int:
+	if _current_level_node and _current_level_node.data.has("stage"):
+		return _current_level_node.data["stage"]
+	return 1
 
 
 ## 切换阶段
@@ -1037,6 +1040,8 @@ func _clear_battle_data():
 	character_dices.clear()
 	skill_dices.clear()
 	item_dices.clear()
+	_cached_rewards.clear()
+	_current_level_node = null
 	current_turn = 0
 	current_actor = null
 	battle_data = {

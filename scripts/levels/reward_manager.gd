@@ -219,6 +219,55 @@ func execute_effect(result_id: String) -> Dictionary:
 	return {"success": true, "effects": applied_effects, "des": des}
 
 
+## 收集奖励数据（用于 UI 显示）
+## 解析结果的 effect + params，返回 rewards 数组
+func collect_rewards(result_id: String) -> Array:
+	var result = reward_results.get(result_id, {})
+	if result.is_empty():
+		return []
+
+	var effect = result.get("effect", "")
+	var params = result.get("params", {})
+	var rewards: Array = []
+
+	var p1_val = _get_param_value(params, "p1")
+	var p2_val = _get_param_value(params, "p2")
+
+	# 处理组合效果
+	var effects = effect.split("_and_")
+	for single_effect in effects:
+		match single_effect:
+			"gold_add":
+				rewards.append({"id": "gold", "amount": p1_val})
+			"hp_add":
+				rewards.append({"id": "hp_add", "name": "生命恢复", "type": "效果", "amount": p1_val})
+			"str_add":
+				rewards.append({"id": "str_add", "name": "力量增加", "type": "属性", "amount": p1_val})
+			"agi_add":
+				rewards.append({"id": "agi_add", "name": "敏捷增加", "type": "属性", "amount": p1_val})
+			"int_add":
+				rewards.append({"id": "int_add", "name": "智力增加", "type": "属性", "amount": p1_val})
+			"item_add":
+				rewards.append({"id": str(p1_val), "amount": 1})
+			"all_add":
+				rewards.append({"id": "str_add", "name": "全属性增加", "type": "属性", "amount": p1_val})
+			"all_attr_add":
+				rewards.append({"id": "str_add", "name": "全属性增加", "type": "属性", "amount": p1_val})
+			"hp_add_and_gold_add":
+				rewards.append({"id": "hp_add", "name": "生命恢复", "type": "效果", "amount": p1_val})
+				rewards.append({"id": "gold", "amount": p2_val})
+			"hp_add_and_attr_add":
+				rewards.append({"id": "hp_add", "name": "生命恢复", "type": "效果", "amount": p1_val})
+				rewards.append({"id": "str_add", "name": "全属性增加", "type": "属性", "amount": p2_val})
+			"gold_and_attr_add":
+				rewards.append({"id": "gold", "amount": p1_val})
+				rewards.append({"id": "str_add", "name": "全属性增加", "type": "属性", "amount": p2_val})
+			_:
+				pass
+
+	return rewards
+
+
 ## 替换描述中的参数占位符
 func _replace_params(text: String, params: Dictionary) -> String:
 	var result = text

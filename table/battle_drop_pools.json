@@ -1,0 +1,29 @@
+{
+  "battle_drop_pools": [
+    {
+      "stage": 1,
+      "item_pool": [
+        {"id": "101", "weight": 30},
+        {"id": "102", "weight": 25},
+        {"id": "301", "weight": 40}
+      ],
+      "gold_min": 50,
+      "gold_max": 150,
+      "relic_weight": 0,
+      "max_items": 2
+    },
+    {
+      "stage": 2,
+      "item_pool": [
+        {"id": "101", "weight": 20},
+        {"id": "103", "weight": 20},
+        {"id": "201", "weight": 15},
+        {"id": "303", "weight": 35}
+      ],
+      "gold_min": 100,
+      "gold_max": 300,
+      "relic_weight": 5,
+      "max_items": 3
+    }
+  ]
+}

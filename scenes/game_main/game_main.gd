@@ -672,6 +672,13 @@ func _start_battle(node: LevelNode):
 	await battle_manager.on_battle_finished
 	print("【战斗】战斗结束，继续游戏流程")
 
+	# 结算奖励（战斗胜利时）
+	var rewards = battle_manager.get_battle_rewards()
+	if rewards.size() > 0:
+		await _show_reward_settlement_ui(rewards, _load_item_table(), "战斗胜利！获得以下奖励：")
+		_apply_rewards_to_player(rewards)
+		print("【战斗】奖励已应用")
+
 
 ## 启动贸易流程
 func _start_trade(node: LevelNode):
@@ -969,6 +976,11 @@ func _start_adventure(node: LevelNode):
 	else:
 		push_warning("【奇遇】效果执行可能有问题")
 
+	# 12b. 显示奖励结算 UI
+	var ui_rewards = AdventureManager.collect_rewards(result.get("id", ""))
+	if not ui_rewards.is_empty():
+		await _show_reward_settlement_ui(ui_rewards, _load_item_table(), "奇遇结算")
+
 	# 13. 显示效果描述（短暂停留）
 	await get_tree().create_timer(1.5).timeout
 
@@ -1233,6 +1245,11 @@ func _start_reward(node: LevelNode):
 	else:
 		push_warning("【奖励】效果执行可能有问题")
 
+	# 10b. 显示奖励结算 UI
+	var ui_rewards = RewardManager.collect_rewards(result.get("id", ""))
+	if not ui_rewards.is_empty():
+		await _show_reward_settlement_ui(ui_rewards, _load_item_table(), "奖励结算")
+
 	# 11. 显示效果描述（短暂停留）
 	await get_tree().create_timer(1.5).timeout
 
@@ -1426,3 +1443,54 @@ func _cleanup_reward_dice():
 	if _reward_dice and is_instance_valid(_reward_dice):
 		_reward_dice.queue_free()
 	_reward_dice = null
+
+
+# ============================================================================
+# 奖励结算相关辅助方法
+# ============================================================================
+
+## 显示奖励结算 UI（等待确认后返回）
+func _show_reward_settlement_ui(rewards: Array, item_table: Dictionary, title: String) -> void:
+	var ui_scene = load("res://scenes/ui/reward_settlement_ui.tscn")
+	if not ui_scene:
+		push_error("【奖励结算】无法加载 UI 场景")
+		return
+
+	var ui = ui_scene.instantiate()
+	get_tree().root.add_child(ui)
+	ui.set_title(title)
+	ui.show_rewards(rewards, item_table)
+	await ui.on_confirm_pressed
+	ui.hide_ui()
+	ui.queue_free()
+
+
+## 将奖励应用到 PlayerData
+func _apply_rewards_to_player(rewards: Array) -> void:
+	for reward in rewards:
+		var item_id = str(reward.get("id", ""))
+		var amount = int(reward.get("amount", 1))
+		if item_id == "gold":
+			PlayerData.add_gold(amount)
+		elif item_id == "relic":
+			# 遗物待实现
+			print("【奖励结算】获得遗物（待实现）：", amount, " 个")
+		else:
+			PlayerData.add_item(item_id, amount)
+
+
+## 加载 items.json 为字典格式
+func _load_item_table() -> Dictionary:
+	var json_path = "res://table/items.json"
+	if not FileAccess.file_exists(json_path):
+		return {}
+	var file = FileAccess.open(json_path, FileAccess.READ)
+	var json = JSON.new()
+	json.parse(file.get_as_text())
+	file.close()
+	var data = json.get_data()
+	var table = {}
+	if data and data.has("items"):
+		for item in data["items"]:
+			table[str(item["id"])] = item
+	return table
